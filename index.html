@@ -153,8 +153,11 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 /* Jeu */
 .top{display:flex;align-items:center;gap:10px;padding:calc(10px + var(--st)) calc(12px + var(--sr)) 10px calc(12px + var(--sl));background:var(--card);border-bottom:2px solid var(--line)}
 .top .ttl{flex:1;min-width:0}
+.btn.sq{padding:7px 9px;display:grid;place-items:center}
+.btn.sq svg{width:22px;height:22px;display:block}
+.top{gap:8px}
 .top .ttl b{font-family:var(--display);font-size:19px;display:block;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.top .ttl span{font-size:13px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
+.top .ttl span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:13px;color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums}
 .body{flex:1;min-height:0;display:flex;flex-direction:column}
 #stage{flex:1;min-height:0;min-width:0;position:relative;touch-action:none;background:
   linear-gradient(var(--line) 1px,transparent 1px) 0 0/24px 24px,
@@ -242,6 +245,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="top">
     <button class="btn ghost small" id="back" type="button">‹ Dessins</button>
     <div class="ttl"><b id="pname"></b><span id="pprog"></span></div>
+    <button class="btn ghost small sq" id="snd" type="button"></button>
     <button class="btn ghost small" id="reset" type="button">Recommencer</button>
   </div>
   <div class="body">
@@ -721,13 +725,70 @@ function renderGallery(){
   pg.appendChild(blk);
 }
 
+/* ---------- Sons et brillances ---------- */
+let actx = null, muted = store.get("cpn.mute", false), lastS = 0, combo = 0, comboT = 0;
+const calmFx = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+function audio(){
+  if(muted) return null;
+  try{
+    if(!actx){ const A = window.AudioContext || window.webkitAudioContext; if(!A) return null; actx = new A(); }
+    if(actx.state === "suspended") actx.resume();
+    return actx;
+  }catch(e){ return null; }
+}
+function tone(f, t0, dur, vol, type){
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || "sine"; o.frequency.setValueAtTime(f, t0);
+  g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(vol, t0+.012); g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+  o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+dur+.03);
+}
+const SCALE = [0,2,4,7,9,12,14,16,19,21,24];
+function sPaint(){
+  const a = audio(); if(!a) return;
+  const now = performance.now(); if(now-lastS < 45) return;
+  combo = now-comboT < 600 ? Math.min(combo+1, SCALE.length-1) : 0; comboT = now; lastS = now;
+  tone(523.25*Math.pow(2, SCALE[combo]/12), a.currentTime, .12, .11, "triangle");
+}
+function sColor(){ const a = audio(); if(!a) return; [783.99,1046.5,1318.5].forEach((f,i)=>tone(f, a.currentTime+i*.08, .25, .12, "sine")); }
+function sWin(){
+  const a = audio(); if(!a) return; const t = a.currentTime;
+  [523.25,659.25,783.99,1046.5,1318.5,1568].forEach((f,i)=>tone(f, t+i*.11, .3, .14, "triangle"));
+  [523.25,659.25,783.99,1046.5].forEach(f=>tone(f, t+.74, 1.1, .09, "sine"));
+}
+const SND_ON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>';
+const SND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9.5l5 5M22 9.5l-5 5"/></svg>';
+function showSnd(){ const b = $("snd"); b.innerHTML = muted ? SND_OFF : SND_ON; b.setAttribute("aria-label", muted ? "Activer le son" : "Couper le son"); b.setAttribute("aria-pressed", !muted); }
+$("snd").onclick = () => { muted = !muted; store.set("cpn.mute", muted); showSnd(); if(!muted){ const a = audio(); if(a) tone(880, a.currentTime, .12, .1, "triangle"); } };
+showSnd();
+let sparks = [];
+function sparkle(i, delay){ if(calmFx) return; if(sparks.length > 140) sparks.shift(); sparks.push({i, t0: performance.now()+(delay||0), rot: Math.random()*1.5}); }
+function drawSparks(){
+  if(!sparks.length) return;
+  const now = performance.now(), s = view.s, DUR = 420;
+  sparks = sparks.filter(p => now-p.t0 < DUR);
+  for(const p of sparks){
+    const age = (now-p.t0)/DUR; if(age < 0) continue;
+    const X = view.x+(p.i%cur.cols)*s, Y = view.y+Math.floor(p.i/cur.cols)*s, cx = X+s/2, cy = Y+s/2, e = 1-(1-age)*(1-age);
+    ctx.fillStyle = `rgba(255,255,255,${(1-age)*.6})`; ctx.fillRect(X, Y, s, s);
+    const R = Math.max(7, s*.75)*(.35+.65*e), rot = p.rot+age*.9;
+    ctx.globalAlpha = 1-age*age;
+    ctx.beginPath();
+    for(let k=0;k<8;k++){ const r = k%2 ? R*.3 : R, a = rot+k*Math.PI/4; ctx[k?"lineTo":"moveTo"](cx+r*Math.cos(a), cy+r*Math.sin(a)); }
+    ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = "#ffd23f"; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = "#fff6b0";
+    for(let k=0;k<3;k++){ const a = p.rot*4+k*2.1, d = R*(.9+e*.8), r = Math.max(1.2, s*.07)*(1-age); ctx.beginPath(); ctx.arc(cx+d*Math.cos(a), cy+d*Math.sin(a), r, 0, 6.3); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  }
+  if(sparks.length) draw();
+}
+
 /* ---------- Jeu ---------- */
 const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
 let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=0, dpr=1, raf=0;
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
 function openDrawing(d){
-  cur = d; done = loadDone(d); store.set("cpn.last", d.id);
+  sparks = []; cur = d; done = loadDone(d); store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
   for(let i=0;i<d.cells.length;i++){
@@ -743,10 +804,11 @@ function resize(){
   dpr = Math.min(window.devicePixelRatio||1, 3);
   W = r.width; Hh = r.height;
   cv.width = Math.round(W*dpr); cv.height = Math.round(Hh*dpr);
-  draw();
+  if(fitted && cur) fit(); else draw();
 }
 function fitScale(){ return Math.min(W/cur.cols, Hh/cur.rows)*.94; }
-function fit(){ view.s = fitScale(); view.x = (W-cur.cols*view.s)/2; view.y = (Hh-cur.rows*view.s)/2; draw(); }
+let fitted = true;
+function fit(){ fitted = true; view.s = fitScale(); view.x = (W-cur.cols*view.s)/2; view.y = (Hh-cur.rows*view.s)/2; draw(); }
 function clampView(){
   const w = cur.cols*view.s, h = cur.rows*view.s, m = 60;
   view.x = Math.min(W-m, Math.max(m-w, view.x));
@@ -776,6 +838,7 @@ function paintFrame(){
   }
   ctx.strokeStyle = "#1d1b3a"; ctx.lineWidth = 2;
   ctx.strokeRect(view.x-1, view.y-1, cols*s+2, rows*s+2);
+  drawSparks();
 }
 function buildPalette(){
   const pal = $("pal"); pal.textContent = "";
@@ -804,13 +867,18 @@ function selectColor(i, scroll){
 }
 function updateProg(){
   const st = stats(cur, done);
-  $("pprog").textContent = `${st.ok} / ${st.tot} cases · ${Math.floor(st.ok/st.tot*100)} %`;
+  $("pprog").textContent = `${st.ok} / ${st.tot} · ${Math.floor(st.ok/st.tot*100)} %`;
   $("win").classList.toggle("on", st.ok===st.tot);
 }
 let saveT = 0;
 function paintCell(i){
   if(i<0 || idx[i]!==sel || done[i]) return false;
-  done[i] = 1; left[sel]--;
+  done[i] = 1; left[sel]--; sparkle(i);
+  if(left.every(v=>v===0)){
+    sWin();
+    const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
+    for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
+  } else if(left[sel]===0) sColor(); else sPaint();
   clearTimeout(saveT); saveT = setTimeout(()=>saveDone(cur, done), 250);
   if(left[sel]===0){
     const n = left.findIndex(v=>v>0);
@@ -829,7 +897,7 @@ const pts = new Map(); let mode = "", moved = 0, pinch = null;
 function pos(e){ const r = stage.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top}; }
 stage.addEventListener("pointerdown", e=>{
   if(e.target.closest("#win")) return;
-  stage.setPointerCapture(e.pointerId);
+  stage.setPointerCapture(e.pointerId); audio();
   const p = pos(e); pts.set(e.pointerId, p);
   if(pts.size===1){
     moved = 0;
@@ -850,7 +918,7 @@ stage.addEventListener("pointermove", e=>{
     for(let k=1;k<=n;k++) paintCell(cellAt(prev.x+(p.x-prev.x)*k/n, prev.y+(p.y-prev.y)*k/n));
   } else if(mode==="pan"){
     moved += Math.abs(p.x-prev.x)+Math.abs(p.y-prev.y);
-    view.x += p.x-prev.x; view.y += p.y-prev.y; clampView(); draw();
+    view.x += p.x-prev.x; view.y += p.y-prev.y; fitted = false; clampView(); draw();
   } else if(mode==="pinch" && pts.size>=2){
     const [a,b] = [...pts.values()];
     const d = H(a.x-b.x,a.y-b.y), mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
@@ -870,6 +938,7 @@ function endPtr(e){
 stage.addEventListener("pointerup", endPtr);
 stage.addEventListener("pointercancel", endPtr);
 function zoomTo(ns, cx, cy, vx=view.x, vy=view.y, os=view.s){
+  fitted = false;
   const f = fitScale(); ns = Math.max(f*.7, Math.min(90, ns));
   view.x = cx-(cx-vx)*ns/os; view.y = cy-(cy-vy)*ns/os; view.s = ns;
 }
@@ -885,7 +954,7 @@ $("find").onclick = () => {
   for(let i=0;i<idx.length;i++) if(idx[i]===sel && !done[i]){
     const d = H(i%cur.cols+.5-cx, Math.floor(i/cur.cols)+.5-cy); if(d<bd){ bd=d; best=i; }
   }
-  view.s = Math.max(view.s, 34);
+  fitted = false; view.s = Math.max(view.s, 34);
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
