@@ -69,6 +69,7 @@ body.drawer-open #scrim{opacity:1;pointer-events:auto}
 .nv canvas,.nv .ic{width:42px;height:42px;border-radius:11px;flex:0 0 auto;background:var(--c);display:grid;place-items:center}
 .nv .ic svg{width:22px;height:22px}
 .nv b{font-family:var(--display);font-weight:800;font-size:18px;line-height:1.05;display:block}
+.nv{padding-top:5px;padding-bottom:5px}
 .nv small{font-size:12px;font-weight:800;color:#b9b5db;font-variant-numeric:tabular-nums}
 .nv.on{background:var(--c)}
 .nv.on small{color:#fff}
@@ -1075,7 +1076,7 @@ function planetArt(cv, p, locked, seed){
 const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c"],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["photos","Mes photos","#7048e8"]];
 let filt = "tous";
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -1182,6 +1183,12 @@ function renderGallery(){
   const li = el("span","ic"); li.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/></svg>';
   const lt = el("span"); lt.append(el("b",null,"Mode libre"), el("small",null,"Colorie comme tu veux"));
   lb.append(li, lt); lb.onclick = () => setPage("libre"); nav.appendChild(lb);
+  const lastId = store.get("cpn.last", "");
+  const ongoing = items.filter(i=>i.st.ok>0 && i.pct<100).sort((a,b)=>(b.d.id===lastId)-(a.d.id===lastId) || b.pct-a.pct);
+  const eb = el("button","nv" + (page==="encours" ? " on" : "")); eb.type = "button"; eb.style.setProperty("--c", "#e8590c");
+  const ei = el("span","ic"); ei.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+  const et = el("span"); et.append(el("b",null,"Dessins en cours"), el("small",null, ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins commencés" : "dessin commencé"}` : "Aucun pour l'instant"));
+  eb.append(ei, et); eb.onclick = () => setPage("encours"); nav.appendChild(eb);
   for(const [key,label,color] of CATS){
     const list = byCat(key), b = el("button","nv" + (page===key ? " on" : ""));
     b.type = "button"; b.style.setProperty("--c", color);
@@ -1226,7 +1233,9 @@ function renderGallery(){
     pg.appendChild(fb);
 
     if(prog.length > 1){
-      const blk = el("div","block"); blk.appendChild(el("h2",null,"En cours"));
+      const blk = el("div","block"), sh = el("div","sec"); sh.appendChild(el("h2",null,"En cours"));
+      const av = el("button","btn ghost small","Tout voir"); av.type = "button"; av.onclick = () => setPage("encours"); sh.appendChild(av);
+      blk.appendChild(sh);
       const row = el("div","rowscroll"); prog.slice(1,11).forEach(i=>row.appendChild(makeCard(i)));
       blk.appendChild(row); pg.appendChild(blk);
     }
@@ -1280,6 +1289,19 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Mes dessins en cours */
+  if(page === "encours"){
+    $("abTitle").textContent = "Mes dessins en cours";
+    const blk = el("div","block"), sec = el("div","sec"), lh = el("div","lh");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.onclick = () => setPage("menu");
+    lh.append(bk, el("span","eyebrow", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins à finir" : "dessin à finir"}` : "Rien à finir")); sec.appendChild(lh);
+    const g = el("div","grid");
+    if(!ongoing.length) g.appendChild(el("p","empty","Tu n'as aucun dessin commencé. Dès que tu colories une case d'un dessin sans le finir, il apparaît ici."));
+    ongoing.forEach(i=>g.appendChild(makeCard(i)));
+    blk.append(sec, g); pg.appendChild(blk);
     return;
   }
 
@@ -1683,7 +1705,7 @@ function paintCell(i){
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
-  clearTimeout(saveT); saveT = setTimeout(()=>saveDone(cur, done), 250);
+  clearTimeout(saveT); { const c = cur, dn = done; saveT = setTimeout(()=>saveDone(c, dn), 250); }
   if(left[sel]===0){
     const n = left.findIndex(v=>v>0);
     if(n>=0) selectColor(n, true); else refreshChips();
@@ -1770,7 +1792,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ if(cur){ if(free) saveFree(); else saveDone(cur, done); } cur = null; renderGallery(); show("home"); }
+function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
