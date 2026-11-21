@@ -50,6 +50,39 @@ canvas{image-rendering:pixelated}
 .sp-bar i{display:block;height:100%;width:0;background:#ff6fae;border-radius:10px}
 .sp-s{font-weight:700;font-size:14px;color:#cfcbe8}
 
+/* Page d'accueil : créer son joueur */
+#land{position:fixed;inset:0;z-index:8;background:var(--ink);color:#fff;overflow-y:auto;display:flex;justify-content:center;padding:calc(26px + var(--st)) calc(18px + var(--sr)) calc(28px + var(--sb)) calc(18px + var(--sl))}
+#land[hidden]{display:none}
+.ld{width:100%;max-width:470px;display:flex;flex-direction:column;gap:18px;margin:auto 0}
+.ld-top{display:flex;align-items:center;gap:14px}
+#ldLogo{width:76px;height:76px;border-radius:20px;border:3px solid #fff;flex:0 0 auto}
+.ld h1{font-size:30px}
+.ld .tag{margin:4px 0 0;color:#cfcbe8;font-weight:700;font-size:15px}
+.ldcard{background:var(--card);color:var(--ink);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.ldcard[hidden]{display:none}
+.ldcard label,.ldcard .lab{font-weight:800;font-size:14px;color:var(--muted)}
+.ldcard input[type=text]{font-size:20px;padding:12px}
+.avgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.av{border:3px solid var(--line);border-radius:16px;padding:0;background:#eceaf5;overflow:hidden;aspect-ratio:1}
+.av canvas{width:100%;height:100%;display:block}
+.av.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
+.btn.big{font-size:20px;padding:14px 18px;font-family:var(--display)}
+.ldnote{margin:0;font-size:12px;font-weight:700;color:var(--muted);text-align:center}
+.players{display:flex;flex-direction:column;gap:8px}
+.plb{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:16px;padding:8px;background:var(--card);text-align:left}
+.plb canvas{width:50px;height:50px;border-radius:13px;flex:0 0 auto}
+.plb b{font-family:var(--display);font-size:20px;display:block;line-height:1.1}
+.plb small{font-size:12px;font-weight:800;color:var(--muted)}
+.plb.on{border-color:var(--accent)}
+.ldfeat{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;color:#e4e1f7;font-weight:700;font-size:15px}
+.ldfeat li{display:flex;align-items:center;gap:10px}
+.ldfeat i{width:14px;height:14px;border-radius:4px;flex:0 0 auto}
+.me{flex:0 0 auto;width:42px;height:42px;border-radius:13px;border:2px solid #fff;padding:0;overflow:hidden;background:#322f61}
+.me canvas{width:100%;height:100%;display:block}
+.hello{display:flex;align-items:center;gap:12px}
+.hello canvas{width:54px;height:54px;border-radius:15px;border:2px solid var(--ink);flex:0 0 auto}
+.hello small{display:block;color:var(--muted);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -268,6 +301,31 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="sp-s">Préparation des dessins…</div>
 </div>
 
+<div id="land" hidden>
+  <div class="ld">
+    <div class="ld-top">
+      <canvas id="ldLogo" width="52" height="52"></canvas>
+      <div><h1 id="ldTitle">Coloriage par numéros</h1><p class="tag" id="ldTag"></p></div>
+    </div>
+    <div class="ldcard" id="ldChoose" hidden>
+      <div class="players" id="ldPlayers"></div>
+      <div class="row"><button class="btn ghost" id="ldEdit" type="button" style="flex:1">Modifier mon profil</button><button class="btn ghost" id="ldNew" type="button" style="flex:1">Nouveau joueur</button></div>
+      <button class="btn pink" id="ldClose" type="button">Continuer</button>
+    </div>
+    <form class="ldcard" id="ldForm" novalidate>
+      <label for="ldName">Ton prénom</label>
+      <input type="text" id="ldName" maxlength="14" autocomplete="off" autocapitalize="words" placeholder="Écris ton prénom">
+      <p class="err" id="ldErr" hidden>Écris ton prénom pour commencer.</p>
+      <span class="lab">Choisis ton avatar</span>
+      <div class="avgrid" id="ldAv"></div>
+      <button class="btn pink big" id="ldGo" type="submit">Commencer</button>
+      <button class="btn ghost" id="ldBack" type="button" hidden>Annuler</button>
+      <p class="ldnote">Ton prénom et ta progression restent sur cet appareil.</p>
+    </form>
+    <ul class="ldfeat" id="ldFeat"></ul>
+  </div>
+</div>
+
 <section id="home" class="view on">
   <div class="shell">
     <div id="scrim"></div>
@@ -289,6 +347,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
         <button class="icon" id="drawerBtn" type="button" aria-label="Afficher ou masquer les catégories" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <div class="ab-t" id="abTitle"></div>
         <span class="pill" id="ovPill"></span>
+        <button class="me" id="meBtn" type="button" aria-label="Mon profil et les joueurs"><canvas id="meCv" width="8" height="8"></canvas></button>
       </header>
       <div class="pix"></div>
       <div class="page" id="page"></div>
@@ -361,11 +420,17 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
 "use strict";
 const $ = id => document.getElementById(id);
 const CH = "0123456789abcdefghijklmnopqrstuvwxyz";
-const store = {
+const RAW = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
   del(k){ try{ localStorage.removeItem(k); }catch(e){} }
 };
+/* Joueurs : le premier garde les clés d'origine, les suivants ont leur propre espace */
+let users = RAW.get("cpn.users", []); if(!Array.isArray(users)) users = [];
+let me = users.find(u=>u.id===RAW.get("cpn.user", "")) || null;
+const SHARED = ["cpn.users","cpn.user","cpn.mute","cpn.drawerOff"];
+const keyOf = k => (me && me.pfx && !SHARED.includes(k)) ? k.replace(/^cpn\./, "cpn@"+me.pfx+".") : k;
+const store = { get:(k,d)=>RAW.get(keyOf(k),d), set:(k,v)=>RAW.set(keyOf(k),v), del:k=>RAW.del(keyOf(k)) };
 
 const rgb = h => [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)];
 const lum = h => { const [r,g,b] = rgb(h); return (.299*r+.587*g+.114*b)/255; };
@@ -1167,6 +1232,7 @@ function renderGallery(){
   const score = world.reduce((a,w)=>a+w.pts, 0);
   $("ovPill").textContent = `★ ${fmt(score)}`;
   $("ovPill").setAttribute("aria-label", `${score} points`);
+  drawThumb($("meCv"), avatarOf(me), null, true);
 
   /* Tiroir */
   const nav = $("nav"); nav.textContent = "";
@@ -1201,6 +1267,11 @@ function renderGallery(){
   const pg = $("page"); pg.textContent = "";
   if(page === "menu"){
     $("abTitle").textContent = "Coloriage par numéros";
+    if(me){
+      const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true);
+      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(score)} points`));
+      hl.append(hc, hx); pg.appendChild(hl);
+    }
     /* À la une : reprendre ou commencer */
     const last = store.get("cpn.last", "");
     const prog = items.filter(i=>i.st.ok>0 && i.pct<100).sort((a,b)=>(b.d.id===last)-(a.d.id===last) || b.pct-a.pct);
@@ -1857,7 +1928,63 @@ $("iok").onclick = () => {
   closeDlg(); page = "photos"; store.set("cpn.page", page); openDrawing(d);
 };
 
+/* ---------- Joueurs et page d'accueil ---------- */
+const AVATARS = ["O_rose","O_pirate","O_reine","O_lunettes","chat","W_robot1","W_alien","W_dragon","W_pingouin","W_ours","W_abeille","W_tortue"];
+const avatarOf = u => BUILTIN.find(d=>d.id===(u && u.av)) || BUILTIN.find(d=>d.id==="O_rose");
+let ldMode = "create", ldAv = AVATARS[0];
+function sessFlag(set){ try{ if(set) sessionStorage.setItem("cpn.chosen","1"); return sessionStorage.getItem("cpn.chosen")==="1"; }catch(e){ return false; } }
+function showLand(mode){
+  ldMode = mode; const choose = mode==="choose";
+  $("land").hidden = false; $("ldChoose").hidden = !choose; $("ldForm").hidden = choose; $("ldErr").hidden = true;
+  drawThumb($("ldLogo"), BUILTIN.find(d=>d.id==="O_rose"), null, true);
+  $("ldTitle").textContent = choose ? "Qui joue ?" : mode==="edit" ? "Mon profil" : "Coloriage par numéros";
+  $("ldTag").textContent = choose ? "Choisis ton joueur pour retrouver tes dessins." : mode==="edit" ? "Change ton prénom ou ton avatar." : users.length ? "Crée un nouveau joueur : il aura ses propres dessins et ses propres points." : "Crée ton joueur, choisis ton avatar, puis commence à colorier.";
+  const ft = $("ldFeat"); ft.textContent = "";
+  if(mode==="create") [["#ff6fae",`${all().length} dessins à colorier, des pieuvres aux mots en français`],["#4dabf7","Six planètes à compléter pour gagner des points"],["#ffd43b","Un mode libre avec tes couleurs et des dégradés"]].forEach(([c,t])=>{ const li = el("li"), sq = el("i"); sq.style.background = c; li.append(sq, document.createTextNode(t)); ft.appendChild(li); });
+  if(choose){
+    const pl = $("ldPlayers"); pl.textContent = "";
+    for(const u of users){
+      const b = el("button","plb" + (me && u.id===me.id ? " on" : "")); b.type = "button";
+      const c = el("canvas"); drawThumb(c, avatarOf(u), null, true);
+      const t = el("span"); t.append(el("b",null,u.name), el("small",null, me && u.id===me.id ? "Joueur actuel" : "Toucher pour jouer"));
+      b.append(c, t);
+      b.onclick = () => { if(me && u.id===me.id){ $("land").hidden = true; return; } RAW.set("cpn.user", u.id); sessFlag(true); location.reload(); };
+      pl.appendChild(b);
+    }
+    $("ldEdit").hidden = !me;
+    return;
+  }
+  $("ldName").value = mode==="edit" && me ? me.name : "";
+  ldAv = mode==="edit" && me ? me.av : AVATARS[users.length % AVATARS.length];
+  $("ldGo").textContent = mode==="edit" ? "Enregistrer" : "Commencer";
+  $("ldBack").hidden = !me;
+  const g = $("ldAv"); g.textContent = "";
+  AVATARS.forEach(id=>{
+    const d = BUILTIN.find(x=>x.id===id); if(!d) return;
+    const b = el("button","av" + (id===ldAv ? " on" : "")); b.type = "button"; b.setAttribute("aria-label", "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
+    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c);
+    b.onclick = () => { ldAv = id; g.querySelectorAll(".av").forEach(x=>{ x.classList.toggle("on", x===b); x.setAttribute("aria-pressed", x===b); }); };
+    g.appendChild(b);
+  });
+}
+$("ldForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("ldName").value.trim().slice(0,14);
+  if(!name){ $("ldErr").hidden = false; $("ldName").focus(); return; }
+  if(ldMode==="edit" && me){ me.name = name; me.av = ldAv; RAW.set("cpn.users", users); $("land").hidden = true; renderGallery(); return; }
+  const id = "u"+Date.now().toString(36), u = {id, name, av: ldAv, pfx: users.length ? id : ""};
+  users.push(u); RAW.set("cpn.users", users); RAW.set("cpn.user", id); sessFlag(true);
+  if(u.pfx){ location.reload(); return; }      /* nouveau joueur : on recharge avec son espace à lui */
+  me = u; $("land").hidden = true; renderGallery();
+});
+$("ldBack").onclick = () => showLand("choose");
+$("ldEdit").onclick = () => showLand("edit");
+$("ldNew").onclick = () => showLand("create");
+$("ldClose").onclick = () => { $("land").hidden = true; };
+$("meBtn").onclick = () => showLand(me ? "choose" : "create");
+
 renderGallery();
+if(!me) showLand("create"); else if(users.length>1 && !sessFlag(false)) showLand("choose");
 
 /* ---------- Écran de chargement ---------- */
 (function(){
