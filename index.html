@@ -150,6 +150,11 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 }
 @media (prefers-reduced-motion:no-preference){#drawer{transition:transform .22s ease} #scrim{transition:opacity .22s}}
 
+.letters{display:flex;flex-wrap:wrap;gap:7px}
+.lt{min-width:44px;height:44px;padding:0 10px;border:2px solid var(--ink);background:var(--card);border-radius:13px;font-family:var(--display);font-weight:800;font-size:20px;box-shadow:0 3px 0 var(--ink)}
+.lt.on{background:#a66a00;color:#fff}
+.lt:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+.grid.wide .th canvas{aspect-ratio:2/1}
 /* Mode Monde */
 .wbanner{background:var(--ink);color:#fff;border:0;border-radius:22px;box-shadow:0 5px 0 #0d0c20;padding:14px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;text-align:left;width:100%}
 .wbanner:active,.planet:active{transform:translateY(3px);box-shadow:0 2px 0 #0d0c20}
@@ -951,6 +956,38 @@ D("satellite","Satellite","cosmos",SP,P=>{
   P.r(8.5,7,13.5,15,"#f0b429"); P.r(8.5,10,13.5,12,"#ffd43b"); P.o("#495057");
 });
 
+/* ----- Mots (français, niveau primaire) : seules les lettres sont à colorier ----- */
+const ACCENTS = {"́":"00010 00100", "̀":"01000 00100", "̂":"00100 01010", "̈":"01010 00000"};
+const WORDS = {
+  A:["AMI","ÂNE","ARBRE"], B:["BÉBÉ","BALLE","BRAS"], C:["CHAT","CHIEN","CLÉ"], D:["DENT","DAME","DOIGT"],
+  E:["EAU","ÉCOLE","ÉTÉ"], F:["FÉE","FLEUR","FEU"], G:["GANT","GARE","GOMME"], H:["HIBOU","HIVER","HERBE"],
+  I:["ÎLE","IGLOO","IMAGE"], J:["JEU","JOUR","JUPE"], K:["KIWI","KOALA","KAYAK"], L:["LUNE","LAIT","LIVRE"],
+  M:["MAMAN","MAIN","MIEL"], N:["NEZ","NUIT","NEIGE"], O:["OURS","OLIVE","ONCLE"], P:["PAPA","PAIN","POMME"],
+  Q:["QUI","QUAI","QUOI"], R:["ROI","ROBE","ROUGE"], S:["SAC","SEL","SINGE"], T:["TASSE","TAPIS","TÊTE"],
+  U:["UN","UNE","USINE"], V:["VÉLO","VACHE","VERT"], W:["WAGON","WAPITI","WATT"], X:["XYLOPHONE"],
+  Y:["YOYO","YEUX","YOGA"], Z:["ZOO","ZÉRO","ZÈBRE"]
+};
+function wordDrawing(w, letter, hue){
+  const L = [...w].map(ch=>{ const n = ch.normalize("NFD"); return {g: FONT[n[0]].replace(/ /g,""), a: n[1] ? ACCENTS[n[1]].replace(/ /g,"") : null}; });
+  const S = 2, top = L.some(l=>l.a) ? 2 : 0, cols = L.length*5*S+(L.length-1)*2+2, rows = (7+top)*S+2;
+  const at = (x,y) => {            // 0 = vide, 1 = première lettre, 2 = autres lettres
+    const xx = x-1, k = Math.floor(xx/12), gx = Math.floor((xx-k*12)/S), gy = Math.floor((y-1)/S);
+    if(xx<0 || k<0 || k>=L.length || gx<0 || gx>4 || y<1 || gy<0 || gy>=7+top) return 0;
+    const l = L[k], lit = gy<top ? (l.a && l.a[gy*5+gx]==="1") : l.g[(gy-top)*5+gx]==="1";
+    return lit ? (k===0 ? 1 : 2) : 0;
+  };
+  let cells = "";
+  for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
+    const v = at(x,y);
+    cells += v ? CH[v-1] : ".";
+  }
+  const name = w;
+  return {id:"M_"+w, name, cat:"mots", letter, cols, rows, palette:[hsl(hue,85,50), hsl((hue+150)%360,70,52)], cells};
+}
+Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach(w=> BUILTIN.push(wordDrawing(w, k, (i*47)%360))));
+let motL = store.get("cpn.motL", "");
+if(motL && !WORDS[motL]) motL = "";
+
 /* ----- Mode Monde ----- */
 const PLANETS = [
   {key:"eau", name:"Planète Eau", desc:"Poissons et créatures de la mer", c:"#1c7ed6", art:["#3aa7e0","#1c7ed6","#c9efff"]},
@@ -974,7 +1011,7 @@ function planetArt(cv, p, locked, seed){
   }
 }
 
-const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["photos","Mes photos","#7048e8"]];
+const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c"],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["photos","Mes photos","#7048e8"]];
 let filt = "tous";
 let page = store.get("cpn.page", "menu");
 if(page !== "menu" && page !== "monde" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
@@ -999,10 +1036,11 @@ const greyOf = h => { const v = Math.round(178 + lum(h)*68); return `rgb(${v},${
 
 /* ---------- Galerie ---------- */
 function drawThumb(cv, d, done, full){
-  const k = Math.max(1, Math.floor(240/Math.max(d.cols,d.rows)));
-  const side = Math.max(d.cols,d.rows)*k;
-  cv.width = side; cv.height = side;
-  const c = cv.getContext("2d"), ox = (side-d.cols*k)/2, oy = (side-d.rows*k)/2;
+  const wideT = d.cat==="mots" && cv.dataset.wide;
+  const k = Math.max(1, Math.floor(wideT ? Math.min(480/d.cols, 240/d.rows) : 240/Math.max(d.cols,d.rows)));
+  const side = wideT ? Math.max(d.cols*k, d.rows*k*2) : Math.max(d.cols,d.rows)*k, sideH = wideT ? side/2 : side;
+  cv.width = side; cv.height = sideH;
+  const c = cv.getContext("2d"), ox = Math.floor((side-d.cols*k)/2), oy = Math.floor((sideH-d.rows*k)/2);
   for(let i=0;i<d.cells.length;i++){
     const ch = d.cells[i]; if(ch === ".") continue;
     const col = d.palette[CH.indexOf(ch)];
@@ -1012,14 +1050,14 @@ function drawThumb(cv, d, done, full){
 }
 const catOf = d => d.cat || "photos";
 const catColor = key => { const p = PLANETS.find(q=>q.key===key); return p ? p.c : (CATS.find(c=>c[0]===key) || CATS[0])[2]; };
-function makeCard(it){
+function makeCard(it, wideCard){
   const d = it.d, card = document.createElement("div");
   card.className = "card" + (it.pct===100 ? " done" : "");
   card.style.setProperty("--c", catColor(catOf(d)));
   card.tabIndex = 0; card.setAttribute("role","button");
   card.setAttribute("aria-label", `${d.name}, ${it.pct===100 ? "terminé" : it.pct+" % colorié"}`);
   const th = document.createElement("div"); th.className = "th";
-  const cv = document.createElement("canvas"); drawThumb(cv, d, it.done, it.st.ok===0); th.appendChild(cv);
+  const cv = document.createElement("canvas"); if(wideCard) cv.dataset.wide = 1; drawThumb(cv, d, it.done, it.st.ok===0); th.appendChild(cv);
   if(it.st.ok>0){ const b = document.createElement("span"); b.className = "badge"; b.textContent = it.pct===100 ? "✓ Terminé" : it.pct+" %"; th.appendChild(b); }
   const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = d.name;
   const bar = document.createElement("div"); bar.className = "bar";
@@ -1172,6 +1210,29 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Mots : choix de la lettre */
+  if(page === "mots"){
+    $("abTitle").textContent = "Mots";
+    const inCat = byCat("mots");
+    const sec = el("div","sec"), lh = el("div","lh");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.onclick = () => setPage("menu");
+    lh.append(bk, el("span","eyebrow",`${inCat.length} mots · choisis une lettre`)); sec.appendChild(lh);
+    const row = el("div","letters");
+    for(const k of [""].concat(Object.keys(WORDS))){
+      const b = el("button","lt" + (k===motL ? " on" : ""), k || "Tous"); b.type = "button"; b.setAttribute("aria-pressed", k===motL);
+      if(k) b.setAttribute("aria-label", "Mots en "+k);
+      b.onclick = () => { motL = k; store.set("cpn.motL", k); renderGallery(); };
+      row.appendChild(b);
+    }
+    const blk = el("div","block"); blk.append(sec, row); pg.appendChild(blk);
+    for(const k of (motL ? [motL] : Object.keys(WORDS))){
+      const b2 = el("div","block"); b2.appendChild(el("h2",null,"Mots en "+k));
+      const g = el("div","grid wide"); inCat.filter(i=>i.d.letter===k).forEach(i=>g.appendChild(makeCard(i, true)));
+      b2.appendChild(g); pg.appendChild(b2);
+    }
     return;
   }
 
