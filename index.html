@@ -197,6 +197,8 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto}
 #win{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;display:none;gap:12px;align-items:center;font-weight:800;width:max-content;max-width:calc(100% - 24px)}
 #win .btn{white-space:nowrap;flex:0 0 auto}
+#win{flex-wrap:wrap;justify-content:center}
+#win #winTxt{flex:1 1 140px}
 #win.on{display:flex}
 .side{display:flex;flex-direction:column;background:var(--card);border-top:2px solid var(--line)}
 .tools{display:flex;gap:8px;padding:8px calc(12px + var(--sr)) 0 calc(12px + var(--sl));align-items:center}
@@ -304,7 +306,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="body">
     <div id="stage">
       <canvas id="cv"></canvas>
-      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
+      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
     <div class="side">
       <div class="tools">
@@ -1402,6 +1404,23 @@ const SND_OFF = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 function showSnd(){ const b = $("snd"); b.innerHTML = muted ? SND_OFF : SND_ON; b.setAttribute("aria-label", muted ? "Activer le son" : "Couper le son"); b.setAttribute("aria-pressed", !muted); }
 $("snd").onclick = () => { muted = !muted; store.set("cpn.mute", muted); showSnd(); if(!muted){ const a = audio(); if(a) tone(880, a.currentTime, .12, .1, "triangle"); } };
 showSnd();
+/* Voix : le mot terminé est lu par la voix française de l'appareil */
+let frVoice = null, spoke = false;
+const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
+function pickVoice(){ try{ const v = speechSynthesis.getVoices(); frVoice = v.find(x=>/^fr[-_]CA/i.test(x.lang)) || v.find(x=>/^fr/i.test(x.lang)) || null; }catch(e){} }
+if(canSpeak){ pickVoice(); try{ speechSynthesis.addEventListener("voiceschanged", pickVoice); }catch(e){} }
+function sayWord(w){
+  if(muted || !canSpeak) return;
+  try{
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(w.toLocaleLowerCase("fr"));
+    u.lang = frVoice ? frVoice.lang : "fr-CA"; if(frVoice) u.voice = frVoice; u.rate = .85;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+function unlockSpeech(){ if(spoke || !canSpeak) return; try{ const u = new SpeechSynthesisUtterance(" "); u.volume = 0; speechSynthesis.speak(u); spoke = true; }catch(e){} }
+for(const ev of ["touchend","click","keydown"]) document.addEventListener(ev, unlockSpeech, {passive:true});
+$("say").onclick = () => { if(cur) sayWord(cur.name); };
 let sparks = [];
 function sparkle(i, delay){ if(calmFx) return; if(sparks.length > 140) sparks.shift(); sparks.push({i, t0: performance.now()+(delay||0), rot: Math.random()*1.5}); }
 function drawSparks(){
@@ -1565,7 +1584,7 @@ let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
 function openDrawing(d){
   free = false; document.body.classList.remove("freeplay");
-  $("winTxt").textContent = "Dessin terminé !";
+  $("winTxt").textContent = d.cat==="mots" ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = d.cat!=="mots" || !canSpeak;
   sparks = []; cur = d; done = loadDone(d); store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
@@ -1655,6 +1674,7 @@ function paintCell(i){
   done[i] = 1; left[sel]--; sparkle(i);
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done);
+    if(cur.cat === "mots"){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
     const pw = PLANETS.find(p=>p.key===cur.cat);
     if(pw){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
