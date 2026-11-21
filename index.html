@@ -959,21 +959,40 @@ D("satellite","Satellite","cosmos",SP,P=>{
 /* ----- Mots (français, niveau primaire) : seules les lettres sont à colorier ----- */
 const ACCENTS = {"́":"00010 00100", "̀":"01000 00100", "̂":"00100 01010", "̈":"01010 00000"};
 const WORDS = {
-  A:["AMI","ÂNE","ARBRE"], B:["BÉBÉ","BALLE","BRAS"], C:["CHAT","CHIEN","CLÉ"], D:["DENT","DAME","DOIGT"],
-  E:["EAU","ÉCOLE","ÉTÉ"], F:["FÉE","FLEUR","FEU"], G:["GANT","GARE","GOMME"], H:["HIBOU","HIVER","HERBE"],
-  I:["ÎLE","IGLOO","IMAGE"], J:["JEU","JOUR","JUPE"], K:["KIWI","KOALA","KAYAK"], L:["LUNE","LAIT","LIVRE"],
-  M:["MAMAN","MAIN","MIEL"], N:["NEZ","NUIT","NEIGE"], O:["OURS","OLIVE","ONCLE"], P:["PAPA","PAIN","POMME"],
-  Q:["QUI","QUAI","QUOI"], R:["ROI","ROBE","ROUGE"], S:["SAC","SEL","SINGE"], T:["TASSE","TAPIS","TÊTE"],
-  U:["UN","UNE","USINE"], V:["VÉLO","VACHE","VERT"], W:["WAGON","WAPITI","WATT"], X:["XYLOPHONE"],
-  Y:["YOYO","YEUX","YOGA"], Z:["ZOO","ZÉRO","ZÈBRE"]
+  A:"AMI ÂNE ARBRE AVION ANANAS ABEILLE AILE AIR ANIMAL ANNÉE ARC AUTO AUTOBUS AVRIL AOÛT ARGENT ANGE AIGLE AMOUR AGNEAU".split(" "),
+  B:"BÉBÉ BALLE BRAS BATEAU BALLON BANANE BAIN BEAU BLEU BOIS BOL BON BOTTE BOUCHE BRUN BUS BISOU BLANC BONBON BOÎTE".split(" "),
+  C:"CHAT CHIEN CLÉ CADEAU CAROTTE CHEVAL CHAISE CIEL CINQ CLASSE COCHON COQ COU CRAYON CUBE CAMION CANARD CAHIER CERISE CITRON".split(" "),
+  D:"DENT DAME DOIGT DEUX DIX DOS DOUX DRAGON DINDE DODO DÉ DANSE DESSIN DOUZE DRAPEAU DAUPHIN DOMINO DUR DOCTEUR DÎNER".split(" "),
+  E:"EAU ÉCOLE ÉTÉ ÉTOILE ENFANT ELLE ÉPÉE ENCRE ÉPAULE ÉQUIPE ÉCHELLE ÉCRAN ÉGLISE ÉPONGE ÉTAGE ÉCLAIR ENTRÉE ÉLÈVE EST ET".split(" "),
+  F:"FÉE FLEUR FEU FILLE FRÈRE FRAISE FROMAGE FOURMI FEUILLE FERME FÊTE FIL FIN FLEUVE FOIN FORÊT FOU FOUR FROID FRUIT".split(" "),
+  G:"GANT GARE GOMME GÂTEAU GARÇON GIRAFE GLACE GRAND GRIS GROS GUITARE GENOU GENTIL GORGE GOÛT GRAINE GRIPPE GRUE GOLF GAZON".split(" "),
+  H:"HIBOU HIVER HERBE HEURE HOMME HUIT HAUT HIER HÉROS HÔTEL HOCKEY HABIT HACHE HARICOT HOMARD HUILE HUMAIN HÔPITAL HAMSTER HAMAC".split(" "),
+  I:"ÎLE IGLOO IMAGE IDÉE IL ILS ICI INSECTE IGUANE INVITÉ ITALIE IMITER INDEX INCONNU INUIT IMPAIR INSTANT ICEBERG IRIS INFINI".split(" "),
+  J:"JEU JOUR JUPE JAMBE JARDIN JAUNE JE JOLI JOUE JOUET JUS JUIN JEUDI JUMEAU JUMENT JAMBON JOIE JUILLET JANVIER JUNGLE".split(" "),
+  K:"KIWI KOALA KAYAK KILO KARATÉ KETCHUP KIOSQUE KIMONO KLAXON KAKI KART KIT KARTING KANGOUROU".split(" "),
+  L:"LUNE LAIT LIVRE LAPIN LION LIT LOUP LAC LAMPE LANGUE LÉGUME LETTRE LIGNE LUNDI LOURD LONG LUTIN LAVER LIRE LILAS".split(" "),
+  M:"MAMAN MAIN MIEL MAISON MARDI MER MOT MOUTON MUR MONTRE MOUCHE MANGER MATIN MAI MARS MIDI MOI MONDE MUSIQUE MOTO".split(" "),
+  N:"NEZ NUIT NEIGE NOIR NOM NON NOUS NEUF NID NOIX NUAGE NAGER NAPPE NATURE NAVIRE NOËL NOTE NORD NOMBRE NEVEU".split(" "),
+  O:"OURS OLIVE ONCLE OISEAU ORANGE OREILLE OR OS OUI ONZE OIE OGRE ONGLE ORAGE OUTIL OUEST OMBRE OCÉAN ODEUR OCTOBRE".split(" "),
+  P:"PAPA PAIN POMME PIED POULE PORTE PETIT PLUIE POISSON PAPIER PARC PÊCHE PIANO PIE PIZZA POIRE POT POUPÉE PRUNE PATTE".split(" "),
+  Q:"QUI QUAI QUOI QUATRE QUE QUAND QUEL QUELLE QUEUE QUILLE QUINZE QUART QUATORZE QUARANTE QUÉBEC QUESTION QUICHE QUITTER QUARTIER QUÊTE".split(" "),
+  R:"ROI ROBE ROUGE RAT REINE RENARD RIRE RIZ ROBOT ROSE ROUE ROUTE RUE RADIO RAISIN RÂTEAU REPAS RÊVE RIVIÈRE ROND".split(" "),
+  S:"SAC SEL SINGE SOLEIL SAPIN SALADE SAMEDI SEPT SIX SOIR SOURIS SUCRE SALUT SABLE SAVON SERPENT SIROP SKI SOUPE STYLO".split(" "),
+  T:"TASSE TAPIS TÊTE TABLE TOMATE TORTUE TRAIN TROIS TIGRE TANTE TERRE THÉ TOIT TOUR TÉLÉ TEMPS TOUPIE TRÉSOR TULIPE TAXI".split(" "),
+  U:"UN UNE USINE UNI UNIQUE UTILE URGENT UNIVERS USAGE USÉ UNITÉ UNIFORME UKULÉLÉ ULTRA UNIR USER UNION URGENCE USTENSILE URANUS".split(" "),
+  V:"VÉLO VACHE VERT VENT VILLE VOITURE VOIR VASE VESTE VIE VINGT VIOLET VIOLON VISAGE VITE VOIX VOISIN VOYAGE VAGUE VALISE".split(" "),
+  W:"WAGON WAPITI WATT WEB WESTERN WOK WIFI WALLABY WEEKEND WAGONNET WOMBAT".split(" "),
+  X:"XYLOPHONE XAVIER".split(" "),
+  Y:"YOYO YEUX YOGA YOGOURT YAOURT YAK YÉTI YOURTE YACHT".split(" "),
+  Z:"ZOO ZÉRO ZÈBRE ZIGZAG ZESTE ZONE ZUT ZOOM ZÉBU ZOMBIE ZIP ZAPPER".split(" ")
 };
 function wordDrawing(w, letter, hue){
-  const L = [...w].map(ch=>{ const n = ch.normalize("NFD"); return {g: FONT[n[0]].replace(/ /g,""), a: n[1] ? ACCENTS[n[1]].replace(/ /g,"") : null}; });
-  const S = 2, top = L.some(l=>l.a) ? 2 : 0, cols = L.length*5*S+(L.length-1)*2+2, rows = (7+top)*S+2;
+  const L = [...w].map(ch=>{ const n = ch.normalize("NFD"); return {g: FONT[n[0]].replace(/ /g,""), a: n[1] && ACCENTS[n[1]] ? ACCENTS[n[1]].replace(/ /g,"") : null, c: n[1]==="\u0327"}; });
+  const S = 2, top = L.some(l=>l.a) ? 2 : 0, bot = L.some(l=>l.c) ? 1 : 0, cols = L.length*5*S+(L.length-1)*2+2, rows = (7+top+bot)*S+2;
   const at = (x,y) => {            // 0 = vide, 1 = première lettre, 2 = autres lettres
     const xx = x-1, k = Math.floor(xx/12), gx = Math.floor((xx-k*12)/S), gy = Math.floor((y-1)/S);
-    if(xx<0 || k<0 || k>=L.length || gx<0 || gx>4 || y<1 || gy<0 || gy>=7+top) return 0;
-    const l = L[k], lit = gy<top ? (l.a && l.a[gy*5+gx]==="1") : l.g[(gy-top)*5+gx]==="1";
+    if(xx<0 || k<0 || k>=L.length || gx<0 || gx>4 || y<1 || gy<0 || gy>=7+top+bot) return 0;
+    const l = L[k], lit = gy<top ? (l.a && l.a[gy*5+gx]==="1") : gy>=7+top ? (l.c && gx===2) : l.g[(gy-top)*5+gx]==="1";
     return lit ? (k===0 ? 1 : 2) : 0;
   };
   let cells = "";
@@ -985,8 +1004,8 @@ function wordDrawing(w, letter, hue){
   return {id:"M_"+w, name, cat:"mots", letter, cols, rows, palette:[hsl(hue,85,50), hsl((hue+150)%360,70,52)], cells};
 }
 Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach(w=> BUILTIN.push(wordDrawing(w, k, (i*47)%360))));
-let motL = store.get("cpn.motL", "");
-if(motL && !WORDS[motL]) motL = "";
+let motL = store.get("cpn.motL", "A");
+if(!WORDS[motL]) motL = "A";
 
 /* ----- Mode Monde ----- */
 const PLANETS = [
@@ -1221,18 +1240,18 @@ function renderGallery(){
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.onclick = () => setPage("menu");
     lh.append(bk, el("span","eyebrow",`${inCat.length} mots · choisis une lettre`)); sec.appendChild(lh);
     const row = el("div","letters");
-    for(const k of [""].concat(Object.keys(WORDS))){
-      const b = el("button","lt" + (k===motL ? " on" : ""), k || "Tous"); b.type = "button"; b.setAttribute("aria-pressed", k===motL);
-      if(k) b.setAttribute("aria-label", "Mots en "+k);
+    for(const k of Object.keys(WORDS)){
+      const b = el("button","lt" + (k===motL ? " on" : ""), k); b.type = "button"; b.setAttribute("aria-pressed", k===motL);
+      b.setAttribute("aria-label", "Mots en "+k);
       b.onclick = () => { motL = k; store.set("cpn.motL", k); renderGallery(); };
       row.appendChild(b);
     }
     const blk = el("div","block"); blk.append(sec, row); pg.appendChild(blk);
-    for(const k of (motL ? [motL] : Object.keys(WORDS))){
-      const b2 = el("div","block"); b2.appendChild(el("h2",null,"Mots en "+k));
-      const g = el("div","grid wide"); inCat.filter(i=>i.d.letter===k).forEach(i=>g.appendChild(makeCard(i, true)));
-      b2.appendChild(g); pg.appendChild(b2);
-    }
+    const wl = inCat.filter(i=>i.d.letter===motL);
+    const b2 = el("div","block"), sh = el("div","sec");
+    sh.append(el("h2",null,"Mots en "+motL), el("span","eyebrow",`${wl.filter(i=>i.pct===100).length} / ${wl.length} terminés`));
+    const g = el("div","grid wide"); wl.forEach(i=>g.appendChild(makeCard(i, true)));
+    b2.append(sh, g); pg.appendChild(b2);
     return;
   }
 
