@@ -150,6 +150,30 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 }
 @media (prefers-reduced-motion:no-preference){#drawer{transition:transform .22s ease} #scrim{transition:opacity .22s}}
 
+/* Mode Monde */
+.wbanner{background:var(--ink);color:#fff;border:0;border-radius:22px;box-shadow:0 5px 0 #0d0c20;padding:14px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 14px;text-align:left;width:100%}
+.wbanner:active,.planet:active{transform:translateY(3px);box-shadow:0 2px 0 #0d0c20}
+.wbanner .wt{flex:1 1 170px;min-width:0}
+.wbanner b,.planet b,.phead b{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.05;display:block}
+.wbanner small,.planet small,.phead small{font-size:13px;font-weight:700;color:#cfcbe8;display:block}
+.wbanner .pl{display:flex;gap:5px}
+.wbanner .pl canvas{width:34px;height:34px}
+.whead{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center}
+.whead p{flex:1 1 240px;margin:0;color:var(--muted);font-weight:700;font-size:14px;max-width:62ch}
+.wscore b{font-family:var(--display);font-weight:800;font-size:38px;line-height:1;display:block;font-variant-numeric:tabular-nums}
+.planets{display:flex;flex-direction:column;gap:16px}
+.planet,.phead{--c:#ff6fae;display:grid;grid-template-columns:84px 1fr;gap:16px;align-items:center;background:var(--ink);color:#fff;border:0;border-radius:24px;box-shadow:0 5px 0 #0d0c20;padding:14px 16px;text-align:left;width:100%;max-width:640px}
+.planet:nth-child(even){align-self:flex-end}
+.planet canvas,.phead canvas{width:84px;height:84px;display:block}
+.planet.lock b,.planet.lock small{opacity:.7}
+.ptx{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ptx .bar{background:#3a3769;height:8px}
+.pstate{align-self:flex-start;font-size:12px;font-weight:800;border-radius:999px;padding:3px 9px;background:#3a3769;color:#fff;font-variant-numeric:tabular-nums}
+.planet.full .pstate{background:var(--good)}
+.ppts{font-variant-numeric:tabular-nums}
+.phead{max-width:none;box-shadow:none}
+@media (min-width:700px){.planet,.phead{grid-template-columns:110px 1fr} .planet canvas,.phead canvas{width:110px;height:110px}}
+
 /* Jeu */
 .top{display:flex;align-items:center;gap:10px;padding:calc(10px + var(--st)) calc(12px + var(--sr)) 10px calc(12px + var(--sl));background:var(--card);border-bottom:2px solid var(--line)}
 .top .ttl{flex:1;min-width:0}
@@ -163,7 +187,8 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
   linear-gradient(var(--line) 1px,transparent 1px) 0 0/24px 24px,
   linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/24px 24px,var(--paper)}
 #cv{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:auto}
-#win{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;display:none;gap:12px;align-items:center;font-weight:800;white-space:nowrap}
+#win{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:16px;padding:12px 16px;display:none;gap:12px;align-items:center;font-weight:800;width:max-content;max-width:calc(100% - 24px)}
+#win .btn{white-space:nowrap;flex:0 0 auto}
 #win.on{display:flex}
 .side{display:flex;flex-direction:column;background:var(--card);border-top:2px solid var(--line)}
 .tools{display:flex;gap:8px;padding:8px calc(12px + var(--sr)) 0 calc(12px + var(--sl));align-items:center}
@@ -251,7 +276,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="body">
     <div id="stage">
       <canvas id="cv"></canvas>
-      <div id="win"><span>Dessin terminé !</span><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
+      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
     <div class="side">
       <div class="tools">
@@ -553,10 +578,406 @@ octo("arcenciel","Pieuvre arc-en-ciel",{c:"#ff6fae",rainbow:true,arms:8,eyes:"co
 octo("surprise","Pieuvre surprise",{c:"#ffd166",eyes:"grand",mouth:"o"});
 octo("tachetee","Pieuvre tachetée",{c:"#e07a5f",spots:2,bg:"rayons"});
 
+/* ----- Atelier : dessins composés de formes superposées ----- */
+function Pt(N, bg){
+  const g = new Array(N*N).fill(bg), sub = new Uint8Array(N*N); let on = false;
+  const put = (test, col) => { for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const px=x+.5, py=y+.5; if(test(px,py)){ g[y*N+x] = typeof col==="function" ? col(px,py) : col; sub[y*N+x] = on?1:0; } } };
+  const P = {
+    N, f: put,
+    c:(cx,cy,r,col)=>put((x,y)=>H(x-cx,y-cy)<r,col),
+    e:(cx,cy,rx,ry,col)=>put((x,y)=>((x-cx)/rx)**2+((y-cy)/ry)**2<1,col),
+    r:(x0,y0,x1,y1,col)=>put((x,y)=>x>=x0&&x<x1&&y>=y0&&y<y1,col),
+    p:(pts,col)=>put((x,y)=>pip(pts,x,y),col),
+    path:(pts,w0,w1,col)=>{
+      const S=[], seg=[]; let tot=0, acc=0;
+      for(let i=1;i<pts.length;i++){ const d=H(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); seg.push(d); tot+=d; }
+      for(let i=1;i<pts.length;i++){ const n=Math.max(2,Math.ceil(seg[i-1]*3)); for(let k=0;k<=n;k++){ const t=k/n, u=(acc+seg[i-1]*t)/tot; S.push([pts[i-1][0]+(pts[i][0]-pts[i-1][0])*t, pts[i-1][1]+(pts[i][1]-pts[i-1][1])*t, w0+(w1-w0)*u]); } acc+=seg[i-1]; }
+      put((x,y)=>S.some(s=>H(x-s[0],y-s[1])<s[2]),col);
+    },
+    l:(x0,y0,x1,y1,w,col)=>P.path([[x0,y0],[x1,y1]],w,w,col),
+    d:(list,r,col)=>list.forEach(q=>P.c(q[0],q[1],r,col)),
+    s:(x,y,col)=>{ if(x>=0&&y>=0&&x<N&&y<N){ g[y*N+x]=col; sub[y*N+x]=on?1:0; } },
+    x:(cx,cy,r)=>{ const o=on; on=false; put((x,y)=>H(x-cx,y-cy)<r,bg); on=o; },
+    fg:()=>{ on=true; },
+    o:(col)=>{ const add=[]; for(let y=0;y<N;y++) for(let x=0;x<N;x++){ const i=y*N+x; if(sub[i]) continue; if((x>0&&sub[i-1])||(x<N-1&&sub[i+1])||(y>0&&sub[i-N])||(y<N-1&&sub[i+N])) add.push(i); } add.forEach(i=>{ g[i]=col; sub[i]=1; }); },
+    out:(id,name,cat)=>{ const palette=[]; let cells=""; for(const h of g){ let i=palette.indexOf(h); if(i<0){ i=palette.length; palette.push(h); } cells+=CH[i]; } return {id,name,cat,cols:N,rows:N,palette,cells}; }
+  };
+  return P;
+}
+function D(id, name, cat, bg, fn){ const P = Pt(22, bg); fn(P); BUILTIN.push(P.out("W_"+id, name, cat)); }
+const eye = (P,x,y,r) => { P.c(x,y,r||1.2,"#ffffff"); P.c(x+.2,y+.1,(r||1.2)*.55,INK); };
+const smile = (P,cx,y,col) => { P.s(cx-2,y,col); P.s(cx-1,y+1,col); P.s(cx,y+1,col); P.s(cx+1,y,col); };
+const dots = (P,list,col) => list.forEach(q=>P.s(q[0],q[1],col));
+const PI = Math.PI;
+
+/* --- Planète Eau --- */
+const sea = P => { P.r(0,12,22,22,"#2b8fd0"); P.r(0,20,22,22,"#f2d58a"); P.c(2.5,4.5,1,"#c9efff"); dots(P,[[19,2],[17,5],[1,8]],"#c9efff"); };
+function fish(id, name, o){
+  D(id, name, "eau", o.bg || "#5bbcec", P => {
+    if(o.bg) dots(P,[[2,3],[7,18],[19,16],[16,2],[3,13]],"#3a5a8c"); else sea(P);
+    P.fg();
+    const rx=o.rx||6.5, ry=o.ry||4.5, body=(x,y)=>((x-10)/rx)**2+((y-11)/ry)**2<1;
+    P.p([[10+rx-1.5,11],[20.5,6.5],[19,11],[20.5,15.5]],o.fin);
+    P.p([[7,11-ry+1],[11.5,11-ry-2.6],[13.5,11-ry+1.2]],o.fin);
+    P.p([[9,11+ry-1],[11,11+ry+2],[12.5,11+ry-1]],o.fin);
+    P.f(body,o.c);
+    if(o.pat==="stripes") P.f((x,y)=>body(x,y)&&(Math.abs(x-9.5)<.9||Math.abs(x-13)<.9),o.s);
+    if(o.pat==="spots") [[9,9],[12,12.5],[13,9.5],[9.5,13.5],[6.5,12.5]].forEach(q=>P.f((x,y)=>body(x,y)&&H(x-q[0],y-q[1])<1,o.s));
+    if(o.pat==="belly") P.f((x,y)=>body(x,y)&&y>12,o.s);
+    eye(P,6,10,1.3);
+    if(o.extra) o.extra(P);
+    P.o(mix(o.c,INK,.62));
+  });
+}
+fish("poisson1","Poisson rayé",{c:"#ff922b",s:"#ffffff",fin:"#d9480f",pat:"stripes"});
+fish("poisson2","Poisson à pois",{c:"#4d7cff",s:"#ffd43b",fin:"#3b5bdb",pat:"spots"});
+fish("poisson3","Poisson-ballon",{c:"#ffd43b",s:"#fff9db",fin:"#f08c00",pat:"belly",rx:5.8,ry:5.6});
+D("etoilemer","Étoile de mer","eau","#f2d58a",P=>{
+  P.r(0,0,22,5,"#5bbcec"); P.fg();
+  P.p(Array.from({length:10},(_,i)=>{ const r=i%2?4:8.6, a=-PI/2+i*PI/5; return [11+r*Math.cos(a), 12+r*Math.sin(a)]; }),"#ff8c42");
+  dots(P,[[10,6],[5,10],[16,10],[7,16],[14,16]],"#ffc078");
+  eye(P,9.5,11.5,1.1); eye(P,12.5,11.5,1.1); smile(P,11,13,"#a8410a"); P.o("#a8410a");
+});
+D("meduse","Méduse","eau","#5bbcec",P=>{
+  sea(P); P.fg();
+  for(let k=0;k<5;k++){ const x=6.6+k*2.2, w=k%2?.8:-.8; P.path([[x,10],[x+w,13],[x,16],[x-w,18.5]],.6,.45,k%2?"#ffa6c9":"#f783ac"); }
+  P.f((x,y)=>((x-11)/6.6)**2+((y-10.5)/7)**2<1&&y<10.5,"#f783ac");
+  P.c(8,6,1.1,"#ffc9de"); eye(P,9,8,1.2); eye(P,13,8,1.2); P.r(10,9,12,10,"#a61e4d"); P.o("#a61e4d");
+});
+D("crabe","Crabe","eau","#f2d58a",P=>{
+  P.r(0,0,22,4,"#5bbcec"); P.fg();
+  for(const s of [-1,1]){
+    for(let k=0;k<3;k++) P.path([[11+s*5,13+k*1.3],[11+s*8.2,14.6+k*1.7]],.55,.5,"#c92a2a");
+    P.path([[11+s*5,11.5],[11+s*7.5,8.5]],.7,.7,"#c92a2a");
+    P.c(11+s*7.5,7,2.4,"#e03131"); P.p([[11+s*7.5,7.2],[11+s*6.7,4.4],[11+s*8.3,4.4]],"#a51111");
+    P.l(11+s*2,10.5,11+s*2,8.5,.5,"#e03131");
+  }
+  P.e(11,13.5,6.2,4,"#e03131"); eye(P,9,8,1.2); eye(P,13,8,1.2); smile(P,11,14,"#7a0c0c"); P.o("#7a0c0c");
+});
+D("tortue","Tortue","eau","#5bbcec",P=>{
+  sea(P); P.fg(); const lg="#8fd18a";
+  P.e(6.5,6.5,2.8,1.6,lg); P.e(6.5,16.5,2.8,1.6,lg); P.e(14.5,6.2,2.8,1.6,lg); P.e(14.5,16.8,2.8,1.6,lg);
+  P.p([[4.5,10.5],[2,11.5],[4.5,12.5]],lg); P.c(18,11.5,2.6,lg);
+  P.e(10.5,11.5,6.5,5.2,"#2f9e44"); P.d([[10.5,11.5],[7.5,9.5],[13.5,9.5],[7.5,13.5],[13.5,13.5]],1.2,"#1b6e2e");
+  P.s(18,10,INK); P.o("#134b20");
+});
+D("baleine","Baleine","eau","#5bbcec",P=>{
+  sea(P); P.fg();
+  P.l(8,7.5,8,5,.5,"#c9efff"); dots(P,[[6,4],[9,4],[5,5],[10,5]],"#c9efff");
+  P.p([[16.5,11.5],[20,6],[21.5,9],[20,12.5]],"#3b5bdb");
+  const b=(x,y)=>((x-10)/8)**2+((y-12.5)/5)**2<1;
+  P.f(b,"#4d7cff"); P.f((x,y)=>b(x,y)&&y>14.5,"#cfe3ff"); eye(P,5,11.5,1.1); P.r(3,13,6,14,"#2b4bb0"); P.o("#1c2f7a");
+});
+D("coquillage","Coquillage","eau","#f2d58a",P=>{
+  P.r(0,0,22,4,"#5bbcec"); P.fg();
+  P.f((x,y)=>{ const dx=x-11, dy=18-y; return dy>0&&H(dx,dy)<11&&Math.abs(Math.atan2(dx,dy))<1.1; }, (x,y)=>Math.floor((Math.atan2(x-11,18-y)+1.1)/.44)%2?"#ffa6c9":"#ff7ab8");
+  P.e(11,18.2,2.8,1.5,"#e0559a"); P.o("#a12a66");
+});
+fish("abysses","Poisson des abysses",{c:"#7b2cbf",s:"#c77dff",fin:"#5a189a",pat:"belly",bg:"#14213d",extra:P=>{ P.path([[6.5,7.5],[4.5,4],[2.5,5]],.5,.5,"#adb5bd"); P.c(2.5,6,1.2,"#ffe066"); }});
+
+/* --- Planète Jardin --- */
+const garden = P => { P.r(0,19,22,22,"#51b85a"); P.c(18,4,2,"#ffffff"); P.c(16,4.6,1.5,"#ffffff"); };
+const stem = (P,y0) => { P.l(11,y0,11,19.5,.6,"#2f9e44"); P.e(8.5,15.5,2.2,1.1,"#2f9e44"); P.e(13.5,14,2.2,1.1,"#37b24d"); };
+function flower(id, name, o){
+  D(id, name, "jardin", "#cdeeff", P => {
+    garden(P); P.fg(); stem(P,10);
+    for(let i=0;i<o.n;i++){ const a=i*2*PI/o.n; P.c(11+o.d*Math.cos(a), 8+o.d*Math.sin(a), o.pr, i%2?o.c2:o.c1); }
+    P.c(11,8,o.cr,o.cc); if(o.seeds) dots(P,[[10,7],[11,8],[9,8],[12,9],[10,9],[11,6]],o.seeds);
+    P.o(o.out);
+  });
+}
+flower("marguerite","Marguerite",{n:8,d:4.3,pr:1.9,c1:"#ffffff",c2:"#f1f3f5",cr:2.3,cc:"#ffd43b",out:"#868e96"});
+D("tulipe","Tulipe","jardin","#cdeeff",P=>{
+  garden(P); P.fg(); stem(P,10);
+  P.e(8.6,7.5,2.2,4,"#c92a2a"); P.e(13.4,7.5,2.2,4,"#c92a2a"); P.e(11,7,2.4,4.6,"#fa5252"); P.e(11,9.5,4,2.6,"#e03131"); P.o("#7a0c0c");
+});
+flower("tournesol","Tournesol",{n:12,d:4.7,pr:1.6,c1:"#ffd43b",c2:"#fcc419",cr:3.3,cc:"#8b5a2b",seeds:"#5c3a17",out:"#5c3a17"});
+D("trefle","Trèfle à quatre feuilles","jardin","#e6fcf5",P=>{
+  P.fg(); P.path([[11,12],[12,17],[14.5,20.5]],.6,.5,"#2b8a3e");
+  P.d([[7.8,7.8],[14.2,7.8],[7.8,14.2],[14.2,14.2]],3.4,"#40c057");
+  P.l(8,8,14,14,.4,"#2b8a3e"); P.l(14,8,8,14,.4,"#2b8a3e"); P.o("#1b5e2a");
+});
+D("pommier","Pommier","jardin","#cdeeff",P=>{
+  garden(P); P.fg(); P.r(9.5,12,12.5,20,"#8b5a2b");
+  P.c(6.5,10.5,3.4,"#2f9e44"); P.c(15.5,10.5,3.4,"#2f9e44"); P.c(11,8,6,"#37b24d");
+  dots(P,[[8,6],[13,7],[10,10],[15,11],[6,10],[11,4]],"#e03131"); P.o("#1b5e2a");
+});
+D("sapin","Sapin","jardin","#cdeeff",P=>{
+  garden(P); P.fg(); P.r(10,17,12,20,"#8b5a2b");
+  P.p([[4,17.5],[11,9],[18,17.5]],"#2b8a3e"); P.p([[5.5,12.5],[11,5],[16.5,12.5]],"#37b24d"); P.p([[7,8],[11,2.5],[15,8]],"#51cf66"); P.o("#1b5e2a");
+});
+D("papillon","Papillon","jardin","#d0ebff",P=>{
+  P.fg();
+  P.path([[11,6],[9.5,3.5],[8,2.5]],.45,.45,"#3d2b56"); P.path([[11,6],[12.5,3.5],[14,2.5]],.45,.45,"#3d2b56");
+  P.c(6.5,8,4.4,"#9b5de5"); P.c(15.5,8,4.4,"#9b5de5"); P.c(7.5,14.5,3.3,"#f783ac"); P.c(14.5,14.5,3.3,"#f783ac");
+  P.c(6.5,8,1.8,"#ffd43b"); P.c(15.5,8,1.8,"#ffd43b"); P.c(7.5,14.5,1.1,"#ffffff"); P.c(14.5,14.5,1.1,"#ffffff");
+  P.e(11,11,1.2,5.8,"#3d2b56"); P.o("#2a1c3d");
+});
+D("coccinelle","Coccinelle","jardin","#8fd18a",P=>{
+  P.l(0,22,22,0,.4,"#69b96b"); P.fg();
+  const b=(x,y)=>H(x-11,y-12.5)<7;
+  P.c(11,6,3.3,"#2b2b3a"); P.f(b,"#e03131"); P.f((x,y)=>b(x,y)&&Math.abs(x-11)<.6,"#2b2b3a");
+  P.d([[7.5,10],[14.5,10],[6.5,14.5],[15.5,14.5],[9,17.5],[13,17.5]],1.2,"#2b2b3a");
+  P.s(9,5,"#ffffff"); P.s(12,5,"#ffffff"); P.o("#14141c");
+});
+D("escargot","Escargot","jardin","#cdeeff",P=>{
+  garden(P); P.fg();
+  P.l(3.8,13,3,9.8,.45,"#ffd43b"); P.l(5.5,13,6.2,9.8,.45,"#ffd43b");
+  P.e(10.5,17.5,8,1.8,"#ffd43b"); P.r(3,14.5,6.5,18,"#ffd43b"); P.c(4.5,14.5,2.2,"#ffd43b");
+  P.c(12.5,11.5,5.6,"#ff8c42"); P.f((x,y)=>Math.abs(H(x-12.5,y-11.5)-3.2)<.55,"#d9480f"); P.c(12.5,11.5,1,"#d9480f");
+  P.s(3,14,INK); P.o("#7a4a00");
+});
+D("abeille","Abeille","jardin","#d0ebff",P=>{
+  P.fg(); P.path([[7,8],[5.5,5.2]],.45,.45,"#2b2b3a");
+  P.e(9,6.5,2.8,3.4,"#e7f5ff"); P.e(13.5,6.5,2.8,3.4,"#ffffff"); P.p([[16.5,11],[19.8,12],[16.5,13]],"#2b2b3a");
+  const b=(x,y)=>((x-11)/6.2)**2+((y-12)/4.6)**2<1;
+  P.f(b,"#ffd43b"); P.f((x,y)=>b(x,y)&&(Math.abs(x-10.5)<.9||Math.abs(x-14)<.9),"#2b2b3a");
+  eye(P,7,11,1.2); P.s(6,13,"#3d2b00"); P.o("#3d2b00");
+});
+
+/* --- Planète Glace --- */
+const snowy = P => { P.r(0,19,22,22,"#ffffff"); dots(P,[[2,3],[6,6],[19,4],[16,8],[3,11],[20,12],[12,1]],"#ffffff"); };
+function flocon(id, name, v){
+  D(id, name, "glace", "#3b82c4", P => {
+    for(let k=0;k<6;k++){
+      const a=k*PI/3-PI/2, ux=Math.cos(a), uy=Math.sin(a);
+      P.l(11,11,11+ux*9.5,11+uy*9.5,.5,"#ffffff");
+      for(const [t,len] of v.br) for(const s of [-1,1]){ const b=a+s*PI/3, bx=11+ux*t, by=11+uy*t; P.l(bx,by,bx+len*Math.cos(b),by+len*Math.sin(b),.45,"#d0ebff"); }
+      if(v.tip) P.c(11+ux*9.5,11+uy*9.5,v.tip,"#a5d8ff");
+    }
+    if(v.ring) P.f((x,y)=>Math.abs(H(x-11,y-11)-v.ring)<.5,"#a5d8ff");
+    P.c(11,11,v.c,"#e7f5ff");
+  });
+}
+flocon("flocon1","Flocon étoile",{br:[[5,3],[7.5,2]],c:1.6});
+D("bonhomme","Bonhomme de neige","glace","#bfe3ff",P=>{
+  snowy(P); P.fg();
+  P.l(6.5,13,2.5,10.5,.45,"#8b5a2b"); P.l(15.5,13,19.5,10.5,.45,"#8b5a2b");
+  P.c(11,15.5,5,"#ffffff"); P.c(11,8.5,3.7,"#ffffff");
+  P.r(7.5,11,14.5,12.4,"#e03131"); P.r(13,12.4,14.5,15,"#e03131");
+  P.r(7.5,4,14.5,5.2,"#2b2b3a"); P.r(8.8,1,13.2,4,"#2b2b3a"); P.r(8.8,3,13.2,4,"#e03131");
+  P.s(9,7,INK); P.s(12,7,INK); P.p([[10.5,8.6],[14.5,9.4],[10.5,10]],"#ff8c42");
+  dots(P,[[10,14],[10,16],[10,18]],INK); P.o("#5c7c99");
+});
+D("pingouin","Pingouin","glace","#bfe3ff",P=>{
+  snowy(P); P.fg();
+  P.e(8.5,19.6,2,1,"#ff8c42"); P.e(13.5,19.6,2,1,"#ff8c42"); P.e(5.3,13,1.5,4.2,"#2b2b3a"); P.e(16.7,13,1.5,4.2,"#2b2b3a");
+  P.e(11,11.5,5.6,7.8,"#2b2b3a"); P.e(11,13.5,3.7,5.6,"#ffffff");
+  eye(P,9,7.5,1.2); eye(P,13,7.5,1.2); P.p([[9.5,9.2],[12.5,9.2],[11,11.4]],"#ff8c42"); P.o("#14141c");
+});
+D("tuque","Tuque","glace","#d0ebff",P=>{
+  P.fg(); P.c(11,4.5,2.5,"#ffffff");
+  P.f((x,y)=>((x-11)/7.2)**2+((y-15)/9.5)**2<1&&y<15, (x,y)=>{ const r=Math.floor(y); return (r===9||r===10)?"#ffffff":(r===8||r===11)?"#1c7ed6":"#e03131"; });
+  P.r(3,15,19,18.5,(x,y)=>Math.floor(x)%2?"#f1f3f5":"#dee2e6"); P.o("#5c7c99");
+});
+D("mitaine","Mitaine","glace","#d0ebff",P=>{
+  P.fg(); P.e(5.8,12,2.1,3.2,"#4d7cff"); P.e(11.5,10,4.8,6.5,"#4d7cff"); P.r(6.8,10,16.3,15.5,"#4d7cff");
+  P.r(6.3,15.5,16.8,19.5,(x,y)=>Math.floor(x)%2?"#ffffff":"#dee2e6");
+  dots(P,[[11,7],[10,8],[11,8],[12,8],[11,9],[9,12],[13,12]],"#ffffff"); P.o("#1c3d8a");
+});
+flocon("flocon2","Flocon cristal",{br:[[4,2.5],[6.5,2.5],[8.5,1.5]],tip:1.1,c:2.2});
+D("igloo","Igloo","glace","#bfe3ff",P=>{
+  snowy(P); P.fg();
+  P.f((x,y)=>((x-11)/8.6)**2+((y-19)/11.5)**2<1&&y<19, (x,y)=>{ const r=Math.floor(y); return (r%3===0||Math.floor(x+(Math.floor(r/3)%2)*2)%4===0)?"#a5d8ff":"#e7f5ff"; });
+  P.f((x,y)=>((x-11)/3)**2+((y-19)/5)**2<1&&y<19,"#1c3d5a"); P.o("#4a7ba6");
+});
+D("ours","Ours polaire","glace","#74c0fc",P=>{
+  P.fg(); P.c(5.5,6,2.6,"#f8f9fa"); P.c(16.5,6,2.6,"#f8f9fa"); P.c(5.5,6,1.2,"#ffc9c9"); P.c(16.5,6,1.2,"#ffc9c9");
+  P.c(11,12,7.2,"#f8f9fa"); P.e(11,14.8,3.4,2.6,"#dee2e6"); P.e(11,13.6,1.5,1,INK);
+  P.s(7,10,INK); P.s(14,10,INK); P.s(10,16,"#868e96"); P.s(11,16,"#868e96"); P.s(5,13,"#ffc9c9"); P.s(16,13,"#ffc9c9"); P.o("#5c7c99");
+});
+D("montagne","Montagne enneigée","glace","#bfe3ff",P=>{
+  P.c(4,4,2.2,"#ffd43b"); P.r(0,20,22,22,"#ffffff"); P.fg();
+  P.p([[9,20],[16.5,8],[22.5,17],[22.5,20]],"#5c636a"); P.p([[16.5,8],[14.6,11],[16,10.4],[17,11.6],[18.3,10.8]],"#f1f3f5");
+  P.p([[1,20],[10,3],[19,20]],"#868e96"); P.p([[10,3],[6.8,9],[8.6,8],[10,10],[11.6,8],[13.2,9]],"#ffffff"); P.o("#343a40");
+});
+flocon("flocon3","Flocon dentelle",{br:[[6,3.5]],tip:1.2,c:1.2,ring:4});
+
+/* --- Planète Feu --- */
+const night = (P,c) => dots(P,[[2,2],[6,5],[18,3],[20,8],[3,10],[15,1],[19,14]],c||"#ffe066");
+function flame(P,cx,by,k){
+  P.c(cx,by-6*k,6*k,"#e03131"); P.p([[cx-5.6*k,by-8*k],[cx,by-19*k],[cx+5.6*k,by-8*k]],"#e03131");
+  P.c(cx,by-5*k,4.3*k,"#ff8c42"); P.p([[cx-4*k,by-6.5*k],[cx,by-14*k],[cx+4*k,by-6.5*k]],"#ff8c42");
+  P.c(cx,by-3.6*k,2.6*k,"#ffd43b"); P.p([[cx-2.3*k,by-4.5*k],[cx,by-9.5*k],[cx+2.3*k,by-4.5*k]],"#ffd43b");
+}
+D("flamme","Flamme","feu","#2b1a3d",P=>{ night(P); P.fg(); flame(P,11,20.5,1); P.o("#7a0c0c"); });
+D("soleil","Soleil","feu","#74c0fc",P=>{
+  P.fg();
+  for(let k=0;k<8;k++){ const a=k*PI/4; P.p([[11+Math.cos(a-.3)*6,11+Math.sin(a-.3)*6],[11+Math.cos(a)*10.2,11+Math.sin(a)*10.2],[11+Math.cos(a+.3)*6,11+Math.sin(a+.3)*6]],"#ff922b"); }
+  P.c(11,11,6.2,"#ffd43b"); P.s(8,9,INK); P.s(13,9,INK); smile(P,11,12,"#d9480f"); P.s(7,12,"#ffa94d"); P.s(14,12,"#ffa94d"); P.o("#d9480f");
+});
+D("bougie","Bougie","feu","#2b1a3d",P=>{
+  night(P); P.fg(); flame(P,11,9.6,.42);
+  P.r(8,10.5,14,19,(x,y)=>Math.floor(y)%3===0?"#ff8fab":"#fff1d6"); P.r(5.5,19,16.5,20.8,"#f0b429"); P.o("#0d0718");
+});
+D("piment","Piment","feu","#fff3bf",P=>{
+  P.fg(); P.path([[4.5,17.5],[8,17.8],[12,15.5],[15,11.5],[16.5,7.5]],.6,2.9,"#e03131");
+  P.path([[9,16],[12.5,13.5],[14.5,10.5]],.4,.5,"#ff8787");
+  P.path([[16.5,6],[17.5,4.2],[19.5,3.2]],1,.6,"#2f9e44"); P.e(16.5,6.2,2.7,1.3,"#2f9e44"); P.o("#7a0c0c");
+});
+D("feucamp","Feu de camp","feu","#2b1a3d",P=>{
+  night(P); P.r(0,19.5,22,22,"#3d2b1f"); P.fg(); flame(P,11,17.5,.78);
+  P.l(4,19,18,16.5,.9,"#8b5a2b"); P.l(18,19,4,16.5,.9,"#6f4518"); P.o("#0d0718");
+});
+D("volcan","Volcan","feu","#3d2466",P=>{
+  night(P); P.r(0,20,22,22,"#5c3a17"); P.fg();
+  P.d([[11,2.5],[8.5,3.8],[13.5,3.8]],1.6,"#ff6b00"); dots(P,[[10,4],[12,2],[8,2]],"#ffd43b");
+  P.p([[2,20],[8,7.5],[14,7.5],[20,20]],"#7f4f24"); P.r(8,6.5,14,8.5,"#ff6b00");
+  P.path([[9,8],[8,12],[6.5,16]],.9,.6,"#ff6b00"); P.path([[12.5,8],[13.5,13],[15,18]],.9,.6,"#ff922b"); P.path([[11,8],[11,11.5]],.7,.5,"#ffd43b"); P.o("#2b1608");
+});
+D("meteore","Météore","feu","#14213d",P=>{
+  night(P); P.fg(); P.p([[1,1],[17.5,11],[11,17.5]],"#ff6b00"); P.p([[4.5,4],[16,12.5],[12.5,16]],"#ffd43b");
+  P.c(15.5,15.5,4.2,"#8d6e63"); dots(P,[[14,14],[17,16],[15,18],[13,16]],"#5d4037"); P.o("#3e2723");
+});
+D("lanterne","Lanterne","feu","#2b1a3d",P=>{
+  night(P); P.fg(); P.l(11,1,11,4.5,.4,"#f0b429"); P.r(8,4,14,5.6,"#f0b429");
+  P.e(11,11.5,6,6.2,(x,y)=>Math.floor(Math.abs(x-11)/1.5)%2?"#c92a2a":"#e03131"); P.c(11,11.5,2,"#ffd43b");
+  P.r(8,17.4,14,19,"#f0b429"); P.l(11,19,11,21.5,.5,"#e03131"); P.o("#0d0718");
+});
+D("dragon","Dragon","feu","#ffe8cc",P=>{
+  P.fg(); P.p([[5.5,7],[4,1.5],[8.5,5]],"#ffd43b"); P.p([[16.5,7],[18,1.5],[13.5,5]],"#ffd43b");
+  P.c(11,11,6.8,"#2f9e44"); P.p([[9.8,4.8],[11,1.8],[12.2,4.8]],"#e03131");
+  P.e(11,15.5,4.6,3.2,"#69db7c"); P.s(9,15,INK); P.s(12,15,INK);
+  P.c(8,9.5,1.6,"#ffd43b"); P.c(14,9.5,1.6,"#ffd43b"); P.r(7,8.5,8,10.5,INK); P.r(14,8.5,15,10.5,INK);
+  P.s(9,18,"#ffffff"); P.s(12,18,"#ffffff"); P.o("#134b20");
+});
+D("artifice","Feu d'artifice","feu","#14213d",P=>{
+  for(const [cx,cy,R,c1,c2] of [[7,7,5.5,"#ff6b6b","#ffd43b"],[15.5,11,4.6,"#74c0fc","#ffffff"],[8,16.5,4,"#b197fc","#f783ac"]]){
+    for(let k=0;k<8;k++){ const a=k*PI/4+.2; P.l(cx+Math.cos(a)*1.6,cy+Math.sin(a)*1.6,cx+Math.cos(a)*R*.75,cy+Math.sin(a)*R*.75,.42,c1); P.c(cx+Math.cos(a)*R,cy+Math.sin(a)*R,.7,c2); }
+    P.c(cx,cy,.9,"#ffffff");
+  }
+});
+
+/* --- Planète Bonbons --- */
+D("sucette","Sucette","bonbons","#d3f9d8",P=>{
+  P.fg(); P.r(10.3,13,11.7,21.5,"#f1f3f5");
+  P.c(11,8.5,6.8,(x,y)=>{ const d=H(x-11,y-8.5), a=Math.atan2(y-8.5,x-11); return Math.floor(d/1.7+a/(2*PI)+10)%2?"#fa5252":"#ffffff"; }); P.o("#862e2e");
+});
+D("bonbon","Bonbon","bonbons","#fff0f6",P=>{
+  P.fg(); P.p([[7,11],[1.5,6.5],[1.5,15.5]],"#b197fc"); P.p([[15,11],[20.5,6.5],[20.5,15.5]],"#b197fc");
+  P.c(11,11,5,(x,y)=>Math.floor((x+y)/2)%2?"#7950f2":"#d0bfff"); P.o("#3b2a7a");
+});
+D("biscuit","Biscuit","bonbons","#d0ebff",P=>{
+  P.fg(); P.c(11,11,8.3,"#d9a066"); P.d([[7.5,7.5],[13.5,6.5],[10.5,11.5],[15.5,11.5],[6.5,13.5],[11.5,16.5],[15.5,15.5]],1.1,"#5c3a17");
+  P.x(18,4.5,3.4); P.o("#7a4a00");
+});
+D("macaron","Macaron","bonbons","#e5dbff",P=>{
+  P.fg(); P.e(11,8,7.5,3.8,"#f783ac"); P.e(11,15,7.5,3.6,"#f783ac"); P.r(4,10.5,18,13,"#fff1d6"); P.e(8.5,6.5,2.5,.8,"#fcc2d7"); P.o("#a61e4d");
+});
+D("cornet","Cornet de crème glacée","bonbons","#fff3bf",P=>{
+  P.fg(); P.p([[6.3,11.5],[15.7,11.5],[11,21.5]],(x,y)=>(Math.floor(x+y)%3===0||Math.floor(x-y+30)%3===0)?"#c98a3a":"#e8a857");
+  P.c(11,1.6,1.3,"#e03131"); P.c(11,8.8,5.2,"#f783ac"); P.c(7.5,11.5,1.3,"#f783ac"); P.c(14.5,11.8,1.2,"#f783ac");
+  P.c(11,4.6,3.6,"#96f2d7"); dots(P,[[10,4],[12,5],[9,5]],"#5c3a17"); P.o("#7a4a00");
+});
+D("beigne","Beigne","bonbons","#d0ebff",P=>{
+  P.fg(); P.c(11,11,8.3,"#e8a857");
+  P.f((x,y)=>{ const d=H(x-11,y-11), a=Math.atan2(y-11,x-11); return d<6.6+Math.sin(a*6)*.7; },"#f783ac");
+  dots(P,[[7,7],[13,6]],"#ffd43b"); dots(P,[[15,10],[8,15]],"#74c0fc"); dots(P,[[6,11],[13,16]],"#ffffff"); dots(P,[[10,6],[15,14]],"#69db7c");
+  P.x(11,11,2.7); P.o("#7a4a00");
+});
+D("cupcake","Cupcake","bonbons","#e5dbff",P=>{
+  P.fg(); P.p([[5.5,12.5],[16.5,12.5],[15,20.5],[7,20.5]],(x,y)=>Math.floor(x)%2?"#74c0fc":"#4dabf7");
+  P.c(7.8,11,2.8,"#f783ac"); P.c(14.2,11,2.8,"#f783ac"); P.c(11,9,4.8,"#f783ac"); P.c(11,5.5,2.8,"#faa2c1"); P.c(11,2.8,1.5,"#e03131");
+  P.s(8,9,"#ffd43b"); P.s(13,8,"#69db7c"); P.s(10,11,"#ffffff"); P.s(14,11,"#74c0fc"); P.s(11,7,"#ffffff"); P.o("#862e9c");
+});
+D("canne","Canne de bonbon","bonbons","#d3f9d8",P=>{
+  P.fg(); P.path([[7.5,20.5],[7.5,8.5],[8.6,5.6],[11,4.2],[13.6,5.4],[14.8,8],[14.8,10.5]],1.5,1.5,(x,y)=>Math.floor((x+y)/1.6)%2?"#e03131":"#ffffff"); P.o("#7a0c0c");
+});
+D("chocolat","Tablette de chocolat","bonbons","#ffe8cc",P=>{
+  P.fg(); P.r(5,2,17,13,(x,y)=>(Math.floor(x-5)%4===3||Math.floor(y-2)%4===3)?"#5c3a17":"#8b5a2b");
+  P.r(4,12,18,20.5,"#e03131"); P.r(4,14.5,18,16.5,"#ffd43b"); P.o("#3d2410");
+});
+D("gateau","Gâteau d'anniversaire","bonbons","#ffe0ef",P=>{
+  P.fg(); P.r(2,19.5,20,21,"#ced4da"); P.r(3.5,13,18.5,19.5,"#f783ac"); P.r(6,8,16,13,"#fff1d6");
+  P.f((x,y)=>x>=3.5&&x<18.5&&y>=13&&y<14.5+(Math.floor(x)%3===0?1:0),"#ffffff");
+  P.f((x,y)=>x>=6&&x<16&&y>=8&&y<9.5+(Math.floor(x)%3===1?1:0),"#e64980");
+  for(const c of [7,10,13]){ P.r(c,5,c+1,8,"#4dabf7"); P.s(c,4,"#ffd43b"); P.s(c,3,"#ff922b"); }
+  dots(P,[[5,17],[9,17],[13,17],[17,17]],"#ffd43b"); P.o("#862e9c");
+});
+
+/* --- Planète Cosmos --- */
+const SP = "#14213d";
+D("fusee","Fusée","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg();
+  P.p([[8.5,17],[13.5,17],[11,21.8]],"#ff922b"); P.p([[10,17],[12,17],[11,20]],"#ffd43b");
+  P.p([[8,12.5],[4,19],[8.5,17.5]],"#e03131"); P.p([[14,12.5],[18,19],[13.5,17.5]],"#e03131");
+  P.e(11,9.5,3.9,8,(x,y)=>y<5.5?"#e03131":(y>=14&&y<15)?"#e03131":"#f1f3f5"); P.c(11,9,2.2,"#868e96"); P.c(11,9,1.3,"#74c0fc"); P.o("#495057");
+});
+D("lune","Pleine lune","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); P.c(11,11,8.3,"#ffe066");
+  P.c(7.5,8,1.8,"#f0c040"); P.c(14,6.5,1.2,"#f0c040"); P.c(13.5,14,2.2,"#f0c040"); P.c(8,15,1.1,"#f0c040"); P.o("#8a6d00");
+});
+function robot(id, name, o){
+  D(id, name, "cosmos", o.bg, P => {
+    P.fg(); P.l(11,4.5,11,2,.45,"#868e96"); P.c(11,1.6,1.1,o.light);
+    P.r(3,8,5,12,o.acc); P.r(17,8,19,12,o.acc);
+    if(o.round) P.e(11,10,6.6,5.9,o.c); else P.r(5,4.5,17,15,o.c);
+    P.c(8,9,1.9,"#ffffff"); P.c(14,9,1.9,"#ffffff"); P.c(8,9,.9,o.eye); P.c(14,9,.9,o.eye);
+    P.r(8,12,14,13.5,INK); P.s(9,12,"#ffffff"); P.s(12,12,"#ffffff");
+    P.r(9.5,15,12.5,16.5,"#868e96"); P.r(4.5,16.5,17.5,22,o.body); P.r(8,18,14,21,o.acc); P.s(9,19,"#e03131"); P.s(12,19,"#69db7c");
+    P.o("#343a40");
+  });
+}
+robot("robot1","Robot",{bg:"#d0ebff",c:"#adb5bd",acc:"#ff922b",body:"#4d7cff",eye:"#1c7ed6",light:"#e03131"});
+D("comete","Comète","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); P.p([[1,1],[17,12],[12,17]],"#4dabf7"); P.p([[4.5,4],[16,13],[13,16]],"#a5d8ff");
+  P.c(15.5,15.5,3.4,"#e7f5ff"); P.c(15,15,1.2,"#ffffff"); P.o("#1c3d8a");
+});
+D("alien","Extraterrestre","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); P.l(8,5,6.5,1.8,.45,"#69db7c"); P.l(14,5,15.5,1.8,.45,"#69db7c"); P.c(6.5,1.5,1,"#ffd43b"); P.c(15.5,1.5,1,"#ffd43b");
+  P.e(11,19,4,3.5,"#40c057"); P.e(11,10,6.8,7,"#69db7c"); P.e(8,9.5,2,2.9,INK); P.e(14,9.5,2,2.9,INK);
+  P.s(7,8,"#ffffff"); P.s(14,8,"#ffffff"); P.r(10,14,12,15,"#2b8a3e"); P.o("#0f5132");
+});
+D("terre","Planète Terre","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); P.c(11,11,8.3,"#4d7cff");
+  const bl=[[8,8,3],[6.5,11,2],[14.5,13.5,2.8],[13,16.5,1.6],[15.5,6.5,1.5]];
+  P.f((x,y)=>H(x-11,y-11)<8.3&&bl.some(b=>H(x-b[0],y-b[1])<b[2]),"#40c057");
+  P.e(13,9.5,2.5,.8,"#ffffff"); P.e(7.5,15,2,.7,"#ffffff"); P.o("#1c3d8a");
+});
+D("soucoupe","Soucoupe volante","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.p([[8,13],[14,13],[18,21.5],[4,21.5]],"#fff3bf"); P.fg();
+  P.f((x,y)=>((x-11)/4.2)**2+((y-10.5)/4.8)**2<1&&y<10.5,"#96f2d7"); P.c(11,8.8,1.3,"#69db7c");
+  P.e(11,12,9.5,2.9,"#adb5bd"); dots(P,[[3,11],[18,11]],"#ffd43b"); dots(P,[[6,12],[15,12]],"#e03131"); dots(P,[[10,13],[11,13]],"#ffd43b"); P.o("#495057");
+});
+robot("robot2","Robot rond",{bg:"#e5dbff",round:true,c:"#ffd43b",acc:"#7950f2",body:"#e64980",eye:"#2b8a3e",light:"#69db7c"});
+D("astronaute","Astronaute","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); P.r(4.5,14,17.5,20,"#868e96"); P.r(6,14.5,16,22,"#f1f3f5"); P.r(8.5,17,13.5,20,"#4dabf7"); P.s(9,18,"#e03131"); P.s(12,18,"#ffd43b");
+  P.c(11,8.5,6.8,"#f1f3f5"); P.e(11,9,4.8,3.8,"#1c3d5a"); P.path([[8,7.8],[9.6,6.8]],.5,.5,"#74c0fc"); P.o("#495057");
+});
+D("satellite","Satellite","cosmos",SP,P=>{
+  night(P,"#ffffff"); P.fg(); const pan=(x,y)=>Math.floor(x)%2?"#1c7ed6":"#4dabf7";
+  P.r(1,8.5,7.5,13.5,pan); P.r(14.5,8.5,21,13.5,pan); P.r(7.5,10.5,14.5,11.5,"#868e96");
+  P.l(11,7,11,5,.4,"#868e96"); P.c(11,4,2,"#dee2e6"); P.p([[9.5,15],[12.5,15],[13.5,17.5],[8.5,17.5]],"#868e96");
+  P.r(8.5,7,13.5,15,"#f0b429"); P.r(8.5,10,13.5,12,"#ffd43b"); P.o("#495057");
+});
+
+/* ----- Mode Monde ----- */
+const PLANETS = [
+  {key:"eau", name:"Planète Eau", desc:"Poissons et créatures de la mer", c:"#1c7ed6", art:["#3aa7e0","#1c7ed6","#c9efff"]},
+  {key:"jardin", name:"Planète Jardin", desc:"Fleurs, arbres et petites bêtes", c:"#2f9e44", art:["#51cf66","#2f9e44","#ffd43b"]},
+  {key:"glace", name:"Planète Glace", desc:"Neige, flocons et animaux du froid", c:"#1098ad", art:["#e7f5ff","#a5d8ff","#74c0fc"]},
+  {key:"feu", name:"Planète Feu", desc:"Volcans, flammes et dragon", c:"#e03131", art:["#ff6b00","#e03131","#ffd43b"]},
+  {key:"bonbons", name:"Planète Bonbons", desc:"Gâteaux et sucreries", c:"#d6336c", art:["#f783ac","#faa2c1","#96f2d7"]},
+  {key:"cosmos", name:"Planète Cosmos", desc:"Fusées, robots et extraterrestres", c:"#7048e8", art:["#7950f2","#4d3aa8","#ffd43b"]}
+];
+const PTS_DRAW = 100, PTS_PLANET = 1000, UNLOCK_AT = 3;
+const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+function planetArt(cv, p, locked, seed){
+  cv.width = cv.height = 16; const c = cv.getContext("2d");
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){
+    const d = H(x+.5-8, y+.5-8); if(d >= 7.6) continue;
+    const v = Math.sin((y+.5)*.85+Math.sin((x+.5)*.6+seed)*1.4+seed);
+    let col = locked ? (v>.35 ? "#8a87a8" : v<-.4 ? "#5f5c80" : "#737095") : (v>.35 ? p.art[2] : v<-.4 ? p.art[1] : p.art[0]);
+    if(H(x+.5-5.5, y+.5-5.5) > 7.4) col = mix(col, INK, .35);
+    if(d > 6.6) col = mix(col, INK, .25);
+    c.fillStyle = col; c.fillRect(x, y, 1, 1);
+  }
+}
+
 const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["photos","Mes photos","#7048e8"]];
 let filt = "tous";
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && !CATS.some(c=>c[0]===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -590,7 +1011,7 @@ function drawThumb(cv, d, done, full){
   }
 }
 const catOf = d => d.cat || "photos";
-const catColor = key => (CATS.find(c=>c[0]===key) || CATS[0])[2];
+const catColor = key => { const p = PLANETS.find(q=>q.key===key); return p ? p.c : (CATS.find(c=>c[0]===key) || CATS[0])[2]; };
 function makeCard(it){
   const d = it.d, card = document.createElement("div");
   card.className = "card" + (it.pct===100 ? " done" : "");
@@ -640,9 +1061,12 @@ function renderGallery(){
   const fin = items.filter(i=>i.pct===100).length;
   $("ovTxt").textContent = `${fin} / ${items.length} dessins terminés`;
   $("ovBar").style.width = (items.length ? fin/items.length*100 : 0)+"%";
-  $("ovPill").textContent = `${fin} / ${items.length}`;
-  $("ovPill").setAttribute("aria-label", `${fin} dessins terminés sur ${items.length}`);
   const byCat = key => items.filter(i=>catOf(i.d)===key);
+  const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
+  world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
+  const score = world.reduce((a,w)=>a+w.pts, 0);
+  $("ovPill").textContent = `★ ${fmt(score)}`;
+  $("ovPill").setAttribute("aria-label", `${score} points`);
 
   /* Tiroir */
   const nav = $("nav"); nav.textContent = "";
@@ -650,6 +1074,11 @@ function renderGallery(){
   const ic = el("span","ic"); ic.innerHTML = HOME_SVG;
   const ht = el("span"); ht.append(el("b",null,"Menu principal"), el("small",null,"Accueil"));
   hb.append(ic, ht); hb.onclick = () => setPage("menu"); nav.appendChild(hb);
+  const inWorld = page==="monde" || PLANETS.some(p=>p.key===page);
+  const wb = el("button","nv" + (inWorld ? " on" : "")); wb.type = "button"; wb.style.setProperty("--c", "#7048e8");
+  const wc = el("canvas"); planetArt(wc, PLANETS[0], false, 1);
+  const wt = el("span"); wt.append(el("b",null,"Mode Monde"), el("small",null,`★ ${fmt(score)} points`));
+  wb.append(wc, wt); wb.onclick = () => setPage("monde"); nav.appendChild(wb);
   for(const [key,label,color] of CATS){
     const list = byCat(key), b = el("button","nv" + (page===key ? " on" : ""));
     b.type = "button"; b.style.setProperty("--c", color);
@@ -682,6 +1111,11 @@ function renderGallery(){
     b2.onclick = () => { const pool = items.filter(i=>i.pct<100); const pick = (pool.length ? pool : items)[Math.floor(Math.random()*(pool.length||items.length))]; openDrawing(pick.d); };
     q.append(b1, b2);
     const top = el("div","block"); top.append(f, q); pg.appendChild(top);
+    const bn = el("button","wbanner"); bn.type = "button";
+    const pl = el("span","pl"); world.forEach((w,i)=>{ const c = el("canvas"); planetArt(c, w.p, !w.open, i+1); pl.appendChild(c); });
+    const bt = el("span","wt"); bt.append(el("b",null,"Mode Monde"), el("small",null,`${world.filter(w=>w.full).length} / ${world.length} planètes complétées · ★ ${fmt(score)} points`));
+    bn.append(bt, pl, el("span","btn pink","Explorer")); bn.onclick = () => setPage("monde");
+    pg.appendChild(bn);
 
     if(prog.length > 1){
       const blk = el("div","block"); blk.appendChild(el("h2",null,"En cours"));
@@ -699,6 +1133,45 @@ function renderGallery(){
       tiles.appendChild(t);
     }
     cb.appendChild(tiles); pg.appendChild(cb);
+    return;
+  }
+
+  /* Mode Monde : carte des planètes */
+  if(page === "monde"){
+    $("abTitle").textContent = "Mode Monde";
+    const hd = el("div","whead");
+    const sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes points"), el("b",null,`★ ${fmt(score)}`));
+    hd.append(sc, el("p",null,`Chaque dessin terminé rapporte ${PTS_DRAW} points. Une planète complétée ajoute ${fmt(PTS_PLANET)} points. Termine ${UNLOCK_AT} dessins d'une planète pour ouvrir la suivante.`));
+    pg.appendChild(hd);
+    const wl = el("div","planets");
+    world.forEach((w,i)=>{
+      const b = el("button","planet" + (w.open ? "" : " lock") + (w.full ? " full" : "")); b.type = "button"; b.style.setProperty("--c", w.p.art[0]);
+      const c = el("canvas"); planetArt(c, w.p, !w.open, i+1);
+      const tx = el("span","ptx");
+      tx.append(el("span","pstate", !w.open ? "Verrouillée" : w.full ? `Complétée · +${fmt(PTS_PLANET)}` : `${w.nd} / ${w.list.length}`), el("b",null,w.p.name),
+        el("small",null, w.open ? w.p.desc : `Termine ${UNLOCK_AT} dessins de la ${w.prev} pour l'ouvrir.`), barEl(w.list.length ? w.nd/w.list.length*100 : 0),
+        el("small","ppts",`${fmt(w.pts)} / ${fmt(w.max)} points`));
+      b.append(c, tx); b.onclick = () => setPage(w.p.key);
+      wl.appendChild(b);
+    });
+    pg.appendChild(wl);
+    return;
+  }
+  const wp = world.find(w=>w.p.key===page);
+  if(wp){
+    $("abTitle").textContent = wp.p.name;
+    const hd = el("div","phead"); hd.style.setProperty("--c", wp.p.art[0]);
+    const c = el("canvas"); planetArt(c, wp.p, !wp.open, world.indexOf(wp)+1);
+    const tx = el("div","ptx");
+    tx.append(el("span","pstate", !wp.open ? "Verrouillée" : wp.full ? "Défi complété" : "Défi en cours"), el("b",null,wp.p.name),
+      el("small",null, wp.full ? `Bravo ! Tu as gagné ${fmt(wp.pts)} points sur cette planète.` : `Complète les ${wp.list.length} dessins pour gagner ${fmt(wp.max)} points.`),
+      barEl(wp.list.length ? wp.nd/wp.list.length*100 : 0), el("small","ppts",`${wp.nd} / ${wp.list.length} dessins · ${fmt(wp.pts)} points`));
+    hd.append(c, tx);
+    const bk = el("button","btn ghost small","‹ Monde"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("monde");
+    const blk = el("div","block"); blk.append(bk, hd);
+    if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
+    else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
+    pg.appendChild(blk);
     return;
   }
 
@@ -788,6 +1261,7 @@ let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
 function openDrawing(d){
+  $("winTxt").textContent = "Dessin terminé !";
   sparks = []; cur = d; done = loadDone(d); store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
@@ -875,7 +1349,12 @@ function paintCell(i){
   if(i<0 || idx[i]!==sel || done[i]) return false;
   done[i] = 1; left[sel]--; sparkle(i);
   if(left.every(v=>v===0)){
-    sWin();
+    sWin(); saveDone(cur, done);
+    const pw = PLANETS.find(p=>p.key===cur.cat);
+    if(pw){
+      const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
+      $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
+    }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
