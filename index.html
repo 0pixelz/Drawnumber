@@ -259,6 +259,24 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
   #pal{flex:1;flex-wrap:wrap;align-content:flex-start;overflow-x:hidden;overflow-y:auto;padding:14px calc(14px + var(--sr)) calc(14px + var(--sb)) 14px}
 }
 
+/* Mode chrono */
+.clock{flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:20px;line-height:1;font-variant-numeric:tabular-nums;background:var(--ink);color:#fff;border-radius:12px;padding:8px 10px}
+.clock.low{background:#e03131}
+#tbar{height:7px;background:var(--line);flex:0 0 auto}
+#tbar i{display:block;height:100%;width:100%;background:var(--good)}
+#tbar.low i{background:#e03131}
+body.chrono #reset{display:none}
+.wbanner.chr{background:#e8590c;box-shadow:0 5px 0 #a13d06}
+.wbanner.chr small{color:#fff}
+.wbanner.chr .btn{background:#fff;color:var(--ink);box-shadow:0 3px 0 #a13d06}
+.wbanner.chr .big{font-family:var(--display);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.lvl{position:relative}
+.lvl .num{position:absolute;left:6px;top:6px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;background:var(--ink);color:#fff;font-variant-numeric:tabular-nums}
+.lvl .stars{font-size:17px;letter-spacing:1px;color:#e8a400;line-height:1}
+.lvl .stars.none{color:var(--line)}
+.lvl.lock{opacity:.55;cursor:default}
+.lvl.lock:active{transform:none;box-shadow:0 4px 0 var(--ink)}
+
 /* Mode libre */
 .ftools{display:none;flex-direction:column;gap:7px;padding:8px calc(12px + var(--sr)) 0 calc(12px + var(--sl))}
 body.freeplay .ftools{display:flex}
@@ -360,13 +378,15 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="top">
     <button class="btn ghost small" id="back" type="button">‹ Dessins</button>
     <div class="ttl"><b id="pname"></b><span id="pprog"></span></div>
+    <span class="clock" id="clock" hidden></span>
     <button class="btn ghost small sq" id="snd" type="button"></button>
     <button class="btn ghost small" id="reset" type="button">Recommencer</button>
   </div>
+  <div id="tbar" hidden><i></i></div>
   <div class="body">
     <div id="stage">
       <canvas id="cv"></canvas>
-      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
+      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small pink" id="winNext" type="button" hidden></button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
     <div class="side">
       <div class="tools">
@@ -1141,7 +1161,7 @@ function planetArt(cv, p, locked, seed){
 const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c"],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["photos","Mes photos","#7048e8"]];
 let filt = "tous";
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -1153,7 +1173,7 @@ function loadDone(d){
   if(typeof s === "string" && s.length === n) for(let i=0;i<n;i++) a[i] = s.charCodeAt(i)===49 ? 1 : 0;
   return a;
 }
-function saveDone(d, a){ let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set("cpn.p."+d.id, s); }
+function saveDone(d, a){ if(chrono) return; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set("cpn.p."+d.id, s); }
 function stats(d, done){
   let tot=0, ok=0;
   for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== "."){ tot++; if(done[i]) ok++; }
@@ -1229,7 +1249,8 @@ function renderGallery(){
   const byCat = key => items.filter(i=>catOf(i.d)===key);
   const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
   world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
-  const score = world.reduce((a,w)=>a+w.pts, 0);
+  const cStars = LEVELS.reduce((a,l)=>a+((chronoRes[l.i]||{}).s||0), 0);
+  const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS;
   $("ovPill").textContent = `★ ${fmt(score)}`;
   $("ovPill").setAttribute("aria-label", `${score} points`);
   drawThumb($("meCv"), avatarOf(me), null, true);
@@ -1249,6 +1270,10 @@ function renderGallery(){
   const li = el("span","ic"); li.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/></svg>';
   const lt = el("span"); lt.append(el("b",null,"Mode libre"), el("small",null,"Colorie comme tu veux"));
   lb.append(li, lt); lb.onclick = () => setPage("libre"); nav.appendChild(lb);
+  const cb2 = el("button","nv" + (page==="chrono" ? " on" : "")); cb2.type = "button"; cb2.style.setProperty("--c", "#e8590c");
+  const ci = el("span","ic"); ci.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/></svg>';
+  const ct = el("span"); ct.append(el("b",null,"Mode chrono"), el("small",null,`★ ${cStars} / ${LEVELS.length*3} étoiles`));
+  cb2.append(ci, ct); cb2.onclick = () => setPage("chrono"); nav.appendChild(cb2);
   const lastId = store.get("cpn.last", "");
   const ongoing = items.filter(i=>i.st.ok>0 && i.pct<100).sort((a,b)=>(b.d.id===lastId)-(a.d.id===lastId) || b.pct-a.pct);
   const eb = el("button","nv" + (page==="encours" ? " on" : "")); eb.type = "button"; eb.style.setProperty("--c", "#e8590c");
@@ -1302,6 +1327,10 @@ function renderGallery(){
     const sw = el("span","swatches"); ["#e03131","#ff922b","#ffd43b","#2f9e44","#4dabf7","#7048e8"].forEach(h=>{ const i = el("i"); i.style.background = h; sw.appendChild(i); });
     fb.append(ft2, sw, el("span","btn","Dessiner")); fb.onclick = () => setPage("libre");
     pg.appendChild(fb);
+    const kb = el("button","wbanner chr"); kb.type = "button";
+    const kt = el("span","wt"); kt.append(el("b",null,"Mode chrono"), el("small",null,`Finis le dessin avant la fin du temps. ${LEVELS.length} niveaux.`));
+    kb.append(kt, el("span","big",`★ ${cStars} / ${LEVELS.length*3}`), el("span","btn","Jouer")); kb.onclick = () => setPage("chrono");
+    pg.appendChild(kb);
 
     if(prog.length > 1){
       const blk = el("div","block"), sh = el("div","sec"); sh.appendChild(el("h2",null,"En cours"));
@@ -1360,6 +1389,32 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Mode chrono : niveaux */
+  if(page === "chrono"){
+    $("abTitle").textContent = "Mode chrono";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${cStars} / ${LEVELS.length*3}`));
+    hd.append(sc, el("p",null,`Le chrono démarre à ta première case. Finis le dessin à temps pour ouvrir le niveau suivant. Une étoile si tu finis, deux s'il te reste le quart du temps, trois s'il t'en reste la moitié. Chaque étoile rapporte ${STAR_PTS} points.`));
+    b0.append(bk, hd); pg.appendChild(b0);
+    CHRONO_DEF.forEach(([stage], si)=>{
+      const blk = el("div","block"); blk.appendChild(el("h2",null,`Étape ${si+1} · ${stage}`));
+      const g = el("div","grid");
+      LEVELS.filter(l=>l.si===si).forEach(l=>{
+        const res = chronoRes[l.i], open = l.i===0 || !!chronoRes[l.i-1];
+        const card = el("div","card lvl" + (open ? "" : " lock")); card.style.setProperty("--c", "#e8590c");
+        const th = el("div","th"), cv = el("canvas"); drawThumb(cv, l.d, new Uint8Array(l.d.cells.length), open); th.append(cv, el("span","num",`Niveau ${l.i+1}`));
+        const meta = el("div","meta"); meta.append(el("span",null,`Temps : ${mmss(l.T)}`), el("span",null, res ? `reste ${mmss(res.l)}` : open ? `${l.cells} cases` : "Verrouillé"));
+        card.append(th, el("div","nm",l.d.name), el("div","stars" + (res ? "" : " none"), starTxt(res ? res.s : 0)), meta);
+        card.setAttribute("aria-label", `Niveau ${l.i+1}, ${l.d.name}, ${open ? "temps "+mmss(l.T) : "verrouillé"}`);
+        if(open){ card.tabIndex = 0; card.setAttribute("role","button"); card.onclick = () => openChrono(l.i); card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openChrono(l.i); } }; }
+        g.appendChild(card);
+      });
+      blk.appendChild(g); pg.appendChild(blk);
+    });
     return;
   }
 
@@ -1536,6 +1591,59 @@ function drawSparks(){
   if(sparks.length) draw();
 }
 
+/* ---------- Mode chrono ---------- */
+const CHRONO_DEF = [
+  ["Formes", ["F_cercle","F_carre","F_losange","F_triangle","F_ovale","F_etoile"]],
+  ["Lettres et chiffres", ["L_A","N_1","L_B","N_2","L_C","N_3"]],
+  ["Nature", ["coeur","champi","fleur","arc","chat","poisson"]],
+  ["Pieuvres", ["O_bebe","O_rose","O_pirate","O_reine","O_arcenciel","O_geante"]]
+];
+const LEVELS = [];
+CHRONO_DEF.forEach(([stage, ids], si) => ids.forEach(id => {
+  const d = BUILTIN.find(x=>x.id===id); if(!d) return;
+  const cells = [...d.cells].filter(c=>c!==".").length;
+  /* temps raisonnable : environ une demi-seconde par case, plus quelques secondes par couleur ; un peu plus serré à chaque étape */
+  const T = Math.round((cells*.55 + d.palette.length*7 + 20) * (1 - si*.05) / 5) * 5;
+  LEVELS.push({i: LEVELS.length, stage, si, d, T, cells});
+}));
+const STAR_PTS = 50;
+let chrono = null, chronoRes = store.get("cpn.chrono", {});
+const mmss = t => { t = Math.max(0, Math.ceil(t)); return Math.floor(t/60)+":"+String(t%60).padStart(2,"0"); };
+const starTxt = n => "★".repeat(n)+"☆".repeat(3-n);
+function openChrono(i){ const lv = LEVELS[i]; openDrawing(lv.d, {lv:i, T:lv.T, left:lv.T, started:false, over:false, won:false, last:-1}); }
+function stopChrono(){ if(chrono) clearInterval(chrono.timer); }
+function chronoUI(){
+  const on = !!chrono; document.body.classList.toggle("chrono", on);
+  $("clock").hidden = !on; $("tbar").hidden = !on; $("winNext").hidden = true; $("winBack").textContent = on ? "Niveaux" : "Autre dessin";
+  if(on){ $("pname").textContent = `Niveau ${chrono.lv+1}`; tickChrono(); }
+}
+function tickChrono(){
+  if(!chrono) return;
+  if(chrono.started && !chrono.over && !chrono.won) chrono.left = chrono.T-(performance.now()-chrono.t0)/1000;
+  const low = chrono.left <= 10;
+  $("clock").textContent = mmss(chrono.left); $("clock").classList.toggle("low", low); $("tbar").classList.toggle("low", low);
+  $("tbar").firstElementChild.style.width = Math.max(0, chrono.left/chrono.T*100)+"%";
+  if(chrono.started && !chrono.won && !chrono.over){
+    const sec = Math.ceil(chrono.left);
+    if(low && sec !== chrono.last && sec > 0){ chrono.last = sec; const a = audio(); if(a) tone(988, a.currentTime, .07, .07, "square"); }
+    if(chrono.left <= 0) chronoLose();
+  }
+}
+function chronoLose(){
+  chrono.over = true; stopChrono(); const st = stats(cur, done), rest = st.tot-st.ok;
+  $("winTxt").textContent = `Temps écoulé ! Il te restait ${rest} ${rest>1 ? "cases" : "case"}.`;
+  $("winNext").textContent = "Réessayer"; $("winNext").hidden = false; $("say").hidden = true; $("win").classList.add("on");
+  const a = audio(); if(a) [392,330,262].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .12, "triangle"));
+}
+function chronoWin(){
+  chrono.won = true; stopChrono();
+  const r = chrono.left/chrono.T, stars = r>=.5 ? 3 : r>=.25 ? 2 : 1, prev = chronoRes[chrono.lv];
+  if(!prev || stars>prev.s || (stars===prev.s && chrono.left>prev.l)){ chronoRes[chrono.lv] = {s:stars, l:Math.round(chrono.left)}; store.set("cpn.chrono", chronoRes); }
+  $("winTxt").textContent = `Niveau ${chrono.lv+1} réussi ! ${starTxt(stars)} Il te restait ${mmss(chrono.left)}.`;
+  if(chrono.lv+1 < LEVELS.length){ $("winNext").textContent = "Niveau suivant"; $("winNext").hidden = false; }
+}
+$("winNext").onclick = () => { if(!chrono) return; const i = chrono.won ? chrono.lv+1 : chrono.lv; openChrono(i); };
+
 /* ---------- Mode libre ---------- */
 const PRESET = ["#e03131","#ff6b6b","#ff922b","#ffd43b","#fff3bf","#94d82d","#2f9e44","#0c8599","#3bc9db","#4dabf7","#1c7ed6","#3b5bdb","#7048e8","#b197fc","#d6336c","#f783ac","#ffc9c9","#8b5a2b","#d9a066","#ffe8cc","#ffffff","#adb5bd","#495057","#1d1b3a"];
 let free = false, fcol = null, reg = null, tool = "brush", colA = "#e03131", colB = "#ffd43b", slot = 0, fdir = 0, bsize = 1, undoS = [];
@@ -1552,6 +1660,7 @@ function saveFree(){
   if(!flist.includes(cur.id)){ flist.unshift(cur.id); store.set("cpn.flist", flist); }
 }
 function openFree(d){
+  stopChrono(); chrono = null; chronoUI();
   free = true; document.body.classList.add("freeplay");
   sparks = []; undoS = []; cur = d; fcol = loadFree(d); done = new Uint8Array(d.cells.length); left = []; sel = -1;
   idx = new Int8Array(d.cells.length);
@@ -1675,10 +1784,11 @@ const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
 let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=0, dpr=1, raf=0;
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
-function openDrawing(d){
+function openDrawing(d, ch){
+  stopChrono(); chrono = ch || null;
   free = false; document.body.classList.remove("freeplay");
   $("winTxt").textContent = d.cat==="mots" ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = d.cat!=="mots" || !canSpeak;
-  sparks = []; cur = d; done = loadDone(d); store.set("cpn.last", d.id);
+  sparks = []; cur = d; done = chrono ? new Uint8Array(d.cols*d.rows) : loadDone(d); if(!chrono) store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
   for(let i=0;i<d.cells.length;i++){
@@ -1687,7 +1797,7 @@ function openDrawing(d){
   }
   sel = Math.max(0, left.findIndex(n=>n>0));
   $("pname").textContent = d.name;
-  show("play"); resize(); fit(); buildPalette(); updateProg();
+  show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI();
 }
 function resize(){
   const r = stage.getBoundingClientRect();
@@ -1763,10 +1873,11 @@ function updateProg(){
 }
 let saveT = 0;
 function paintCell(i){
-  if(i<0 || idx[i]!==sel || done[i]) return false;
+  if(i<0 || idx[i]!==sel || done[i] || (chrono && chrono.over)) return false;
+  if(chrono && !chrono.started){ chrono.started = true; chrono.t0 = performance.now(); chrono.timer = setInterval(tickChrono, 200); }
   done[i] = 1; left[sel]--; sparkle(i);
   if(left.every(v=>v===0)){
-    sWin(); saveDone(cur, done);
+    sWin(); saveDone(cur, done); if(chrono) chronoWin();
     if(cur.cat === "mots"){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
     const pw = PLANETS.find(p=>p.key===cur.cat);
     if(pw){
@@ -1776,7 +1887,7 @@ function paintCell(i){
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
-  clearTimeout(saveT); { const c = cur, dn = done; saveT = setTimeout(()=>saveDone(c, dn), 250); }
+  clearTimeout(saveT); if(!chrono){ const c = cur, dn = done; saveT = setTimeout(()=>saveDone(c, dn), 250); }
   if(left[sel]===0){
     const n = left.findIndex(v=>v>0);
     if(n>=0) selectColor(n, true); else refreshChips();
@@ -1863,7 +1974,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } cur = null; renderGallery(); show("home"); }
+function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {

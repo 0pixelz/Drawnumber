@@ -11,6 +11,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Mode libre sans numéros : pinceau, pot de peinture, dégradé entre deux couleurs, gomme, annulation, couleurs personnalisées, pages blanches
 - Icône d'application (`apple-touch-icon.png`, `icon-192.png`, `icon-512.png`) et `manifest.webmanifest`
 - Page d'accueil : création d'un joueur (prénom + avatar), plusieurs joueurs sur le même appareil avec progression séparée
+- Mode chrono : 24 niveaux en 4 étapes, temps limite selon la taille du dessin, 1 à 3 étoiles, 50 points par étoile
 - Sons (case, couleur terminée, dessin terminé) avec bouton muet, et brillance sur chaque case remplie
 - Progression enregistrée dans le navigateur (localStorage)
 
