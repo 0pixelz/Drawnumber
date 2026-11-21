@@ -1281,8 +1281,18 @@ function sPaint(){
   const a = audio(); if(!a) return;
   const now = performance.now(); if(now-lastS < 45) return;
   combo = now-comboT < 600 ? Math.min(combo+1, SCALE.length-1) : 0; comboT = now; lastS = now;
-  tone(523.25*Math.pow(2, SCALE[combo]/12), a.currentTime, .12, .11, "triangle");
+  const f = 523.25*Math.pow(2, SCALE[combo]/12), t = a.currentTime;
+  tone(f, t, .12, .13, "triangle");
+  tone(f*3, t+.03, .16, .05, "sine"); tone(f*4, t+.07, .14, .035, "sine");   /* petit tintement de la brillance */
 }
+/* iPhone et iPad ne débloquent le son qu'à la fin d'un toucher : on le réveille à chaque geste */
+let unlocked = false;
+function unlockAudio(){
+  const a = audio(); if(!a || unlocked) return;
+  try{ const src = a.createBufferSource(); src.buffer = a.createBuffer(1, 1, 22050); src.connect(a.destination); src.start(0); }catch(e){}
+  if(a.state === "running") unlocked = true;
+}
+for(const ev of ["touchend","pointerup","click","keydown"]) document.addEventListener(ev, unlockAudio, {passive:true});
 function sColor(){ const a = audio(); if(!a) return; [783.99,1046.5,1318.5].forEach((f,i)=>tone(f, a.currentTime+i*.08, .25, .12, "sine")); }
 function sWin(){
   const a = audio(); if(!a) return; const t = a.currentTime;
