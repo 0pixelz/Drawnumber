@@ -120,6 +120,29 @@ canvas{image-rendering:pixelated}
 .bprev{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/16px 16px,var(--paper)}
 .th .bprev canvas{width:54%;aspect-ratio:1;border-radius:6px;background:none;border:2px solid var(--ink)}
 
+/* Replay : on revoit le coloriage case par case */
+#rep{position:fixed;inset:0;z-index:8;background:rgba(29,27,58,.88);display:flex;align-items:center;justify-content:center;padding:calc(12px + var(--st)) 12px calc(12px + var(--sb));overflow:auto}
+#rep[hidden]{display:none}
+.rep-card{background:var(--card);border:3px solid var(--ink);border-radius:26px;box-shadow:0 7px 0 #0d0c20;padding:14px;width:100%;max-width:440px;display:flex;flex-direction:column;gap:10px;margin:auto}
+#rep.two .rep-card{max-width:760px}
+.rep-h{display:flex;align-items:center;gap:10px}
+.rep-h b{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:22px;line-height:1.1}
+.rep-h small{display:block;font-family:var(--body,inherit);font-size:13px;font-weight:800;color:var(--muted)}
+.rep-st{display:flex;gap:10px;justify-content:center}
+.rep-p{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:5px;align-items:center}
+#rep:not(.two) .rep-p{max-width:min(100%,52vh)}
+.rep-p canvas.pic{width:100%;height:auto;display:block;border-radius:14px;border:3px solid var(--ink);background:#eceaf5;image-rendering:pixelated}
+.rep-p.win canvas.pic{border-color:#e8a400;box-shadow:0 0 0 3px #ffe066}
+.rep-n{display:flex;align-items:center;gap:6px;font-weight:800;font-size:15px;max-width:100%}
+.rep-n canvas{width:26px;height:26px;border-radius:8px;flex:0 0 auto}
+.rep-n span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rep-pc{font-family:var(--display);font-weight:800;font-size:18px;font-variant-numeric:tabular-nums}
+.rep-bar{height:10px;border-radius:999px;background:#e1def2;overflow:hidden}
+.rep-bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:999px}
+.rep-btns{display:flex;gap:8px}
+.rep-btns .btn{flex:1 1 0;padding-left:6px;padding-right:6px}
+.srow .btn.rp{flex:0 0 auto;padding:5px 10px;font-size:13px}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -548,13 +571,14 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
             <button class="btn" id="finOther" type="button">Autre dessin</button>
             <button class="btn line" id="finAgain" type="button">Recommencer</button>
             <button class="btn line" id="finSay" type="button" hidden>Écouter le mot</button>
+            <button class="btn line" id="finRep" type="button">Voir le replay</button>
             <button class="btn ghost" id="finSee" type="button">Voir mon dessin</button>
           </div>
         </div>
       </div>
       <div id="opp" hidden><canvas id="oppCv" width="8" height="8"></canvas><div class="ot"><b id="oppName"></b><span id="oppPct"></span></div></div>
       <div id="count" hidden></div>
-      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small pink" id="winNext" type="button" hidden></button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
+      <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="winRep" type="button">Replay</button><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small pink" id="winNext" type="button" hidden></button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
     <div class="side">
       <div class="tools">
@@ -606,6 +630,14 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   </div>
 </div>
 
+<div id="rep" hidden role="dialog" aria-modal="true" aria-labelledby="repT">
+  <div class="rep-card">
+    <div class="rep-h"><b id="repT"></b><button class="btn small ghost" id="repX" type="button" aria-label="Fermer le replay">Fermer</button></div>
+    <div class="rep-st" id="repSt"></div>
+    <div class="rep-bar" aria-hidden="true"><i id="repBar"></i></div>
+    <div class="rep-btns"><button class="btn pink" id="repPlay" type="button">Pause</button><button class="btn line" id="repAgain" type="button">Depuis le début</button><button class="btn line" id="repSpd" type="button">Vitesse ×1</button></div>
+  </div>
+</div>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
@@ -615,7 +647,7 @@ const CH = "0123456789abcdefghijklmnopqrstuvwxyz";
    La clé ci-dessous est la clé publique du projet, prévue pour être dans le navigateur. */
 const SB_URL = "https://vfikxkdadiqkducklewv.supabase.co", SB_KEY = "sb_publishable_7ChQQ1PKLuvBgo5qcrvFhg_CKlSwK6t";
 const DEVICE_KEYS = ["cpn.sync","cpn.mute","cpn.drawerOff","cpn.user"];
-const syncable = k => (k.startsWith("cpn.") || k.startsWith("cpn@")) && !DEVICE_KEYS.includes(k);
+const syncable = k => (k.startsWith("cpn.") || k.startsWith("cpn@")) && !DEVICE_KEYS.includes(k) && !/^cpn(@[^.]+)?\.(r\.|rm\.|duelrep$)/.test(k);
 let sync = null, syncTimer = 0, syncBusy = false, syncGen = 0, syncErr = "";
 try{ sync = JSON.parse(localStorage.getItem("cpn.sync") || "null"); }catch(e){}
 const saveSync = () => { try{ if(sync) localStorage.setItem("cpn.sync", JSON.stringify(sync)); else localStorage.removeItem("cpn.sync"); }catch(e){} };
@@ -2042,7 +2074,7 @@ function loadDone(d, math){
   if(typeof s === "string" && s.length === n) for(let i=0;i<n;i++) a[i] = s.charCodeAt(i)===49 ? 1 : 0;
   return a;
 }
-function saveDone(d, a, math){ if(chrono || duel) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); if(d===cur && timeKnown) store.set(tKey(d, math), Math.round(playMs/1000)); }
+function saveDone(d, a, math){ if(chrono || duel) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); if(d===cur) saveRec(d, math); if(d===cur && timeKnown) store.set(tKey(d, math), Math.round(playMs/1000)); }
 function stats(d, done){
   let tot=0, ok=0;
   for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== "."){ tot++; if(done[i]) ok++; }
@@ -2102,7 +2134,7 @@ function makeCard(it, wideCard, clearBtn){
   if(clearBtn){            /* retire le dessin des dessins en cours : sa progression est effacée */
     const rm = el("button","del","Supprimer"); rm.type = "button"; rm.setAttribute("aria-label", `Supprimer la progression de ${d.name}`);
     rm.onclick = e => { e.stopPropagation();
-      if(rm.dataset.sure){ store.del("cpn.p."+d.id); store.del("cpn.t."+d.id); if(store.get("cpn.last","")===d.id) store.del("cpn.last"); renderGallery(); }
+      if(rm.dataset.sure){ store.del("cpn.p."+d.id); store.del("cpn.r."+d.id); store.del("cpn.t."+d.id); if(store.get("cpn.last","")===d.id) store.del("cpn.last"); renderGallery(); }
       else { rm.dataset.sure = 1; rm.textContent = "Tout effacer ?"; setTimeout(()=>{ if(rm.isConnected){ delete rm.dataset.sure; rm.textContent = "Supprimer"; } }, 3000); } };
     meta.appendChild(rm);
   } else if(d.custom){
@@ -2432,7 +2464,8 @@ function renderGallery(){
       else { const hl = el("div","slist"); duelLog.slice().reverse().slice(0,20).forEach(([t,name,av,won,did])=>{
           const r2 = el("div","srow"), cv = el("canvas","sthumb"), ad = BUILTIN.find(x=>x.id===av), dd = BUILTIN.find(x=>x.id===did); if(ad) drawThumb(cv, ad, null, true);
           const tx = el("span"); tx.append(document.createTextNode(name), el("small",null, dfm(t)+(dd ? " · "+dd.name : "")));
-          r2.append(cv, tx, el("b", won ? "res ok" : "res ko", won ? "Victoire" : "Défaite")); hl.appendChild(r2); }); bh.appendChild(hl); }
+          r2.append(cv, tx); const dr = duelReps.find(x=>x.t===t); if(dr && dd){ const rb = el("button","btn small line rp","Replay"); rb.type = "button"; rb.onclick = () => openDuelReplay(dr); r2.appendChild(rb); }
+          r2.append(el("b", won ? "res ok" : "res ko", won ? "Victoire" : "Défaite")); hl.appendChild(r2); }); bh.appendChild(hl); }
       pg.appendChild(bh);
       /* Classement */
       const bl = el("div","block"), sh = el("div","sec"); sh.appendChild(el("h2",null,"Classement des duels"));
@@ -2956,7 +2989,7 @@ function startBot(level, note){
 function beginDuel(drawId, opp, net, botRate, note){
   pad = null;
   const d = BUILTIN.find(x=>x.id===drawId) || duelPool()[0];
-  openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||""});
+  openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], mine:[], theirs:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||""});
 }
 function duelUI(){
   const on = !!duel; document.body.classList.toggle("duelplay", on); $("opp").hidden = !on; $("count").hidden = true;
@@ -2979,7 +3012,7 @@ function duelLoops(){
 }
 function duelMsg(m){
   if(!duel) return;
-  if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; } }); drawOpp(); }
+  if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; duel.theirs.push([i, duelDs()]); } }); drawOpp(); }
   else if(m.t==="done" && !duel.over) duelEnd(false, `${duel.opp.name} a fini en premier. Bien essayé !`);
   else if((m.t==="bye" || m.t==="_closed") && !duel.over){ if(duel.started) duelEnd(true, `${duel.opp.name} a quitté la partie. Tu gagnes !`); else { stopDuel(); cur = null; show("home"); lobReset(`${duel ? duel.opp.name : "L'autre joueur"} a quitté la partie.`); } }
 }
@@ -2987,7 +3020,8 @@ function duelEnd(won, text){
   duel.over = true; clearInterval(duel.tx); clearInterval(duel.bot);
   if(won && duel.net){ if(duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); duel.net.send({t:"done"}); }
   if(won) duelRec.w++; else duelRec.l++; store.set("cpn.duel", duelRec);
-  duelLog.push([Date.now(), duel.opp.name, duel.opp.av, won ? 1 : 0, cur.id]); if(duelLog.length>100) duelLog = duelLog.slice(-100); store.set("cpn.duellog", duelLog);
+  const dNow = Date.now(); saveDuelRep(dNow, won);
+  duelLog.push([dNow, duel.opp.name, duel.opp.av, won ? 1 : 0, cur.id]); if(duelLog.length>100) duelLog = duelLog.slice(-100); store.set("cpn.duellog", duelLog);
   reportDuel();
   const ns = won ? DUEL_WIN : DUEL_LOSS; logStar(won ? "w" : "l", duel.opp.name, ns);
   $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; $("say").hidden = true; $("win").classList.add("on");
@@ -3195,7 +3229,7 @@ function restartCur(){
   if(free){ pushUndo(); fcol.fill(null); freeChanged(); }
   else if(chrono) openChrono(chrono.lv);
   else if(duel) return;
-  else { store.del((mathMode ? "cpn.pm." : "cpn.p.")+cur.id); store.del(tKey(cur, !!mathMode)); openDrawing(cur, null, mathMode); }
+  else { store.del((mathMode ? "cpn.pm." : "cpn.p.")+cur.id); store.del((mathMode ? "cpn.rm." : "cpn.r.")+cur.id); store.del(tKey(cur, !!mathMode)); openDrawing(cur, null, mathMode); }
 }
 function hideFin(){ $("fin").hidden = true; cancelAnimationFrame(finRaf); finRaf = 0; }
 function celebrate(nStars, title){
@@ -3237,6 +3271,91 @@ $("finAgain").onclick = () => {
   else { b.dataset.sure = 1; b.textContent = "Tout effacer ?"; setTimeout(()=>{ if(b.dataset.sure){ delete b.dataset.sure; b.textContent = "Recommencer"; } }, 3000); }
 };
 
+/* ---------- Replay : l'ordre des cases coloriées est gardé, puis rejoué ---------- */
+let rec = [], duelReps = store.get("cpn.duelrep", []); if(!Array.isArray(duelReps)) duelReps = [];
+const recW = d => d.cells.length>1296 ? 3 : 2;
+const recKey = (d, math) => (math ? "cpn.rm." : "cpn.r.")+d.id;
+function loadRec(d, math){
+  const s = store.get(recKey(d, math), ""), w = recW(d), out = [], seen = new Set(); if(typeof s!=="string") return out;
+  for(let k=0;k+w<=s.length;k+=w){ const i = parseInt(s.substr(k,w),36); if(i>=0 && i<d.cells.length && !seen.has(i)){ seen.add(i); out.push(i); } }
+  return out;
+}
+function saveRec(d, math){ const w = recW(d); store.set(recKey(d, math), rec.map(i=>i.toString(36).padStart(w,"0")).join("")); }
+const duelDs = () => duel && duel.t0 ? Math.max(0, Math.min(46000, Math.round((performance.now()-duel.t0)/100))) : 0;
+const encEv = (d, ev) => { const w = recW(d); return ev.map(([i,t])=>i.toString(36).padStart(w,"0")+t.toString(36).padStart(3,"0")).join(""); };
+const decEv = (d, s) => { const w = recW(d), out = []; if(typeof s!=="string") return out; for(let k=0;k+w+3<=s.length;k+=w+3){ const i = parseInt(s.substr(k,w),36), t = parseInt(s.substr(k+w,3),36); if(i>=0 && i<d.cells.length && t>=0) out.push([i,t]); } return out; };
+function saveDuelRep(t, won){
+  if(!duel || !cur) return;
+  duelReps.push({t, id:cur.id, n:duel.opp.name, av:duel.opp.av, w:won ? 1 : 0, a:encEv(cur, duel.mine), b:encEv(cur, duel.theirs)});
+  if(duelReps.length>12) duelReps = duelReps.slice(-12); store.set("cpn.duelrep", duelReps);
+}
+/* Ordre rejoué : les cases déjà faites sans trace (anciens dessins) passent d'abord, couleur par couleur */
+function soloOrder(d, dn, order){
+  const seen = new Set(order), pre = [];
+  for(let c=0;c<d.palette.length;c++) for(let i=0;i<d.cells.length;i++) if(dn[i] && !seen.has(i) && d.cells[i]!=="." && CH.indexOf(d.cells[i])===c) pre.push(i);
+  return pre.concat(order.filter(i=>dn[i]));
+}
+const RP = {tracks:[], T:1, pos:0, speed:1, on:false, raf:0, last:0};
+function openReplay(title, tracks, T){
+  cancelAnimationFrame(RP.raf);
+  RP.tracks = tracks; RP.T = Math.max(1, T); RP.speed = 1; $("repSpd").textContent = "Vitesse ×1";
+  $("repT").textContent = title; $("rep").classList.toggle("two", tracks.length>1);
+  const st = $("repSt"); st.textContent = "";
+  for(const tr of tracks){
+    const p = el("div","rep-p"), cv = el("canvas","pic"); tr.cv = cv; tr.box = p; tr.tot = stats(tr.d, new Uint8Array(tr.d.cells.length)).tot;
+    if(tr.name){ const n = el("div","rep-n"); const ad = BUILTIN.find(x=>x.id===tr.av); if(ad){ const a = el("canvas"); drawThumb(a, ad, null, true); n.appendChild(a); } n.appendChild(el("span",null,tr.name)); p.appendChild(n); }
+    tr.pc = el("div","rep-pc","0 %"); p.append(cv, tr.pc); st.appendChild(p);
+  }
+  $("rep").hidden = false; replaySeek(0); replayPlay(true);
+}
+function replaySeek(pos){
+  RP.pos = Math.max(0, Math.min(RP.T, pos));
+  for(const tr of RP.tracks){
+    let k = 0; while(k<tr.ev.length && tr.ev[k][1]<=RP.pos) k++;
+    if(k!==tr.k || !tr.dn){ if(!tr.dn || k<tr.k){ tr.dn = new Uint8Array(tr.d.cells.length); for(let j=0;j<k;j++) tr.dn[tr.ev[j][0]] = 1; } else for(let j=tr.k;j<k;j++) tr.dn[tr.ev[j][0]] = 1;
+      tr.k = k; drawThumb(tr.cv, tr.d, tr.dn); tr.pc.textContent = (tr.tot ? Math.floor(Math.min(k,tr.tot)/tr.tot*100) : 0)+" %"; }
+    tr.box.classList.toggle("win", !!tr.won && RP.pos>=RP.T);
+  }
+  $("repBar").style.width = (RP.pos/RP.T*100)+"%";
+}
+function replayPlay(on){
+  RP.on = on; $("repPlay").textContent = on ? "Pause" : RP.pos>=RP.T ? "Rejouer" : "Lecture"; cancelAnimationFrame(RP.raf);
+  if(!on) return; RP.last = performance.now();
+  const step = now => {
+    if(!RP.on || $("rep").hidden) return;
+    replaySeek(RP.pos + Math.min(100, now-RP.last)*RP.speed); RP.last = now;
+    if(RP.pos>=RP.T){ replayPlay(false); const a = audio(); if(a && !calmFx) [659.25,783.99,1046.5].forEach((f,i)=>tone(f, a.currentTime+i*.09, .22, .09, "triangle")); return; }
+    RP.raf = requestAnimationFrame(step);
+  };
+  RP.raf = requestAnimationFrame(step);
+}
+function closeReplay(){ RP.on = false; cancelAnimationFrame(RP.raf); $("rep").hidden = true; }
+$("repX").onclick = closeReplay;
+$("rep").addEventListener("click", e => { if(e.target===$("rep")) closeReplay(); });
+$("repPlay").onclick = () => { if(RP.pos>=RP.T) replaySeek(0); replayPlay(!RP.on); };
+$("repAgain").onclick = () => { replaySeek(0); replayPlay(true); };
+$("repSpd").onclick = () => { RP.speed = RP.speed===1 ? 2 : RP.speed===2 ? 4 : 1; $("repSpd").textContent = "Vitesse ×"+RP.speed; };
+function openSoloReplay(d, dn, order){
+  const o = soloOrder(d, dn, order), T = Math.max(3500, Math.min(14000, o.length*28));
+  openReplay("Replay · "+d.name, [{d, ev:o.map((i,k)=>[i, (k+1)/o.length*T])}], T);
+}
+function duelTracks(d, mine, theirs, oppName, oppAv, won){
+  const last = Math.max(1, ...mine.map(e=>e[1]), ...theirs.map(e=>e[1])), T = Math.max(4000, Math.min(16000, last*100)), f = T/last;
+  return [[{d, ev:mine.map(([i,t])=>[i,t*f]), name: me ? me.name : "Moi", av: me ? me.av : "", won: !!won},
+           {d, ev:theirs.map(([i,t])=>[i,t*f]), name: oppName, av: oppAv, won: !won}], T];
+}
+function openDuelReplay(r){
+  const d = BUILTIN.find(x=>x.id===r.id); if(!d) return;
+  const [tracks, T] = duelTracks(d, decEv(d, r.a), decEv(d, r.b), r.n, r.av, r.w);
+  openReplay("Replay du duel · "+d.name, tracks, T);
+}
+function replayCur(){
+  if(!cur || free) return;
+  if(duel){ const [tracks, T] = duelTracks(cur, duel.mine, duel.theirs, duel.opp.name, duel.opp.av, done.every((v,i)=>idx[i]<0 || v)); openReplay("Replay du duel · "+cur.name, tracks, T); }
+  else openSoloReplay(cur, done, rec);
+}
+$("finRep").onclick = replayCur; $("winRep").onclick = replayCur;
+
 /* ---------- Jeu ---------- */
 const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
 let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=0, dpr=1, raf=0;
@@ -3250,7 +3369,7 @@ function openDrawing(d, ch, math, du){
   free = false; document.body.classList.remove("freeplay");
   const isWord = d.cat==="mots" || !!d.word;
   $("winTxt").textContent = isWord ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = !isWord || !canSpeak;
-  sparks = []; cur = d; done = (chrono || duel) ? new Uint8Array(d.cols*d.rows) : loadDone(d, !!mathMode); if(!chrono && !mathMode && !duel) store.set("cpn.last", d.id);
+  sparks = []; cur = d; done = (chrono || duel) ? new Uint8Array(d.cols*d.rows) : loadDone(d, !!mathMode); rec = (chrono || duel) ? [] : loadRec(d, !!mathMode).filter(i=>done[i]); if(!chrono && !mathMode && !duel) store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
   for(let i=0;i<d.cells.length;i++){
@@ -3345,7 +3464,7 @@ function tickPlay(){ const now = performance.now(); playMs += lastAct ? Math.min
 function paintCell(i){
   if(i<0 || idx[i]!==sel || done[i] || (chrono && chrono.over) || (duel && (!duel.started || duel.over))) return false;
   if(chrono && !chrono.started){ chrono.started = true; chrono.t0 = performance.now(); chrono.timer = setInterval(tickChrono, 200); }
-  done[i] = 1; left[sel]--; sparkle(i); if(duel) duel.queue.push(i); tickPlay();
+  done[i] = 1; left[sel]--; sparkle(i); rec.push(i); if(duel){ duel.queue.push(i); duel.mine.push([i, duelDs()]); } tickPlay();
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done); if(chrono) chronoWin();
     if(duel) duelEnd(true, `Tu as gagné contre ${duel.opp.name} !`);
@@ -3467,7 +3586,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ hideFin(); if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ hideFin(); closeReplay(); if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {

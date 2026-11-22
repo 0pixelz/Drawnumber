@@ -19,6 +19,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Jeu hors ligne : `sw.js` met le jeu en cache après la première visite (réseau d'abord, cache en secours)
 - Étoiles : chaque dessin vaut de 1 à 5 étoiles selon sa difficulté (cases × couleurs), gagnées quand il est terminé
 - Magasin : les étoiles se dépensent en avatars (12), cadres d'avatar (9) et tableaux de fond pour dessiner (10) ; achats enregistrés par joueur (`cpn.shop`)
+- Replay : l'ordre des cases coloriées est gardé et rejoué (pause, vitesse ×1/×2/×4) ; en duel, les deux dessins se rejouent côte à côte (12 derniers duels gardés sur l'appareil)
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
