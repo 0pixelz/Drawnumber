@@ -312,6 +312,10 @@ body.duelplay #reset{display:none}
 .dcard{background:var(--card);border:2px solid var(--ink);border-radius:20px;box-shadow:0 4px 0 var(--ink);padding:14px;display:flex;flex-direction:column;gap:10px}
 .dcard h3{font-family:var(--display);font-weight:800;font-size:20px;margin:0;line-height:1.1}
 .dcard p{margin:0;color:var(--muted);font-weight:700;font-size:14px}
+.padcv{width:100%;max-width:300px;align-self:center;border:2px solid var(--ink);border-radius:12px;touch-action:none;display:block;image-rendering:auto}
+.padsw{display:flex;flex-wrap:wrap;gap:7px;justify-content:center}
+.psw{width:34px;height:34px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 2px var(--line);padding:0}
+.psw.on{box-shadow:0 0 0 3px var(--ink)}
 .dcode{font-family:var(--display);font-weight:800;font-size:54px;letter-spacing:.12em;text-align:center;line-height:1;font-variant-numeric:tabular-nums}
 .dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
 .dcard input{font-size:26px;text-align:center;letter-spacing:.2em;font-family:var(--display)}
@@ -2154,11 +2158,11 @@ function renderGallery(){
     const card = (title, text) => { const c = el("div","dcard"); c.append(el("h3",null,title), el("p",null,text)); g.appendChild(c); return c; };
     const B = (label, cls, fn, parent) => { const b = el("button","btn "+cls, label); b.type = "button"; b.onclick = fn; parent.appendChild(b); return b; };
     if(lob.view==="host"){
-      const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code)); c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c);
+      const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code)); c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else if(lob.view==="joining"){
-      const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c);
+      const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else if(lob.view==="seek"){
-      const c = card("Recherche d'un joueur","On cherche quelqu'un qui veut jouer en ce moment. Si personne ne répond en 15 secondes, tu joueras contre le robot."); B("Annuler","ghost",()=>lobReset(""),c);
+      const c = card("Recherche d'un joueur","On cherche quelqu'un qui veut jouer en ce moment. Si personne ne répond en 15 secondes, tu joueras contre le robot."); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else {
       const c1 = card("Jouer avec un ami","Crée une partie et donne le code, ou entre le code de ton ami.");
       B("Créer une partie","pink",duelCreate,c1);
@@ -2516,6 +2520,42 @@ function Net(room, onMsg, onOpen, onErr){
     close(){ dead = true; clearInterval(hb); try{ ws.close(); }catch(e){} }
   };
 }
+/* Petit coloriage libre pour patienter pendant la recherche d'un adversaire */
+let pad = null;
+const PAD_COLS = ["#e03131","#ff922b","#ffd43b","#2f9e44","#4dabf7","#7048e8","#f783ac","#8b5a2b","#1d1b3a","#ffffff"];
+function miniPad(host){
+  const pool = BUILTIN.filter(d=>d.cat==="formes");
+  if(!pad){ const d = pool[Math.floor(Math.random()*pool.length)]; pad = {d, cells:new Array(d.cells.length).fill(null), col:PAD_COLS[0]}; }
+  const c = el("div","dcard"); c.append(el("h3",null,"En attendant, colorie !"), el("p",null,"Pas de numéros ici : choisis une couleur et glisse ton doigt sur le dessin."));
+  const cv = el("canvas","padcv"), K = 20; cv.width = pad.d.cols*K; cv.height = pad.d.rows*K; cv.setAttribute("aria-label","Petit dessin à colorier librement");
+  const x = cv.getContext("2d");
+  const paint = () => {
+    const d = pad.d; x.fillStyle = "#ffffff"; x.fillRect(0,0,cv.width,cv.height);
+    for(let i=0;i<d.cells.length;i++) if(pad.cells[i]){ x.fillStyle = pad.cells[i]; x.fillRect((i%d.cols)*K, Math.floor(i/d.cols)*K, K, K); }
+    x.fillStyle = "rgba(29,27,58,.07)"; for(let k=1;k<d.cols;k++) x.fillRect(k*K,0,1,cv.height); for(let k=1;k<d.rows;k++) x.fillRect(0,k*K,cv.width,1);
+    x.fillStyle = "#1d1b3a";
+    for(let i=0;i<d.cells.length;i++){ const cx = i%d.cols, cy = Math.floor(i/d.cols), a = d.cells[i];
+      if(cx<d.cols-1 && d.cells[i+1]!==a) x.fillRect((cx+1)*K-1.5, cy*K, 3, K);
+      if(cy<d.rows-1 && d.cells[i+d.cols]!==a) x.fillRect(cx*K, (cy+1)*K-1.5, K, 3); }
+  };
+  let down = false, lastP = null;
+  const dab1 = (fx,fy) => { const cx = Math.floor(fx*pad.d.cols), cy = Math.floor(fy*pad.d.rows);
+    if(cx<0||cy<0||cx>=pad.d.cols||cy>=pad.d.rows) return false; const i = cy*pad.d.cols+cx, v = pad.col==="#ffffff" ? null : pad.col; if(pad.cells[i]===v) return false; pad.cells[i] = v; return true; };
+  const dab = e => { const r = cv.getBoundingClientRect(), fx = (e.clientX-r.left)/r.width, fy = (e.clientY-r.top)/r.height, a = lastP || [fx,fy];
+    const n = Math.max(1, Math.ceil(Math.max(Math.abs(fx-a[0])*pad.d.cols, Math.abs(fy-a[1])*pad.d.rows)*2)); let hit = false;
+    for(let k=1;k<=n;k++) if(dab1(a[0]+(fx-a[0])*k/n, a[1]+(fy-a[1])*k/n)) hit = true;      /* pas de trou quand le doigt va vite */
+    lastP = [fx,fy]; if(hit){ paint(); if(pad.col!=="#ffffff") sPaint(); } };
+  cv.addEventListener("pointerdown", e=>{ down = true; lastP = null; try{ cv.setPointerCapture(e.pointerId); }catch(err){} audio(); dab(e); e.preventDefault(); });
+  cv.addEventListener("pointermove", e=>{ if(down) dab(e); });
+  for(const ev of ["pointerup","pointercancel"]) cv.addEventListener(ev, ()=>{ down = false; });
+  const sw = el("div","padsw");
+  PAD_COLS.forEach(h=>{ const b = el("button","psw" + (h===pad.col ? " on" : "")); b.type = "button"; b.style.background = h; b.setAttribute("aria-label", h==="#ffffff" ? "Gomme" : "Couleur "+h); b.setAttribute("aria-pressed", h===pad.col);
+    b.onclick = () => { pad.col = h; sw.querySelectorAll(".psw").forEach(o=>{ o.classList.toggle("on", o===b); o.setAttribute("aria-pressed", o===b); }); }; sw.appendChild(b); });
+  const row = el("div","quick");
+  const b1 = el("button","btn ghost small","Effacer"); b1.type = "button"; b1.onclick = () => { pad.cells.fill(null); paint(); };
+  const b2 = el("button","btn ghost small","Autre dessin"); b2.type = "button"; b2.onclick = () => { let d; do{ d = pool[Math.floor(Math.random()*pool.length)]; }while(d===pad.d && pool.length>1); pad.d = d; pad.cells = new Array(d.cells.length).fill(null); cv.width = d.cols*K; cv.height = d.rows*K; paint(); };
+  row.append(b1, b2); c.append(cv, sw, row); host.appendChild(c); paint();
+}
 function duelPool(){ return BUILTIN.filter(d=>["formes","lettres","chiffres","nature"].includes(d.cat) && starsOf(d)<=2); }
 function pickDuelDrawing(){ const p = duelPool(); return p[Math.floor(Math.random()*p.length)].id; }
 function lobClear(){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; if(lob.net){ lob.net.close(); lob.net = null; } }
@@ -2566,6 +2606,7 @@ function startBot(level, note){
   beginDuel(pickDuelDrawing(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], note);
 }
 function beginDuel(drawId, opp, net, botRate, note){
+  pad = null;
   const d = BUILTIN.find(x=>x.id===drawId) || duelPool()[0];
   openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||""});
 }
