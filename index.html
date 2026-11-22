@@ -2500,9 +2500,9 @@ function renderGallery(){
     b0.append(bk, hd); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"Badges"));
     const g = el("div","grid");
-    BG.forEach(([name,desc,cur2,goal,col])=>{
+    BG.forEach(([name,desc,cur2,goal,col,art])=>{
       const got = cur2>=goal, card = el("div","card bdg" + (got ? " got" : "")); card.style.setProperty("--c", col);
-      const th = el("div","th"), cv = el("canvas"); medalArt(cv, col, got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Gagné"));
+      const th = el("div","th"), cv = el("canvas"), ad = BUILTIN.find(x=>x.id===art); if(ad) drawThumb(cv, ad, new Uint8Array(ad.cells.length), got); else medalArt(cv, col, got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Gagné"));
       const meta = el("div","meta"); meta.appendChild(el("span",null,`${Math.min(cur2,goal)} / ${goal}`));
       card.append(th, el("div","nm",name), el("small","bd",desc), barEl(Math.min(100, cur2/goal*100)), meta); g.appendChild(card);
     });
@@ -2806,16 +2806,16 @@ function shopUse(kind, id){
 const AV_LOCKED = [["W_fusee",200],["W_soucoupe",400],["W_lion",600],["W_panda",800],["W_renard",1000],["W_hibou",1500],["W_nl_pere",2000],["W_astronaute",3000],["W_noel_etoile",4000],["W_emo_cool",5000],["W_trophee",7000],["O_arcenciel",10000]];
 function badges(S){
   return [
-    ["Premier dessin","Termine un dessin.",S.fin,1,"#f0b429"],["Dix dessins","Termine 10 dessins.",S.fin,10,"#f0b429"],["Vingt-cinq dessins","Termine 25 dessins.",S.fin,25,"#f0b429"],
-    ["Cinquante dessins","Termine 50 dessins.",S.fin,50,"#f0b429"],["Cent dessins","Termine 100 dessins.",S.fin,100,"#f0b429"],
-    ["Explorateur","Complète une planète.",S.planets,1,"#7048e8"],["Voyageur","Complète 3 planètes.",S.planets,3,"#7048e8"],["Maître du monde","Complète les 6 planètes.",S.planets,6,"#7048e8"],
-    ["Rapide","Gagne 10 étoiles au chrono.",S.cStars,10,"#e8590c"],["Éclair","Gagne 36 étoiles au chrono.",S.cStars,36,"#e8590c"],
-    ["Lecteur","Colorie 10 mots.",S.words,10,"#a66a00"],["Grand lecteur","Colorie 50 mots.",S.words,50,"#a66a00"],["Lettre complète","Finis tous les mots d'une lettre.",S.letters,1,"#a66a00"],
-    ["Calculateur","Finis 3 dessins de calcul.",S.math,3,"#0c8599"],["Mathématicien","Finis 10 dessins de calcul.",S.math,10,"#0c8599"],
-    ["Artiste","Fais une création en mode libre.",S.free,1,"#c81fd0"],["Grand artiste","Fais 5 créations en mode libre.",S.free,5,"#c81fd0"],
-    ["Trois jours","Fais le dessin du jour 3 jours de suite.",S.best,3,"#2f9e44"],["Une semaine","Fais le dessin du jour 7 jours de suite.",S.best,7,"#2f9e44"],
-    ["Esprit de Noël","Termine 10 dessins de Noël.",S.noel,10,"#b3261e"],
-    ["Cinquante étoiles","Gagne 50 étoiles.",S.stars,50,"#e8a400"],["Deux cents étoiles","Gagne 200 étoiles.",S.stars,200,"#e8a400"],["Mille étoiles","Gagne 1 000 étoiles.",S.stars,1000,"#e8a400"]
+    ["Premier dessin","Termine un dessin.",S.fin,1,"#f0b429","W_eco_crayon"],["Dix dessins","Termine 10 dessins.",S.fin,10,"#f0b429","W_medaille"],["Vingt-cinq dessins","Termine 25 dessins.",S.fin,25,"#f0b429","W_artifice"],
+    ["Cinquante dessins","Termine 50 dessins.",S.fin,50,"#f0b429","W_trophee"],["Cent dessins","Termine 100 dessins.",S.fin,100,"#f0b429","W_ct_couronne"],
+    ["Explorateur","Complète une planète.",S.planets,1,"#7048e8","W_fusee"],["Voyageur","Complète 3 planètes.",S.planets,3,"#7048e8","planete"],["Maître du monde","Complète les 6 planètes.",S.planets,6,"#7048e8","W_terre"],
+    ["Rapide","Gagne 10 étoiles au chrono.",S.cStars,10,"#e8590c","W_eco_horloge"],["Éclair","Gagne 36 étoiles au chrono.",S.cStars,36,"#e8590c","F_eclair"],
+    ["Lecteur","Colorie 10 mots.",S.words,10,"#a66a00","W_eco_livre"],["Grand lecteur","Colorie 50 mots.",S.words,50,"#a66a00","W_hibou"],["Lettre complète","Finis tous les mots d'une lettre.",S.letters,1,"#a66a00","L_A"],
+    ["Calculateur","Finis 3 dessins de calcul.",S.math,3,"#0c8599","W_eco_regle"],["Mathématicien","Finis 10 dessins de calcul.",S.math,10,"#0c8599","W_robot1"],
+    ["Artiste","Fais une création en mode libre.",S.free,1,"#c81fd0","arc"],["Grand artiste","Fais 5 créations en mode libre.",S.free,5,"#c81fd0","O_arcenciel"],
+    ["Trois jours","Fais le dessin du jour 3 jours de suite.",S.best,3,"#2f9e44","W_flamme"],["Une semaine","Fais le dessin du jour 7 jours de suite.",S.best,7,"#2f9e44","W_soleil"],
+    ["Esprit de Noël","Termine 10 dessins de Noël.",S.noel,10,"#b3261e","W_noel_sapin3"],
+    ["Cinquante étoiles","Gagne 50 étoiles.",S.stars,50,"#e8a400","F_etoile"],["Deux cents étoiles","Gagne 200 étoiles.",S.stars,200,"#e8a400","W_noel_etoile"],["Mille étoiles","Gagne 1 000 étoiles.",S.stars,1000,"#e8a400","W_comete"]
   ];
 }
 function medalArt(cv, col, got){
