@@ -2,8 +2,9 @@
 
 Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée de ses icônes, sans dépendance ni étape de build.
 
-- 697 dessins intégrés : onze catégories (Pieuvres, Lettres, Chiffres, Mots, Formes, Nature, Animaux, Nourriture, Transports, Fêtes et jeux, Mes photos) et six planètes de 10 dessins
-- Sous-catégories : Animaux (Ferme, Savane et jungle, Forêt, Animaux de compagnie), Nourriture (Fruits, Légumes), Transports (Sur la route, Dans l'air et sur l'eau), Fêtes et jeux (Fêtes, Sports et jeux)
+- 751 dessins intégrés : douze catégories (Pieuvres, Lettres, Chiffres, Mots, Formes, Nature, Animaux, Nourriture, Transports, Fêtes et jeux, Découvertes, Mes photos) et six planètes de 10 dessins
+- Sous-catégories : Animaux (Ferme, Savane et jungle, Forêt, Animaux de compagnie), Nourriture (Fruits, Légumes), Transports (Sur la route, Dans l'air et sur l'eau), Fêtes et jeux (Fêtes, Sports et jeux), Découvertes (Drapeaux, Émotions, Météo, École, Vêtements), Chiffres (0 à 9, 10 à 20)
+- Tiroir réorganisé : tuiles de modes, catégories regroupées, sous-catégories dépliables et cliquables
 - Catégorie Mots : 468 mots français faciles classés par lettre initiale (20 par lettre, moins pour K, W, X, Y, Z), avec accents et cédille
 - Mode Monde : planètes à thème (Eau, Jardin, Glace, Feu, Bonbons, Cosmos), 100 points par dessin, 1 000 points par planète complétée, déblocage après 3 dessins
 - Import d'une photo, convertie en grille numérotée (taille et nombre de couleurs au choix)
