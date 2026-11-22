@@ -199,7 +199,7 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 .bar{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--c);border-radius:6px}
 .card.done .bar i{background:var(--good)}
-.del{border:0;background:none;color:var(--muted);font-weight:800;font-size:12px;padding:2px 0;text-decoration:underline}
+.del{border:0;background:none;color:#b3261e;font-weight:800;font-size:13px;padding:6px 0 6px 8px;text-decoration:underline;white-space:nowrap}
 .empty{grid-column:1/-1;color:var(--muted);font-weight:700;padding:12px 0;margin:0}
 @media (hover:hover){.card:hover,.tile:hover,.feature:hover{transform:translateY(-2px)} .nv:hover{background:#322f61} .nv.on:hover{background:var(--c)}}
 @media (min-width:700px){
@@ -1870,7 +1870,7 @@ function logStar(kind, ref, n){
   starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
 }
 const catColor = key => { const p = PLANETS.find(q=>q.key===key); return p ? p.c : (CATS.find(c=>c[0]===key) || CATS[0])[2]; };
-function makeCard(it, wideCard){
+function makeCard(it, wideCard, clearBtn){
   const d = it.d, card = document.createElement("div");
   card.className = "card" + (it.pct===100 ? " done" : "");
   card.style.setProperty("--c", catColor(catOf(d)));
@@ -1887,7 +1887,14 @@ function makeCard(it, wideCard){
   sr.setAttribute("aria-label", it.pct===100 ? `${starsOf(d)} étoiles gagnées` : `${starsOf(d)} étoiles à gagner`);
   const info = document.createElement("span"); info.textContent = `${d.palette.length} couleurs · ${it.st.tot} cases`;
   meta.appendChild(info);
-  if(d.custom){
+  if(clearBtn) info.textContent = `${it.st.ok} / ${it.st.tot} cases`;
+  if(clearBtn){            /* retire le dessin des dessins en cours : sa progression est effacée */
+    const rm = el("button","del","Supprimer"); rm.type = "button"; rm.setAttribute("aria-label", `Supprimer la progression de ${d.name}`);
+    rm.onclick = e => { e.stopPropagation();
+      if(rm.dataset.sure){ store.del("cpn.p."+d.id); if(store.get("cpn.last","")===d.id) store.del("cpn.last"); renderGallery(); }
+      else { rm.dataset.sure = 1; rm.textContent = "Tout effacer ?"; setTimeout(()=>{ if(rm.isConnected){ delete rm.dataset.sure; rm.textContent = "Supprimer"; } }, 3000); } };
+    meta.appendChild(rm);
+  } else if(d.custom){
     const del = document.createElement("button"); del.className = "del"; del.type = "button"; del.textContent = "Supprimer";
     del.onclick = e => {
       e.stopPropagation();
@@ -2297,8 +2304,9 @@ function renderGallery(){
     lh.append(bk, el("span","eyebrow", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins à finir" : "dessin à finir"}` : "Rien à finir")); sec.appendChild(lh);
     const g = el("div","grid");
     if(!ongoing.length) g.appendChild(el("p","empty","Tu n'as aucun dessin commencé. Dès que tu colories une case d'un dessin sans le finir, il apparaît ici."));
-    ongoing.forEach(i=>g.appendChild(makeCard(i)));
-    blk.append(sec, g); pg.appendChild(blk);
+    ongoing.forEach(i=>g.appendChild(makeCard(i, false, true)));
+    blk.append(sec, g); if(ongoing.length) blk.appendChild(el("p","empty","« Supprimer » efface ce que tu as colorié sur ce dessin. Le dessin reste disponible dans sa catégorie."));
+    pg.appendChild(blk);
     return;
   }
 
