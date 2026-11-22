@@ -265,7 +265,12 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 #win.on{display:flex}
 .side{display:flex;flex-direction:column;background:var(--card);border-top:2px solid var(--line)}
 .tools{display:flex;gap:8px;padding:8px calc(12px + var(--sr)) 0 calc(12px + var(--sl));align-items:center}
-.tools .hint{flex:1;color:var(--muted);font-size:13px;font-weight:700;min-width:0}
+.tools{flex-wrap:wrap}
+.tools .hint{flex:1 0 100%;color:var(--muted);font-size:13px;font-weight:700;min-width:0}
+.tools .btn{flex:1 1 auto}
+.tools .btn[hidden]{display:none}
+.tools .btn.on{background:var(--ink);color:#fff}
+.tools .btn:disabled{opacity:.4}
 #pal{display:flex;gap:10px;overflow-x:auto;padding:10px calc(12px + var(--sr)) calc(12px + var(--sb)) calc(12px + var(--sl));scrollbar-width:none}
 #pal::-webkit-scrollbar{display:none}
 .chip{flex:0 0 auto;width:52px;height:52px;border-radius:50%;border:3px solid var(--card);box-shadow:0 0 0 2px var(--line);font-family:var(--display);font-weight:800;font-size:20px;position:relative;padding:0;font-variant-numeric:tabular-nums}
@@ -305,6 +310,16 @@ body.chrono #reset{display:none}
 .lvl .stars.none{color:var(--line)}
 .lvl.lock{opacity:.55;cursor:default}
 .lvl.lock:active{transform:none;box-shadow:0 4px 0 var(--ink)}
+
+.bdg{cursor:default}
+.bdg:active{transform:none;box-shadow:0 4px 0 var(--ink)}
+.bdg .th canvas{background:#eceaf5}
+.bdg:not(.got){opacity:.75}
+.bdg .bd{font-size:12px;font-weight:700;color:var(--muted);line-height:1.25}
+.feature.daily{background:#ebfbee}
+.av{position:relative}
+.av.lock canvas{filter:grayscale(1);opacity:.45}
+.av .cost{position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:#fff;font-size:11px;font-weight:800;padding:2px 0;text-align:center;font-variant-numeric:tabular-nums}
 
 /* Mode libre */
 .ftools{display:none;flex-direction:column;gap:7px;padding:8px calc(12px + var(--sr)) 0 calc(12px + var(--sl))}
@@ -419,7 +434,9 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
     <div class="side">
       <div class="tools">
         <span class="hint" id="hint"></span>
-        <button class="btn ghost small" id="find" type="button">Trouver une case</button>
+        <button class="btn ghost small" id="blink" type="button">Indice</button>
+        <button class="btn ghost small" id="wand" type="button"></button>
+        <button class="btn ghost small" id="find" type="button">Trouver</button>
         <button class="btn ghost small" id="fit" type="button">Recentrer</button>
       </div>
       <div class="ftools" id="ftools">
@@ -1609,6 +1626,42 @@ Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach((w,j)=> BUILTIN.push(wordDra
 let motL = store.get("cpn.motL", "A");
 if(!WORDS[motL]) motL = "A";
 
+/* ----- Mots en images : le dessin, avec son mot à colorier dessous ----- */
+const IMG_WORDS = {CHAT:"chat",CHIEN:"W_chien",LAPIN:"W_lapin",LION:"W_lion",OURS:"W_oursbrun",LOUP:"W_loup",RENARD:"W_renard",SINGE:"W_singe",TIGRE:"W_tigre",VACHE:"W_vache","ÂNE":"W_ane",HIBOU:"W_hibou",KOALA:"W_koala","ZÈBRE":"W_zebre",
+  CANARD:"W_canard",COCHON:"W_cochon",CHEVAL:"W_cheval",GIRAFE:"W_girafe",TORTUE:"W_tortue",POISSON:"W_poisson1",MOUTON:"W_mouton",POULE:"W_poule",SOURIS:"W_souris",HAMSTER:"W_hamster",ABEILLE:"W_abeille",DRAGON:"W_dragon",
+  AVION:"W_avion",AUTO:"W_auto",AUTOBUS:"W_autobus",CAMION:"W_camion",TRAIN:"W_train",BATEAU:"W_bateau",
+  POMME:"W_pomme",POIRE:"W_poire",ORANGE:"W_orange",BANANE:"W_banane",FRAISE:"W_fraise",CERISE:"W_cerises",CITRON:"W_citron",RAISIN:"W_raisin",CAROTTE:"W_carotte",TOMATE:"W_tomate","GÂTEAU":"W_gateau",BONBON:"W_bonbon",
+  FLEUR:"fleur",TULIPE:"W_tulipe",ARBRE:"W_pommier",SAPIN:"W_sapin",LUNE:"W_lune",SOLEIL:"W_soleil","ÉTOILE":"F_etoile",NUAGE:"W_met_nuage",PLUIE:"W_met_pluie",NEIGE:"W_met_neige",FEU:"W_feucamp",
+  MAISON:"W_noel_chalet",CADEAU:"W_cadeau",ROBOT:"W_robot1",IGLOO:"W_igloo",ROBE:"W_vet_robe",LIVRE:"W_eco_livre",CRAYON:"W_eco_crayon",BOTTE:"W_vet_botte","DÉ":"W_de"};
+function pictureWord(w, src){
+  const L = [...w].map(ch=>{ const n = ch.normalize("NFD"); return {g: FONT[n[0]].replace(/ /g,""), a: n[1] && ACCENTS[n[1]] ? ACCENTS[n[1]].replace(/ /g,"") : null, c: n[1]==="̧"}; });
+  const top = L.some(l=>l.a) ? 2 : 0, bot = L.some(l=>l.c) ? 1 : 0, ww = L.length*6-1;
+  const cols = Math.max(src.cols, ww+2), ox = Math.floor((cols-src.cols)/2), wx = Math.floor((cols-ww)/2), wy = src.rows+1, rows = wy+top+7+bot+1;
+  const palette = src.palette.concat(L.map((l,k)=>WCOLS[(k*3+w.length)%WCOLS.length]));
+  let cells = "";
+  for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
+    if(y<src.rows){ const sx = x-ox; cells += (sx>=0 && sx<src.cols) ? src.cells[y*src.cols+sx] : "."; continue; }
+    const xx = x-wx, yy = y-wy, k = Math.floor(xx/6), gx = xx-k*6; let ch = ".";
+    if(xx>=0 && k<L.length && gx<5 && yy>=0 && yy<top+7+bot){ const l = L[k], lit = yy<top ? (l.a && l.a[yy*5+gx]==="1") : yy>=top+7 ? (l.c && gx===2) : l.g[(yy-top)*5+gx]==="1"; if(lit) ch = CH[src.palette.length+k]; }
+    cells += ch;
+  }
+  return {id:"I_"+w, name:w, word:w, cat:"imagier", cols, rows, palette, cells};
+}
+Object.keys(IMG_WORDS).forEach(w=>{ const src = BUILTIN.find(d=>d.id===IMG_WORDS[w]); if(src && src.palette.length+[...w].length<=CH.length) BUILTIN.push(pictureWord(w, src)); });
+
+/* ----- Calcul : les cases montrent une opération au lieu du numéro ----- */
+let mathMode = null;
+const MATH_SETS = [
+  ["add","Additions","Chaque case cache une addition.",["F_cercle","F_carre","F_triangle","F_etoile","F_losange","F_rectangle","F_ovale","F_hexagone","F_lune"]],
+  ["sub","Soustractions","Chaque case cache une soustraction.",["N_0","N_1","N_2","N_3","N_4","N_5","N_6","N_7","N_8","N_9"]],
+  ["mix","Additions et soustractions","Les deux sont mélangées.",["coeur","O_bebe","L_A","L_B","L_C","L_D","L_E","L_F"]]
+];
+function exprOf(i, n){
+  const h = (Math.imul(i+7, 2654435761)>>>0) % 97;
+  if(mathMode==="add" || (mathMode==="mix" && h%2)){ const a = h%(n+1); return a+"+"+(n-a); }
+  const b = h % Math.max(1, 11-n); return (n+b)+"−"+b;
+}
+
 /* ----- Mode Monde ----- */
 const PLANETS = [
   {key:"eau", name:"Planète Eau", desc:"Poissons et créatures de la mer", c:"#1c7ed6", art:["#3aa7e0","#1c7ed6","#c9efff"]},
@@ -1632,23 +1685,23 @@ function planetArt(cv, p, locked, seed){
   }
 }
 
-const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
+const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["imagier","Mots en images","#a61e4d"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
 let filt = "tous", subSel = "", openCat = null;
-const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
+const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
 /* ---------- Données ---------- */
 let customs = store.get("cpn.custom", []);
 const all = () => BUILTIN.concat(customs);
-function loadDone(d){
-  const n = d.cols*d.rows, a = new Uint8Array(n), s = store.get("cpn.p."+d.id, "");
+function loadDone(d, math){
+  const n = d.cols*d.rows, a = new Uint8Array(n), s = store.get((math ? "cpn.pm." : "cpn.p.")+d.id, "");
   if(typeof s === "string" && s.length === n) for(let i=0;i<n;i++) a[i] = s.charCodeAt(i)===49 ? 1 : 0;
   return a;
 }
-function saveDone(d, a){ if(chrono) return; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set("cpn.p."+d.id, s); }
+function saveDone(d, a, math){ if(chrono) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); }
 function stats(d, done){
   let tot=0, ok=0;
   for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== "."){ tot++; if(done[i]) ok++; }
@@ -1725,7 +1778,15 @@ function renderGallery(){
   const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
   world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
   const cStars = LEVELS.reduce((a,l)=>a+((chronoRes[l.i]||{}).s||0), 0);
-  const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS;
+  dailyPick(items);
+  const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS + bonus;
+  lastScore = score;
+  const wordItems = items.filter(i=>i.d.cat==="mots" || i.d.word);
+  STATE = {fin, planets: world.filter(w=>w.full).length, cStars, words: wordItems.filter(i=>i.pct===100).length,
+    letters: Object.keys(WORDS).filter(k=>{ const l = items.filter(i=>i.d.letter===k); return l.length && l.every(i=>i.pct===100); }).length,
+    math: [].concat(...MATH_SETS.map(m=>m[3])).filter(id=>{ const d = BUILTIN.find(x=>x.id===id); if(!d) return false; const st = stats(d, loadDone(d, true)); return st.ok===st.tot; }).length,
+    free: flist.length, best: Math.max(streak.best||0, streakNow()), noel: byCat("noel").filter(i=>i.pct===100).length};
+  const BG = badges(STATE), nBadges = BG.filter(b=>b[2]>=b[3]).length;
   $("ovPill").textContent = `★ ${fmt(score)}`;
   $("ovPill").setAttribute("aria-label", `${score} points`);
   drawThumb($("meCv"), avatarOf(me), null, true);
@@ -1745,6 +1806,8 @@ function renderGallery(){
   [["monde","Monde",`★ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
    ["chrono","Chrono",`★ ${cStars} / ${LEVELS.length*3} étoiles`,"#e8590c",'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/>',page==="chrono"],
    ["libre","Libre","Tes couleurs","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',page==="libre"],
+   ["calcul","Calcul","Additions, soustractions","#0c8599",'<path d="M5 8h6M8 5v6M13.5 8h5.5M5 16.5h6M13.5 15l5 3M18.5 15l-5 3"/>',page==="calcul"],
+   ["trophees","Trophées",`${nBadges} / ${BG.length} gagnés`,"#f0b429",'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4c0 3 1.5 4 3 4M17 6h3c0 3-1.5 4-3 4M12 14v4M8.5 20h7"/>',page==="trophees"],
    ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"]
   ].forEach(([key,label,sub,color,path,on])=>{
     const b = el("button","md" + (on ? " on" : "")); b.type = "button"; b.style.setProperty("--c", color); if(on) b.setAttribute("aria-current","page");
@@ -1795,6 +1858,17 @@ function renderGallery(){
       const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(score)} points`));
       hl.append(hc, hx); pg.appendChild(hl);
     }
+    const dd = items.find(i=>i.d.id===daily.id);
+    if(dd){
+      const dc = el("div","feature daily"); dc.tabIndex = 0; dc.setAttribute("role","button"); dc.style.setProperty("--c", "#2f9e44");
+      const dcv = el("canvas"); drawThumb(dcv, dd.d, dd.done, dd.st.ok===0);
+      const dx = el("div","fx"), sn = streakNow();
+      dx.append(el("span","eyebrow","Dessin du jour"), el("h3",null,dd.d.name), el("span","inf", daily.done ? `Terminé aujourd'hui · série de ${sn} ${sn>1 ? "jours" : "jour"}` : `+${DAILY_PTS} points · série actuelle : ${sn} ${sn>1 ? "jours" : "jour"}`));
+      const db = el("button","btn" + (daily.done ? " ghost" : ""), daily.done ? "✓ Fait" : "Colorier"); db.type = "button"; dx.appendChild(db);
+      dc.append(dcv, dx); dc.onclick = () => openDrawing(dd.d);
+      dc.onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); openDrawing(dd.d); } };
+      pg.appendChild(dc);
+    }
     /* À la une : reprendre ou commencer */
     const last = store.get("cpn.last", "");
     const prog = items.filter(i=>i.st.ok>0 && i.pct<100).sort((a,b)=>(b.d.id===last)-(a.d.id===last) || b.pct-a.pct);
@@ -1813,7 +1887,9 @@ function renderGallery(){
     const b1 = el("button","btn pink","Importer une photo"); b1.type = "button"; b1.onclick = () => $("file").click();
     const b2 = el("button","btn line","Dessin au hasard"); b2.type = "button";
     b2.onclick = () => { const pool = items.filter(i=>i.pct<100); const pick = (pool.length ? pool : items)[Math.floor(Math.random()*(pool.length||items.length))]; openDrawing(pick.d); };
-    q.append(b1, b2);
+    const b3 = el("button","btn line","Calcul"); b3.type = "button"; b3.onclick = () => setPage("calcul");
+    const b4 = el("button","btn line",`Trophées ${nBadges} / ${BG.length}`); b4.type = "button"; b4.onclick = () => setPage("trophees");
+    q.append(b1, b2, b3, b4);
     const top = el("div","block"); top.append(f, q); pg.appendChild(top);
     const bn = el("button","wbanner"); bn.type = "button";
     const pl = el("span","pl"); world.forEach((w,i)=>{ const c = el("canvas"); planetArt(c, w.p, !w.open, i+1); pl.appendChild(c); });
@@ -1887,6 +1963,62 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Trophées */
+  if(page === "trophees"){
+    $("abTitle").textContent = "Trophées";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes trophées"), el("b",null,`${nBadges} / ${BG.length}`));
+    hd.append(sc, el("p",null,`Tu as ★ ${fmt(score)} points. Les points ouvrent de nouveaux avatars, à choisir dans ton profil (ton avatar en haut à droite).`));
+    b0.append(bk, hd); pg.appendChild(b0);
+    const b1 = el("div","block"); b1.appendChild(el("h2",null,"Badges"));
+    const g = el("div","grid");
+    BG.forEach(([name,desc,cur2,goal,col])=>{
+      const got = cur2>=goal, card = el("div","card bdg" + (got ? " got" : "")); card.style.setProperty("--c", col);
+      const th = el("div","th"), cv = el("canvas"); medalArt(cv, col, got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Gagné"));
+      const meta = el("div","meta"); meta.appendChild(el("span",null,`${Math.min(cur2,goal)} / ${goal}`));
+      card.append(th, el("div","nm",name), el("small","bd",desc), barEl(Math.min(100, cur2/goal*100)), meta); g.appendChild(card);
+    });
+    b1.appendChild(g); pg.appendChild(b1);
+    const b2 = el("div","block"); b2.appendChild(el("h2",null,"Avatars à débloquer"));
+    const g2 = el("div","grid");
+    AV_LOCKED.forEach(([id,cost])=>{
+      const d = BUILTIN.find(x=>x.id===id); if(!d) return; const got = score>=cost;
+      const card = el("div","card bdg" + (got ? " got" : "")); card.style.setProperty("--c", "#f0b429");
+      const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, new Uint8Array(d.cells.length), got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Ouvert"));
+      const meta = el("div","meta"); meta.appendChild(el("span",null,`★ ${fmt(Math.min(score,cost))} / ${fmt(cost)}`));
+      card.append(th, el("div","nm",d.name), barEl(Math.min(100, score/cost*100)), meta); g2.appendChild(card);
+    });
+    b2.appendChild(g2); pg.appendChild(b2);
+    return;
+  }
+
+  /* Calcul */
+  if(page === "calcul"){
+    $("abTitle").textContent = "Calcul";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"); hd.appendChild(el("p",null,"Ici, les cases ne montrent pas le numéro de la couleur, mais un calcul. Trouve le résultat, choisis la couleur qui porte ce numéro, puis colorie la case. Aucune aide : il faut compter !"));
+    b0.append(bk, hd); pg.appendChild(b0);
+    for(const [mode, title, desc, ids] of MATH_SETS){
+      const blk = el("div","block"), sh = el("div","sec"); sh.append(el("h2",null,title), el("span","eyebrow",desc)); blk.appendChild(sh);
+      const g = el("div","grid");
+      ids.map(id=>BUILTIN.find(d=>d.id===id)).filter(Boolean).forEach(d=>{
+        const dn = loadDone(d, true), st = stats(d, dn), pct = st.ok===st.tot ? 100 : st.ok>0 ? Math.max(1, Math.floor(st.ok/st.tot*100)) : 0;
+        const card = el("div","card" + (pct===100 ? " done" : "")); card.style.setProperty("--c", "#0c8599"); card.tabIndex = 0; card.setAttribute("role","button");
+        const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, dn, st.ok===0); th.appendChild(cv);
+        if(st.ok>0) th.appendChild(el("span","badge", pct===100 ? "✓ Terminé" : pct+" %"));
+        const meta = el("div","meta"); meta.appendChild(el("span",null,`Résultats de 1 à ${d.palette.length} · ${st.tot} cases`));
+        card.append(th, el("div","nm",d.name), barEl(pct), meta);
+        card.onclick = () => openDrawing(d, null, mode);
+        card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDrawing(d, null, mode); } };
+        g.appendChild(card);
+      });
+      blk.appendChild(g); pg.appendChild(blk);
+    }
     return;
   }
 
@@ -2107,6 +2239,49 @@ function drawSparks(){
   if(sparks.length) draw();
 }
 
+/* ---------- Dessin du jour, série, trophées ---------- */
+const DAILY_PTS = 50;
+const ymd = d => d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const today = () => ymd(new Date());
+const dayBefore = t => { const d = new Date(t+"T12:00:00"); d.setDate(d.getDate()-1); return ymd(d); };
+let daily = store.get("cpn.daily", null), streak = store.get("cpn.streak", {last:"", n:0, best:0}), bonus = store.get("cpn.bonus", 0), lastScore = 0, STATE = null;
+const streakNow = () => (streak.last===today() || streak.last===dayBefore(today())) ? streak.n : 0;
+function dailyPick(items){
+  const t = today(); if(daily && daily.date===t && BUILTIN.some(d=>d.id===daily.id)) return;
+  const pool = items.filter(i=>!i.d.custom && !["mots","imagier","lettres","chiffres"].includes(catOf(i.d)) && !PLANETS.some(p=>p.key===i.d.cat));
+  let h = 0; for(const c of t) h = (h*31+c.charCodeAt(0))>>>0;
+  let pick = pool[h%pool.length]; for(let n=0;n<pool.length;n++){ const c = pool[(h+n)%pool.length]; if(c.pct<100){ pick = c; break; } }
+  daily = {date:t, id:pick.d.id, done:false}; store.set("cpn.daily", daily);
+}
+function dailyWon(){
+  const t = today(); if(!daily || daily.date!==t || daily.done || !cur || cur.id!==daily.id) return false;
+  daily.done = true; store.set("cpn.daily", daily);
+  streak.n = streak.last===dayBefore(t) ? streak.n+1 : streak.last===t ? streak.n : 1; streak.last = t; streak.best = Math.max(streak.best||0, streak.n); store.set("cpn.streak", streak);
+  bonus += DAILY_PTS; store.set("cpn.bonus", bonus);
+  $("winTxt").textContent = `Dessin du jour terminé ! +${DAILY_PTS} points · série de ${streak.n} ${streak.n>1 ? "jours" : "jour"}`;
+  return true;
+}
+const AV_LOCKED = [["W_fusee",200],["W_soucoupe",400],["W_lion",600],["W_panda",800],["W_renard",1000],["W_hibou",1500],["W_nl_pere",2000],["W_astronaute",3000],["W_noel_etoile",4000],["W_emo_cool",5000],["W_trophee",7000],["O_arcenciel",10000]];
+function badges(S){
+  return [
+    ["Premier dessin","Termine un dessin.",S.fin,1,"#f0b429"],["Dix dessins","Termine 10 dessins.",S.fin,10,"#f0b429"],["Vingt-cinq dessins","Termine 25 dessins.",S.fin,25,"#f0b429"],
+    ["Cinquante dessins","Termine 50 dessins.",S.fin,50,"#f0b429"],["Cent dessins","Termine 100 dessins.",S.fin,100,"#f0b429"],
+    ["Explorateur","Complète une planète.",S.planets,1,"#7048e8"],["Voyageur","Complète 3 planètes.",S.planets,3,"#7048e8"],["Maître du monde","Complète les 6 planètes.",S.planets,6,"#7048e8"],
+    ["Rapide","Gagne 10 étoiles au chrono.",S.cStars,10,"#e8590c"],["Éclair","Gagne 36 étoiles au chrono.",S.cStars,36,"#e8590c"],
+    ["Lecteur","Colorie 10 mots.",S.words,10,"#a66a00"],["Grand lecteur","Colorie 50 mots.",S.words,50,"#a66a00"],["Lettre complète","Finis tous les mots d'une lettre.",S.letters,1,"#a66a00"],
+    ["Calculateur","Finis 3 dessins de calcul.",S.math,3,"#0c8599"],["Mathématicien","Finis 10 dessins de calcul.",S.math,10,"#0c8599"],
+    ["Artiste","Fais une création en mode libre.",S.free,1,"#c81fd0"],["Grand artiste","Fais 5 créations en mode libre.",S.free,5,"#c81fd0"],
+    ["Trois jours","Fais le dessin du jour 3 jours de suite.",S.best,3,"#2f9e44"],["Une semaine","Fais le dessin du jour 7 jours de suite.",S.best,7,"#2f9e44"],
+    ["Esprit de Noël","Termine 10 dessins de Noël.",S.noel,10,"#b3261e"]
+  ];
+}
+function medalArt(cv, col, got){
+  cv.width = cv.height = 16; const c = cv.getContext("2d"), m = got ? col : "#b9b5db", d = got ? mix(col,INK,.45) : "#8a87a8", l = got ? mix(col,"#ffffff",.5) : "#d5d2ea";
+  const px = (x,y,w,h,k) => { c.fillStyle = k; c.fillRect(x,y,w,h); };
+  px(4,0,3,6,got ? "#1c7ed6" : "#a09dbc"); px(9,0,3,6,got ? "#e03131" : "#8f8cab");
+  for(let y=0;y<16;y++) for(let x=0;x<16;x++){ const r = H(x+.5-8, y+.5-10); if(r<5.6) px(x,y,1,1, r>4.4 ? d : r<2.2 ? l : m); }
+}
+
 /* ---------- Mode chrono ---------- */
 const CHRONO_DEF = [
   ["Formes", ["F_cercle","F_carre","F_losange","F_triangle","F_ovale","F_etoile"]],
@@ -2176,7 +2351,7 @@ function saveFree(){
   if(!flist.includes(cur.id)){ flist.unshift(cur.id); store.set("cpn.flist", flist); }
 }
 function openFree(d){
-  stopChrono(); chrono = null; chronoUI();
+  stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay");
   free = true; document.body.classList.add("freeplay");
   sparks = []; undoS = []; cur = d; fcol = loadFree(d); done = new Uint8Array(d.cells.length); left = []; sel = -1;
   idx = new Int8Array(d.cells.length);
@@ -2300,11 +2475,13 @@ const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
 let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=0, dpr=1, raf=0;
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
-function openDrawing(d, ch){
-  stopChrono(); chrono = ch || null;
+function openDrawing(d, ch, math){
+  stopChrono(); chrono = ch || null; mathMode = math || null; document.body.classList.toggle("mathplay", !!mathMode);
+  wandLeft = 3; wandOn = false; blinkT = 0;
   free = false; document.body.classList.remove("freeplay");
-  $("winTxt").textContent = d.cat==="mots" ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = d.cat!=="mots" || !canSpeak;
-  sparks = []; cur = d; done = chrono ? new Uint8Array(d.cols*d.rows) : loadDone(d); if(!chrono) store.set("cpn.last", d.id);
+  const isWord = d.cat==="mots" || !!d.word;
+  $("winTxt").textContent = isWord ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = !isWord || !canSpeak;
+  sparks = []; cur = d; done = chrono ? new Uint8Array(d.cols*d.rows) : loadDone(d, !!mathMode); if(!chrono && !mathMode) store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
   for(let i=0;i<d.cells.length;i++){
@@ -2312,8 +2489,8 @@ function openDrawing(d, ch){
     if(idx[i]>=0 && !done[i]) left[idx[i]]++;
   }
   sel = Math.max(0, left.findIndex(n=>n>0));
-  $("pname").textContent = d.name;
-  show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI();
+  $("pname").textContent = mathMode ? "Calcul · "+d.name : d.name;
+  show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI(); updateTools();
 }
 function resize(){
   const r = stage.getBoundingClientRect();
@@ -2339,20 +2516,21 @@ function paintFrame(){
   const x0 = Math.max(0, Math.floor(-view.x/s)), x1 = Math.min(cols, Math.ceil((W-view.x)/s));
   const y0 = Math.max(0, Math.floor(-view.y/s)), y1 = Math.min(rows, Math.ceil((Hh-view.y)/s));
   if(free){ drawFree(x0,x1,y0,y1); drawSparks(); return; }
-  const nums = s >= 13;
+  const nums = s >= (mathMode ? 17 : 13), now = performance.now(), blinking = now < blinkT, flash = blinking && Math.floor(now/240)%2===0;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.font = `800 ${Math.min(22, s*.5)}px Nunito, system-ui, sans-serif`;
+  ctx.font = `800 ${mathMode ? Math.min(20, s*.36) : Math.min(22, s*.5)}px Nunito, system-ui, sans-serif`;
   for(let y=y0;y<y1;y++) for(let x=x0;x<x1;x++){
     const i = y*cols+x, p = idx[i]; if(p<0) continue;
     const X = view.x+x*s, Y = view.y+y*s, col = cur.palette[p];
     if(done[i]){ ctx.fillStyle = col; ctx.fillRect(X-.3, Y-.3, s+.6, s+.6); continue; }
-    const hot = p===sel;
-    ctx.fillStyle = hot ? "#8f8aa8" : greyOf(col);
+    const hot = p===sel && !mathMode;
+    ctx.fillStyle = hot ? (flash ? "#ffd43b" : "#8f8aa8") : greyOf(col);
     ctx.fillRect(X, Y, s, s);
     ctx.strokeStyle = "rgba(29,27,58,.14)"; ctx.lineWidth = 1;
     ctx.strokeRect(X+.5, Y+.5, s-1, s-1);
-    if(nums){ ctx.fillStyle = hot ? "#fff" : "rgba(29,27,58,.62)"; ctx.fillText(p+1, X+s/2, Y+s/2+1); }
+    if(nums){ ctx.fillStyle = hot ? (flash ? "#1d1b3a" : "#fff") : "rgba(29,27,58,.62)"; ctx.fillText(mathMode ? exprOf(i, p+1) : p+1, X+s/2, Y+s/2+1); }
   }
+  if(blinking) draw();
   ctx.strokeStyle = "#1d1b3a"; ctx.lineWidth = 2;
   ctx.strokeRect(view.x-1, view.y-1, cols*s+2, rows*s+2);
   drawSparks();
@@ -2376,7 +2554,7 @@ function refreshChips(){
     b.setAttribute("aria-label", `Couleur ${i+1}, ${left[i]} cases restantes`);
     if(left[i]>0){ const sm = document.createElement("small"); sm.textContent = left[i]; b.appendChild(sm); }
   });
-  $("hint").textContent = left[sel]>0 ? `Couleur ${sel+1} : ${left[sel]} cases` : "";
+  $("hint").textContent = wandOn ? "Baguette : touche une zone pour la colorier d'un coup." : left[sel]>0 ? (mathMode ? `Trouve les calculs qui donnent ${sel+1} : ${left[sel]} cases` : `Couleur ${sel+1} : ${left[sel]} cases`) : "";
 }
 function selectColor(i, scroll){
   sel = i; refreshChips(); draw();
@@ -2394,7 +2572,9 @@ function paintCell(i){
   done[i] = 1; left[sel]--; sparkle(i);
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done); if(chrono) chronoWin();
-    if(cur.cat === "mots"){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
+    if(cur.cat === "mots" || cur.word){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
+    if(mathMode) $("winTxt").textContent = "Bravo ! Tous tes calculs sont justes.";
+    if(!chrono && !mathMode) dailyWon();
     const pw = PLANETS.find(p=>p.key===cur.cat);
     if(pw){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
@@ -2403,7 +2583,7 @@ function paintCell(i){
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
-  clearTimeout(saveT); if(!chrono){ const c = cur, dn = done; saveT = setTimeout(()=>saveDone(c, dn), 250); }
+  clearTimeout(saveT); if(!chrono){ const c = cur, dn = done, mm = mathMode; saveT = setTimeout(()=>saveDone(c, dn, mm), 250); }
   if(left[sel]===0){
     const n = left.findIndex(v=>v>0);
     if(n>=0) selectColor(n, true); else refreshChips();
@@ -2411,6 +2591,21 @@ function paintCell(i){
   updateProg(); draw();
   return true;
 }
+/* Aides : indice (les cases de la couleur clignotent) et baguette (colorie toute une zone) */
+let wandLeft = 3, wandOn = false, blinkT = 0;
+function updateTools(){
+  const w = $("wand"); w.textContent = `Baguette ×${wandLeft}`; w.disabled = wandLeft<=0; w.classList.toggle("on", wandOn); w.setAttribute("aria-pressed", wandOn);
+  w.hidden = !!chrono || !!mathMode; $("blink").hidden = !!mathMode; $("find").hidden = !!mathMode;
+}
+function useWand(i){
+  const p = idx[i], seen = new Uint8Array(idx.length), st = [i], cells = []; seen[i] = 1;
+  while(st.length){ const j = st.pop(); cells.push(j); const x = j%cur.cols; for(const k of [x>0?j-1:-1, x<cur.cols-1?j+1:-1, j-cur.cols, j+cur.cols]) if(k>=0 && k<idx.length && !seen[k] && idx[k]===p && !done[k]){ seen[k] = 1; st.push(k); } }
+  if(sel!==p) selectColor(p, true);
+  cells.forEach(j=>paintCell(j));
+  wandLeft--; wandOn = false; updateTools();
+}
+$("wand").onclick = () => { if(wandLeft>0){ wandOn = !wandOn; updateTools(); refreshChips(); } };
+$("blink").onclick = () => { if(left[sel]>0){ fit(); blinkT = performance.now()+2600; draw(); } };
 function cellAt(px, py){
   const x = Math.floor((px-view.x)/view.s), y = Math.floor((py-view.y)/view.s);
   return (x<0||y<0||x>=cur.cols||y>=cur.rows) ? -1 : y*cur.cols+x;
@@ -2429,8 +2624,8 @@ stage.addEventListener("pointerdown", e=>{
     if(free){
       if(tool==="brush" || tool==="erase"){ mode = "fpaint"; pushUndo(); freeDab(i); } else mode = "pan";
     } else {
-      mode = (i>=0 && idx[i]===sel && !done[i]) ? "paint" : "pan";
-      if(mode==="paint") paintCell(i);
+      if(wandOn && i>=0 && idx[i]>=0 && !done[i]){ mode = "none"; useWand(i); }
+      else { mode = (i>=0 && idx[i]===sel && !done[i]) ? "paint" : "pan"; if(mode==="paint") paintCell(i); }
     }
   } else if(pts.size===2){
     const [a,b] = [...pts.values()];
@@ -2463,6 +2658,7 @@ function endPtr(e){
   if(mode==="pan" && moved<8 && e.type==="pointerup"){
     const i = cellAt(p.x,p.y);
     if(free){ if(i>=0 && idx[i]>=0) freeTap(i); }
+    else if(mathMode){ if(i>=0 && idx[i]>=0 && !done[i] && idx[i]!==sel){ const a = audio(); if(a) tone(150, a.currentTime, .16, .09, "sawtooth"); } }
     else if(i>=0 && idx[i]>=0 && !done[i] && idx[i]!==sel) selectColor(idx[i], true);
   }
   if(pts.size===0) mode = ""; else if(mode==="pinch") mode = "wait";
@@ -2490,11 +2686,11 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); cur = null; renderGallery(); show("home"); }
+function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
-  if(rs.dataset.sure){ delete rs.dataset.sure; rs.textContent = "Recommencer"; if(free){ pushUndo(); fcol.fill(null); freeChanged(); } else { store.del("cpn.p."+cur.id); openDrawing(cur); } }
+  if(rs.dataset.sure){ delete rs.dataset.sure; rs.textContent = "Recommencer"; if(free){ pushUndo(); fcol.fill(null); freeChanged(); } else if(chrono){ openChrono(chrono.lv); } else { store.del((mathMode ? "cpn.pm." : "cpn.p.")+cur.id); openDrawing(cur, null, mathMode); } }
   else { rs.dataset.sure = 1; rs.textContent = "Tout effacer ?"; setTimeout(()=>{ delete rs.dataset.sure; rs.textContent = "Recommencer"; }, 3000); }
 };
 window.addEventListener("resize", ()=>{ if(cur) resize(); });
@@ -2586,10 +2782,12 @@ function showLand(mode){
   $("ldGo").textContent = mode==="edit" ? "Enregistrer" : "Commencer";
   $("ldBack").hidden = !me;
   const g = $("ldAv"); g.textContent = "";
-  AVATARS.forEach(id=>{
-    const d = BUILTIN.find(x=>x.id===id); if(!d) return;
-    const b = el("button","av" + (id===ldAv ? " on" : "")); b.type = "button"; b.setAttribute("aria-label", "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
-    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c);
+  const pts = mode==="edit" ? lastScore : 0;
+  AVATARS.map(id=>[id,0]).concat(AV_LOCKED).forEach(([id,cost])=>{
+    const d = BUILTIN.find(x=>x.id===id); if(!d) return; const locked = pts<cost;
+    const b = el("button","av" + (id===ldAv ? " on" : "") + (locked ? " lock" : "")); b.type = "button"; b.disabled = locked;
+    b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} points` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
+    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c); if(locked) b.appendChild(el("span","cost","★ "+fmt(cost)));
     b.onclick = () => { ldAv = id; g.querySelectorAll(".av").forEach(x=>{ x.classList.toggle("on", x===b); x.setAttribute("aria-pressed", x===b); }); };
     g.appendChild(b);
   });
@@ -2611,6 +2809,8 @@ $("ldClose").onclick = () => { $("land").hidden = true; };
 $("meBtn").onclick = () => showLand(me ? "choose" : "create");
 
 renderGallery();
+/* Jeu hors ligne : seulement sur le vrai site, pas dans un aperçu intégré */
+try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.top===window) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
 if(!me) showLand("create"); else if(users.length>1 && !sessFlag(false)) showLand("choose");
 
 /* ---------- Écran de chargement ---------- */
