@@ -1438,14 +1438,16 @@ const WORDS = {
   Y:"YOYO YEUX YOGA YOGOURT YAOURT YAK YÉTI YOURTE YACHT".split(" "),
   Z:"ZOO ZÉRO ZÈBRE ZIGZAG ZESTE ZONE ZUT ZOOM ZÉBU ZOMBIE ZIP ZAPPER".split(" ")
 };
+/* Une couleur par lettre, jamais deux fois la même dans un mot */
+const WCOLS = ["#e03131","#f76707","#f0b400","#2f9e44","#0c8599","#1c7ed6","#5f3dc4","#c2255c","#8b5a2b","#12b886"];
 function wordDrawing(w, letter, hue){
   const L = [...w].map(ch=>{ const n = ch.normalize("NFD"); return {g: FONT[n[0]].replace(/ /g,""), a: n[1] && ACCENTS[n[1]] ? ACCENTS[n[1]].replace(/ /g,"") : null, c: n[1]==="\u0327"}; });
   const S = 2, top = L.some(l=>l.a) ? 2 : 0, bot = L.some(l=>l.c) ? 1 : 0, cols = L.length*5*S+(L.length-1)*2+2, rows = (7+top+bot)*S+2;
-  const at = (x,y) => {            // 0 = vide, 1 = première lettre, 2 = autres lettres
+  const at = (x,y) => {            // 0 = vide, sinon numéro de la lettre (1, 2, 3…)
     const xx = x-1, k = Math.floor(xx/12), gx = Math.floor((xx-k*12)/S), gy = Math.floor((y-1)/S);
     if(xx<0 || k<0 || k>=L.length || gx<0 || gx>4 || y<1 || gy<0 || gy>=7+top+bot) return 0;
     const l = L[k], lit = gy<top ? (l.a && l.a[gy*5+gx]==="1") : gy>=7+top ? (l.c && gx===2) : l.g[(gy-top)*5+gx]==="1";
-    return lit ? (k===0 ? 1 : 2) : 0;
+    return lit ? k+1 : 0;
   };
   let cells = "";
   for(let y=0;y<rows;y++) for(let x=0;x<cols;x++){
@@ -1453,9 +1455,9 @@ function wordDrawing(w, letter, hue){
     cells += v ? CH[v-1] : ".";
   }
   const name = w;
-  return {id:"M_"+w, name, cat:"mots", letter, cols, rows, palette:[hsl(hue,85,50), hsl((hue+150)%360,70,52)], cells};
+  return {id:"M_"+w, name, cat:"mots", letter, cols, rows, palette: L.map((l,k)=>WCOLS[(hue+k)%WCOLS.length]), cells};
 }
-Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach(w=> BUILTIN.push(wordDrawing(w, k, (i*47)%360))));
+Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach((w,j)=> BUILTIN.push(wordDrawing(w, k, i*3+j*7))));
 let motL = store.get("cpn.motL", "A");
 if(!WORDS[motL]) motL = "A";
 
