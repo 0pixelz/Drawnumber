@@ -258,7 +258,15 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .pet .pt b{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
 .pet .pt small{font-size:13px;font-weight:800;color:var(--muted)}
 .pet input{border:2px solid var(--line);border-radius:10px;padding:6px 8px;font:inherit;font-weight:800;width:100%;background:var(--card);color:var(--ink)}
-.fin-pet{font-weight:800;font-size:14px;color:var(--muted);margin:0}
+.fin-pet{font-weight:800;font-size:14px;color:var(--muted);margin:0;text-align:left}
+.fin-petrow{display:flex;align-items:center;justify-content:center;gap:10px}
+.fin-petrow[hidden]{display:none}
+.fin-petrow canvas{width:54px;height:54px;border-radius:14px;border:2px solid var(--ink);flex:0 0 auto;animation:petbob 1.1s ease-in-out infinite}
+@keyframes petbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes pethop{0%{transform:translateY(0) rotate(0)}30%{transform:translateY(-16px) rotate(-9deg)}60%{transform:translateY(0) rotate(7deg)}80%{transform:translateY(-5px) rotate(0)}100%{transform:none}}
+.pet canvas{animation:petbob 2.6s ease-in-out infinite;cursor:pointer}
+.pet canvas.hop{animation:pethop .65s ease}
+@media (prefers-reduced-motion: reduce){ .pet canvas,.fin-petrow canvas{animation:none} }
 .qz{display:flex;flex-direction:column;gap:12px;align-items:center}
 .qz .ask{font-family:var(--display);font-weight:800;font-size:24px;text-align:center;line-height:1.15}
 .qz .askpic{width:140px;height:140px;border-radius:22px;border:3px solid var(--ink);image-rendering:pixelated}
@@ -710,7 +718,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
           <div class="fin-pic"><canvas id="finCv" width="8" height="8"></canvas></div>
           <div class="fin-stars" id="finStars"></div>
           <p id="finTime" hidden></p>
-          <p class="fin-pet" id="finPet" hidden></p>
+          <div class="fin-petrow" id="finPetRow" hidden><canvas id="finPetCv" width="8" height="8"></canvas><p class="fin-pet" id="finPet"></p></div>
           <p id="finTxt"></p>
           <div class="fin-btns">
             <button class="btn pink" id="finNext" type="button" hidden></button>
@@ -2474,7 +2482,7 @@ const PLANETS = [
   {key:"bonbons", name:"Planète Bonbons", desc:"Gâteaux et sucreries", c:"#d6336c", art:["#f783ac","#faa2c1","#96f2d7"]},
   {key:"cosmos", name:"Planète Cosmos", desc:"Fusées, robots et extraterrestres", c:"#7048e8", art:["#7950f2","#4d3aa8","#ffd43b"]}
 ];
-const PTS_DRAW = 100, PTS_PLANET = 1000, UNLOCK_AT = 3;
+const PLANET_R = 10, DAILY_R = 3, UNLOCK_AT = 3;
 const fmt = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 function planetArt(cv, p, locked, seed){
   cv.width = cv.height = 16; const c = cv.getContext("2d");
@@ -2538,7 +2546,7 @@ const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 /* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
 let starOpen = "";
 let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
-const xLabel = (k, ref) => k==="e" ? `École : ${ref}` : k==="s" ? `Histoire : ${ref}` : k==="o" ? `Coloriage à deux avec ${ref}` : k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
+const xLabel = (k, ref) => k==="p" ? `Planète complétée : ${ref}` : k==="q" ? "Bonus du dessin du jour" : k==="e" ? `École : ${ref}` : k==="s" ? `Histoire : ${ref}` : k==="o" ? `Coloriage à deux avec ${ref}` : k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
 function logStar(kind, ref, n){
   if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
   starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
@@ -2603,12 +2611,13 @@ function renderGallery(){
   $("ovTxt").textContent = `${fin} / ${items.length} dessins terminés`;
   $("ovBar").style.width = (items.length ? fin/items.length*100 : 0)+"%";
   const byCat = key => items.filter(i=>catOf(i.d)===key);
-  const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
+  const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: list.length>0 && nd===list.length}; });
+  for(const w of world) if(w.full && !xs.pl.includes(w.p.key)){ xs.pl.push(w.p.key); xs.n += PLANET_R; saveXs(); logStar("p", w.p.name, PLANET_R); }   /* bonus de planète, donné une seule fois */
   world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
   const cStars = LEVELS.reduce((a,l)=>a+((chronoRes[l.i]||{}).s||0), 0);
   const totalStars = items.reduce((a,i)=>a+(i.pct===100 ? starsOf(i.d) : 0), 0) + cStars + duelRec.w*DUEL_WIN + duelRec.l*DUEL_LOSS + xs.n;
   dailyPick(items);
-  const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS + bonus;
+  const score = totalStars;   /* tout se compte en étoiles gagnées */
   lastScore = score;
   const wordItems = items.filter(i=>i.d.cat==="mots" || i.d.word);
   STATE = {fin, planets: world.filter(w=>w.full).length, cStars, words: wordItems.filter(i=>i.pct===100).length,
@@ -2634,7 +2643,7 @@ function renderGallery(){
   const ht = el("span"); ht.append(el("b",null,"Menu principal"), el("small",null, me ? `Bonjour, ${me.name} !` : "Accueil"));
   hb.append(ic, ht); hb.onclick = () => setPage("menu"); nav.appendChild(hb);
   const albumN = items.filter(i=>i.pct===100).length;
-  const tilesAll = [["monde","Monde",`◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
+  const tilesAll = [["monde","Monde",`${world.filter(w=>w.full).length} / ${world.length} planètes`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
    ["chrono","Chrono",`★ ${cStars} / ${LEVELS.length*3} étoiles`,"#e8590c",'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/>',page==="chrono"],
    ["libre","Libre","Tes couleurs","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',page==="libre"],
    ["duel","Duel",`${duelRec.w} ${duelRec.w>1 ? "victoires" : "victoire"}`,"#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',page==="duel"],
@@ -2697,7 +2706,7 @@ function renderGallery(){
     $("abTitle").textContent = "Pixelo";
     if(me){
       const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true); hc.dataset.fr = shop.fr;
-      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(bal)} étoiles · ◆ ${fmt(score)} points`));
+      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} ${fin>1 ? "dessins terminés" : "dessin terminé"} · ★ ${fmt(bal)} à dépenser`));
       hl.append(hc, hx); pg.appendChild(hl);
     }
     const dd = items.find(i=>i.d.id===daily.id);
@@ -2705,7 +2714,7 @@ function renderGallery(){
       const dc = el("div","feature daily"); dc.tabIndex = 0; dc.setAttribute("role","button"); dc.style.setProperty("--c", "#2f9e44");
       const dcv = el("canvas"); drawThumb(dcv, dd.d, dd.done, dd.st.ok===0);
       const dx = el("div","fx"), sn = streakNow();
-      dx.append(el("span","eyebrow","Dessin du jour"), el("h3",null,dd.d.name), el("span","inf", daily.done ? `Terminé aujourd'hui · série de ${sn} ${sn>1 ? "jours" : "jour"}` : `+${DAILY_PTS} points · série actuelle : ${sn} ${sn>1 ? "jours" : "jour"}`));
+      dx.append(el("span","eyebrow","Dessin du jour"), el("h3",null,dd.d.name), el("span","inf", daily.done ? `Terminé aujourd'hui · série de ${sn} ${sn>1 ? "jours" : "jour"}` : `★ ${DAILY_R} en bonus · série actuelle : ${sn} ${sn>1 ? "jours" : "jour"}`));
       const db = el("button","btn" + (daily.done ? " ghost" : ""), daily.done ? "✓ Fait" : "Colorier"); db.type = "button"; dx.appendChild(db);
       dc.append(dcv, dx); dc.onclick = () => openDrawing(dd.d);
       dc.onkeydown = e => { if(e.key==="Enter"){ e.preventDefault(); openDrawing(dd.d); } };
@@ -2736,14 +2745,17 @@ function renderGallery(){
      ["Jouer à deux","Duel ou ensemble","#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',()=>setPage("duel")],
      ["Apprendre","Mots, calcul, anglais","#2f9e44",'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.500V16c0 1.500 2.500 3 5 3s5-1.500 5-3v-4.500M21 9v6"/>',()=>setPage("ecole")]
     ].forEach(([l,sub,c,path,fn])=>{ const b = el("button"); b.type = "button"; b.style.setProperty("--c", c); b.innerHTML = SVG(path); b.append(el("span",null,l), el("small",null,sub)); b.onclick = fn; big.appendChild(b); });
-    const ps = petState(), pc = el("div","pet"), pcv = el("canvas"); drawThumb(pcv, ps.d, null, true); pcv.dataset.fr = shop.fr;
+    const ps = petState(), pc = el("div","pet"), pcv = el("canvas"); petCanvas(pcv, ps.d, shop.hat); pcv.dataset.fr = shop.fr; pcv.setAttribute("role","button"); pcv.setAttribute("aria-label","Chatouiller "+ps.name);
     const ptx = el("div","pt"), pnm = el("b",null,ps.name);
     const mood = chNow.p.cells ? `${ps.name} est content : tu as colorié aujourd'hui !` : lg.claimed ? `${ps.name} a hâte de te voir colorier.` : `${ps.name} t'attend : un cadeau est prêt !`;
-    ptx.append(pnm, el("small",null, ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour grandir` : " · taille maximale !")), barEl(ps.pct), el("small",null,mood));
+    const moodEl = el("small",null,mood);
+    pcv.onclick = () => { pcv.classList.remove("hop"); void pcv.offsetWidth; pcv.classList.add("hop"); moodEl.textContent = `${ps.name} : « ${PET_TAP[Math.floor(Math.random()*PET_TAP.length)]} »`; sColor(); };
+    ptx.append(pnm, el("small",null, ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour grandir` : " · taille maximale !")), barEl(ps.pct), moodEl);
     const prn = el("button","btn small ghost","Changer son nom"); prn.type = "button"; prn.style.alignSelf = "flex-start";
+    const pac = el("button","btn small line", shop.hat ? "Changer d'accessoire" : "Lui offrir un accessoire"); pac.type = "button"; pac.style.alignSelf = "flex-start"; pac.onclick = () => { shopTab = "hat"; setPage("magasin"); };
     prn.onclick = () => { const inp = el("input"); inp.type = "text"; inp.maxLength = 12; inp.value = xs.pet; inp.setAttribute("aria-label","Nom de ta pieuvre"); pnm.replaceWith(inp); prn.remove(); inp.focus();
       const ok = () => { const v = inp.value.trim().slice(0,12); if(v){ xs.pet = v; saveXs(); } renderGallery(); }; inp.onkeydown = e => { if(e.key==="Enter") ok(); }; inp.onblur = ok; };
-    ptx.appendChild(prn); pc.append(pcv, ptx);
+    const pbt = el("div","quick"); pbt.append(pac, prn); ptx.appendChild(pbt); pc.append(pcv, ptx);
     const top = el("div","block"); top.append(f, big, pc, q); pg.appendChild(top);
     const gb = el("button","wbanner gift"); gb.type = "button";
     const gt = el("span","wt"); gt.append(el("b",null, lg.claimed ? "Défis du jour" : `Cadeau du jour : ★ ${lg.reward}`), el("small",null, (lg.claimed ? `Cadeau reçu · jour ${lg.day} de suite` : `Jour ${lg.day} de suite · reviens chaque jour !`) + ` · ${chNow.got.filter(Boolean).length} / 3 défis` + (chReady ? ` · ${chReady} à réclamer` : "") + (trReady ? ` · ${trReady} ${trReady>1 ? "trophées" : "trophée"} à réclamer` : "") + (colReady ? ` · ${colReady} ${colReady>1 ? "collections" : "collection"} à réclamer` : "")));
@@ -2751,7 +2763,7 @@ function renderGallery(){
     pg.appendChild(gb);
     const bn = el("button","wbanner"); bn.type = "button";
     const pl = el("span","pl"); world.forEach((w,i)=>{ const c = el("canvas"); planetArt(c, w.p, !w.open, i+1); pl.appendChild(c); });
-    const bt = el("span","wt"); bt.append(el("b",null,"Mode Monde"), el("small",null,`${world.filter(w=>w.full).length} / ${world.length} planètes complétées · ◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`));
+    const bt = el("span","wt"); bt.append(el("b",null,"Mode Monde"), el("small",null,`${world.filter(w=>w.full).length} / ${world.length} planètes complétées · ★ ${PLANET_R} par planète`));
     bn.append(bt, pl, el("span","btn pink","Explorer")); bn.onclick = () => setPage("monde");
     pg.appendChild(bn);
     const fb = el("button","wbanner lib"); fb.type = "button";
@@ -2793,17 +2805,17 @@ function renderGallery(){
   if(page === "monde"){
     $("abTitle").textContent = "Mode Monde";
     const hd = el("div","whead");
-    const sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes points"), el("b",null,`◆ ${fmt(score)}`));
-    hd.append(sc, el("p",null,`Chaque dessin terminé rapporte ${PTS_DRAW} points. Une planète complétée ajoute ${fmt(PTS_PLANET)} points. Termine ${UNLOCK_AT} dessins d'une planète pour ouvrir la suivante.`));
+    const sc = el("div","wscore"); sc.append(el("span","eyebrow","Planètes complétées"), el("b",null,`${world.filter(w=>w.full).length} / ${world.length}`));
+    hd.append(sc, el("p",null,`Chaque dessin terminé donne ses étoiles, comme partout ailleurs. Une planète complétée ajoute ★ ${PLANET_R} en bonus. Termine ${UNLOCK_AT} dessins d'une planète pour ouvrir la suivante.`));
     pg.appendChild(hd);
     const wl = el("div","planets");
     world.forEach((w,i)=>{
       const b = el("button","planet" + (w.open ? "" : " lock") + (w.full ? " full" : "")); b.type = "button"; b.style.setProperty("--c", w.p.art[0]);
       const c = el("canvas"); planetArt(c, w.p, !w.open, i+1);
       const tx = el("span","ptx");
-      tx.append(el("span","pstate", !w.open ? "Verrouillée" : w.full ? `Complétée · +${fmt(PTS_PLANET)}` : `${w.nd} / ${w.list.length}`), el("b",null,w.p.name),
+      tx.append(el("span","pstate", !w.open ? "Verrouillée" : w.full ? `Complétée · ★ ${PLANET_R}` : `${w.nd} / ${w.list.length}`), el("b",null,w.p.name),
         el("small",null, w.open ? w.p.desc : `Termine ${UNLOCK_AT} dessins de la ${w.prev} pour l'ouvrir.`), barEl(w.list.length ? w.nd/w.list.length*100 : 0),
-        el("small","ppts",`${fmt(w.pts)} / ${fmt(w.max)} points`));
+        el("small","ppts", w.full ? `★ ${PLANET_R} gagnées` : `★ ${PLANET_R} en bonus quand tout est colorié`));
       b.append(c, tx); b.onclick = () => setPage(w.p.key);
       wl.appendChild(b);
     });
@@ -2817,8 +2829,8 @@ function renderGallery(){
     const c = el("canvas"); planetArt(c, wp.p, !wp.open, world.indexOf(wp)+1);
     const tx = el("div","ptx");
     tx.append(el("span","pstate", !wp.open ? "Verrouillée" : wp.full ? "Défi complété" : "Défi en cours"), el("b",null,wp.p.name),
-      el("small",null, wp.full ? `Bravo ! Tu as gagné ${fmt(wp.pts)} points sur cette planète.` : `Complète les ${wp.list.length} dessins pour gagner ${fmt(wp.max)} points.`),
-      barEl(wp.list.length ? wp.nd/wp.list.length*100 : 0), el("small","ppts",`${wp.nd} / ${wp.list.length} dessins · ${fmt(wp.pts)} points`));
+      el("small",null, wp.full ? `Bravo ! Planète complétée : ★ ${PLANET_R} en bonus.` : `Complète les ${wp.list.length} dessins pour gagner ★ ${PLANET_R} en bonus.`),
+      barEl(wp.list.length ? wp.nd/wp.list.length*100 : 0), el("small","ppts",`${wp.nd} / ${wp.list.length} dessins`));
     hd.append(c, tx);
     const bk = el("button","btn ghost small","‹ Monde"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("monde");
     const blk = el("div","block"); blk.append(bk, hd);
@@ -2841,7 +2853,7 @@ function renderGallery(){
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"D'où viennent tes étoiles"));
     const tb = el("div","slist");
     const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
-    [["d",`Dessins terminés (${doneItems.length})`, sDraw], ["c",`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], ["u",`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel], ["x","Récompenses (trophées, cadeaux, défis, collections)", xs.n]].forEach(([k,l,n])=>{
+    [["d",`Dessins terminés (${doneItems.length})`, sDraw], ["c",`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], ["u",`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel], ["x","Récompenses et bonus (trophées, cadeaux, défis, collections, planètes…)", xs.n]].forEach(([k,l,n])=>{
       const r = el("button","srow tap" + (starOpen===k ? " on" : "")); r.type = "button"; r.setAttribute("aria-expanded", starOpen===k);
       const tx = el("span"); tx.append(document.createTextNode(l), el("small",null, starOpen===k ? "Toucher pour refermer" : "Toucher pour voir le détail"));
       r.append(tx, el("b",null,`★ ${fmt(n)}`)); r.onclick = () => { starOpen = starOpen===k ? "" : k; renderGallery(); }; tb.appendChild(r);
@@ -2865,7 +2877,7 @@ function renderGallery(){
       else { const cl = el("div","slist"); du.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(k==="w" ? `Gagné contre ${ref}` : `Perdu contre ${ref}`), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les duels"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("duel"); b1.appendChild(go);
     } else if(starOpen==="x"){
-      const xl = starLog.filter(e=>"tjfkhoes".includes(e[1])).reverse();
+      const xl = starLog.filter(e=>"tjfkhoespq".includes(e[1])).reverse();
       if(!xl.length) b1.appendChild(el("p","empty","Aucune récompense pour l'instant. Réclame ton cadeau du jour, tes défis et tes trophées."));
       else { const cl = el("div","slist"); xl.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(xLabel(k, ref)), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les défis"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("defis"); b1.appendChild(go);
@@ -2875,7 +2887,7 @@ function renderGallery(){
     const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
     starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
       const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
-      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkhoes".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
+      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkhoespq".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
       const r = el(d ? "button" : "div","srow" + (d ? " tap" : "")), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t)));
       if(d){ r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, d, null, true); r.appendChild(cv); r.onclick = () => openDrawing(d); r.setAttribute("aria-label", label+", ouvrir le dessin"); }
       r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
@@ -3175,7 +3187,7 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","À dépenser"), el("b",null,`★ ${fmt(bal)}`));
-    hd.append(sc, el("p",null,`Achète des avatars, des cadres, des tableaux pour dessiner, des brillances, des sons, des confettis et des thèmes. Tu as gagné ★ ${fmt(totalStars)} étoiles en tout` + (shop.spent ? ` et dépensé ★ ${fmt(shop.spent)}.` : ".") + " Termine des dessins pour en gagner d'autres !"));
+    hd.append(sc, el("p",null,`Achète des avatars, des cadres, des tableaux pour dessiner, des brillances, des sons, des confettis, des thèmes et des accessoires pour ta pieuvre. Tu as gagné ★ ${fmt(totalStars)} étoiles en tout` + (shop.spent ? ` et dépensé ★ ${fmt(shop.spent)}.` : ".") + " Termine des dessins pour en gagner d'autres !"));
     b0.append(bk, hd); pg.appendChild(b0);
     const sample = BUILTIN.find(d=>d.id==="O_rose");
     const section = (title, list, kind, cur2, preview) => {
@@ -3195,7 +3207,7 @@ function renderGallery(){
       });
       blk.appendChild(g); pg.appendChild(blk);
     };
-    const TABS = [["av","Avatars"],["fr","Cadres"],["bd","Tableaux"],["fx","Brillances"],["snd","Sons"],["cf","Confettis"],["th","Thèmes"]];
+    const TABS = [["av","Avatars"],["fr","Cadres"],["bd","Tableaux"],["fx","Brillances"],["snd","Sons"],["cf","Confettis"],["th","Thèmes"],["hat","Compagnon"]];
     const tabs = el("div","filters");
     TABS.forEach(([k,l])=>{ const t = el("button","fl sb" + (shopTab===k ? " on" : ""), l); t.type = "button"; t.style.setProperty("--c","#e64980"); t.setAttribute("aria-pressed", shopTab===k); t.onclick = () => { shopTab = k; renderGallery(); }; tabs.appendChild(t); });
     b0.appendChild(tabs);
@@ -3215,6 +3227,8 @@ function renderGallery(){
     if(shopTab==="cf") section("Confettis de fin de dessin", SHOP_CF, "cf", shop.cf,
       id => mini(120, 120, c => { c.fillStyle = "#1d1b3a"; c.fillRect(0,0,120,120); const cols = CF_COLS[id] || ["#ff6fae","#4dabf7","#ffd43b","#51cf66","#c81fd0"];
         for(let n=0;n<16;n++){ c.save(); c.translate(14+(n*37)%96, 12+(n*53)%98); c.rotate(n*.9); cfShape(c, id, id && id!=="arc" ? 17 : 14, cols[n%cols.length]); c.restore(); } }));
+    if(shopTab==="hat") section(`Accessoires pour ${xs.pet}`, SHOP_HAT, "hat", shop.hat,
+      id => { const cv = el("canvas"); petCanvas(cv, petState().d, id); return cv; });
     if(shopTab==="th") section("Thèmes du menu", SHOP_TH, "th", shop.th,
       id => { const t = SHOP_TH.find(x=>x[0]===id), w = el("div","tprev"), bar = el("i"), body = el("span"), dot = el("u"); bar.style.background = t[3]; body.style.background = t[4]; dot.style.background = t[5]; body.appendChild(dot); w.append(bar, body); return w; });
     return;
@@ -3226,7 +3240,7 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes trophées"), el("b",null,`${nBadges} / ${BG.length}`));
-    hd.append(sc, el("p",null,`Tu as ★ ${fmt(totalStars)} étoiles et ◆ ${fmt(score)} points. Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Chaque trophée gagné donne des étoiles à réclamer : plus il est difficile, plus il en donne. Les points ouvrent de nouveaux avatars, à choisir dans ton profil (ton avatar en haut à droite).`));
+    hd.append(sc, el("p",null,`Tu as gagné ★ ${fmt(totalStars)} étoiles en tout. Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Chaque trophée gagné donne des étoiles à réclamer : plus il est difficile, plus il en donne. Plus tu gagnes d'étoiles, plus tu ouvres d'avatars, à choisir dans ton profil (ton avatar en haut à droite).`));
     b0.append(bk, hd); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"Badges"));
     const g = el("div","grid");
@@ -3246,7 +3260,7 @@ function renderGallery(){
       const d = BUILTIN.find(x=>x.id===id); if(!d) return; const got = score>=cost;
       const card = el("div","card bdg" + (got ? " got" : "")); card.style.setProperty("--c", "#f0b429");
       const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, new Uint8Array(d.cells.length), got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Ouvert"));
-      const meta = el("div","meta"); meta.appendChild(el("span",null,`◆ ${fmt(Math.min(score,cost))} / ${fmt(cost)}`));
+      const meta = el("div","meta"); meta.appendChild(el("span",null,`★ ${fmt(Math.min(score,cost))} / ${fmt(cost)} gagnées`));
       card.append(th, el("div","nm",d.name), barEl(Math.min(100, score/cost*100)), meta); g2.appendChild(card);
     });
     b2.appendChild(g2); pg.appendChild(b2);
@@ -3285,7 +3299,7 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${cStars} / ${LEVELS.length*3}`));
-    hd.append(sc, el("p",null,`Le chrono démarre à ta première case. Finis le dessin à temps pour ouvrir le niveau suivant. Les étapes difficiles (à partir de la 5) sont ouvertes tout de suite : leur premier niveau est toujours jouable. Une étoile si tu finis, deux s'il te reste le quart du temps, trois s'il t'en reste la moitié. Chaque étoile rapporte ${STAR_PTS} points.`));
+    hd.append(sc, el("p",null,`Le chrono démarre à ta première case. Finis le dessin à temps pour ouvrir le niveau suivant. Les étapes difficiles (à partir de la 5) sont ouvertes tout de suite : leur premier niveau est toujours jouable. Une étoile si tu finis, deux s'il te reste le quart du temps, trois s'il t'en reste la moitié.`));
     b0.append(bk, hd); pg.appendChild(b0);
     CHRONO_DEF.forEach(([stage], si)=>{
       const blk = el("div","block"); blk.appendChild(el("h2",null,`Étape ${si+1} · ${stage}`));
@@ -3519,8 +3533,8 @@ function dailyWon(){
   const t = today(); if(!daily || daily.date!==t || daily.done || !cur || cur.id!==daily.id) return false;
   daily.done = true; store.set("cpn.daily", daily);
   streak.n = streak.last===dayBefore(t) ? streak.n+1 : streak.last===t ? streak.n : 1; streak.last = t; streak.best = Math.max(streak.best||0, streak.n); store.set("cpn.streak", streak);
-  bonus += DAILY_PTS; store.set("cpn.bonus", bonus);
-  $("winTxt").textContent = `Dessin du jour terminé ! +${DAILY_PTS} points · série de ${streak.n} ${streak.n>1 ? "jours" : "jour"}`;
+  xs.n += DAILY_R; saveXs(); logStar("q", "Dessin du jour", DAILY_R);
+  $("winTxt").textContent = `Dessin du jour terminé ! ★ ${DAILY_R} en bonus · série de ${streak.n} ${streak.n>1 ? "jours" : "jour"}`;
   return true;
 }
 /* ---------- Étoiles bonus : trophées réclamés, cadeau du jour, défis du jour ---------- */
@@ -3543,9 +3557,9 @@ function chalEnsure(){
   const t = today(); if(xs.ch && xs.ch.day===t && Array.isArray(xs.ch.list)) return xs.ch;
   let h = 7; for(const c of t+(me ? me.id : "")) h = (h*31+c.charCodeAt(0))>>>0;
   const rnd = () => { h = (Math.imul(h, 1664525)+1013904223)>>>0; return h/4294967296; }, pick = a => a[Math.floor(rnd()*a.length)];
-  const easy = pick([{k:"fin",g:1,r:3},{k:"fin",g:2,r:5},{k:"fin",g:3,r:7},{k:"cells",g:150,r:3},{k:"cells",g:300,r:5},{k:"cells",g:600,r:8}]);
+  const easy = pick([{k:"fin",g:1,r:2},{k:"fin",g:2,r:3},{k:"fin",g:3,r:5},{k:"cells",g:150,r:2},{k:"cells",g:300,r:3},{k:"cells",g:600,r:5}]);
   const cats = ["pieuvres","animaux","nourriture","transports","sports","contes","noel","formes","nature","fetes","decouvertes"].filter(k=>CATS.some(c=>c[0]===k));
-  const pool = [{k:"cat",g:1,r:4,cat:pick(cats)},{k:"big",g:1,r:5},{k:"word",g:1,r:3},{k:"math",g:1,r:5},{k:"chrono",g:1,r:5},{k:"duelp",g:1,r:3},{k:"duelw",g:1,r:6},{k:"daily",g:1,r:4}];
+  const pool = [{k:"cat",g:1,r:3,cat:pick(cats)},{k:"big",g:1,r:3},{k:"word",g:1,r:2},{k:"math",g:1,r:3},{k:"chrono",g:1,r:3},{k:"duelp",g:1,r:2},{k:"duelw",g:1,r:4},{k:"daily",g:1,r:3}];
   const list = [easy]; while(list.length<3){ const c = pool.splice(Math.floor(rnd()*pool.length),1)[0]; if(!(c.k==="duelw" && list.some(x=>x.k==="duelp")) && !(c.k==="duelp" && list.some(x=>x.k==="duelw"))) list.push(c); }
   xs.ch = {day:t, list, p:{}, got:[0,0,0]}; saveXs(); return xs.ch;
 }
@@ -3555,7 +3569,7 @@ function chalBump(k, n){ const ch = chalEnsure(); ch.p[k] = (ch.p[k]||0)+(n||1);
 function chalClaim(i){ const ch = chalEnsure(), c = ch.list[i]; if(!c || ch.got[i] || chalVal(ch, c)<c.g) return; ch.got[i] = 1; xsAdd("f", CH_TXT[c.k](c), c.r); }
 const chalReady = () => { const ch = chalEnsure(); return ch.list.filter((c,i)=>!ch.got[i] && chalVal(ch,c)>=c.g).length; };
 /* ---------- Collections : une récompense quand tout un album est colorié ---------- */
-if(!Array.isArray(xs.col)) xs.col = []; if(!Array.isArray(xs.colAv)) xs.colAv = [];
+if(!Array.isArray(xs.col)) xs.col = []; if(!Array.isArray(xs.pl)) xs.pl = []; if(!Array.isArray(xs.colAv)) xs.colAv = [];
 function collections(items){
   const out = [];
   for(const [key,label,color,subs] of CATS){
@@ -3566,12 +3580,12 @@ function collections(items){
     else out.push({key, label, color, list, page:key, sub:"", noAv: key==="imagier"});
   }
   for(const c of out){ c.n = c.list.length; c.ok = c.list.filter(i=>i.pct===100).length; c.full = c.ok===c.n; c.got = xs.col.includes(c.key);
-    c.rw = Math.max(3, Math.min(30, Math.round(c.n/2))); c.av = c.noAv ? null : c.list[c.n-1].d; }
+    c.rw = Math.max(3, Math.min(20, Math.round(c.n/2))); c.av = c.noAv ? null : c.list[c.n-1].d; }
   return out;
 }
 function colClaim(c){ if(!c.full || xs.col.includes(c.key)) return; xs.col.push(c.key); if(c.av && !xs.colAv.includes(c.av.id)) xs.colAv.push(c.av.id); xsAdd("k", c.label, c.rw); }
 /* ---------- Défi de la semaine : un grand dessin 44 × 44 fait de quatre dessins ---------- */
-const WEEK_R = 40;
+const WEEK_R = 30;
 function weekInfo(){ const d = new Date(), k = (d.getDay()+6)%7; d.setDate(d.getDate()-k); return {key: ymd(d), left: 7-k}; }
 let weeklyCache = null;
 function weeklyDrawing(){
@@ -3598,6 +3612,23 @@ if(typeof xs.pet!=="string" || !xs.pet.trim()) xs.pet = "Pixou";
 if(!Array.isArray(xs.st)) xs.st = []; if(!xs.ecole || typeof xs.ecole!=="object") xs.ecole = {day:"", n:0};
 function petState(){ let k = 0; for(let i=0;i<PET_ST.length;i++) if(lastStars>=PET_ST[i][0]) k = i; const nx = PET_ST[k+1] || null;
   return {k, name:xs.pet, stage:PET_ST[k][1], d:BUILTIN.find(x=>x.id===PET_ST[k][2]) || BUILTIN[0], next:nx, pct: nx ? Math.min(100, (lastStars-PET_ST[k][0])/(nx[0]-PET_ST[k][0])*100) : 100}; }
+/* Où poser un accessoire : la première ligne où le corps apparaît, au milieu du dessin */
+const petAnchorCache = {};
+function petAnchor(d){
+  if(petAnchorCache[d.id]) return petAnchorCache[d.id];
+  const bg = d.cells[0], x0 = Math.floor(d.cols*.2), x1 = Math.ceil(d.cols*.8); let out = {x:d.cols/2, y:Math.floor(d.rows*.25)};
+  for(let y=0;y<d.rows;y++){ let run = 0, best = 0, bx = 0;
+    for(let x=x0;x<=x1;x++){ if(x<x1 && d.cells[y*d.cols+x]!==bg){ run++; if(run>best){ best = run; bx = x-run/2+.5; } } else run = 0; }
+    if(best>=3){ out = {x:bx, y}; break; } }
+  return petAnchorCache[d.id] = out;
+}
+function petCanvas(cv, d, hat){
+  drawThumb(cv, d, null, true); const rows = HATS[hat]; if(!rows) return;
+  const k = Math.max(1, Math.floor(240/Math.max(d.cols,d.rows))), side = Math.max(d.cols,d.rows)*k, ox = Math.floor((side-d.cols*k)/2), oy = Math.floor((side-d.rows*k)/2);
+  const a = petAnchor(d), w = rows[0].length, c = cv.getContext("2d"), left = Math.round(a.x-w/2), top = Math.max(0, a.y-rows.length);
+  rows.forEach((r,ry)=>[...r].forEach((ch,rx)=>{ if(ch==="."||!HAT_COL[ch]) return; c.fillStyle = HAT_COL[ch]; c.fillRect(ox+(left+rx)*k, oy+(top+ry)*k, k, k); }));
+}
+const PET_TAP = ["Coucou !","Hi hi, ça chatouille !","On colorie ?","Tu es mon meilleur ami !","J'adore tes dessins !","Encore, encore !","Blub blub !","Je grandis grâce à toi !"];
 const PET_SAY = ["Bravo !","Trop beau !","Tu es un artiste !","J'adore ces couleurs !","Encore un !","Wow, quel talent !","Je suis fier de toi !"];
 /* ---------- Voix : n'importe quel texte, en français ou en anglais ---------- */
 function sayText(text, lang){
@@ -3668,7 +3699,7 @@ const TUTO = [
 ];
 function tutoShow(i){
   tuI = i; const [t, p, id] = TUTO[i], d = BUILTIN.find(x=>x.id===id) || BUILTIN[0];
-  $("tuT").textContent = t; $("tuP").textContent = p(); drawThumb($("tuCv"), d, null, true);
+  $("tuT").textContent = t; $("tuP").textContent = p(); if(i===0) petCanvas($("tuCv"), petState().d, shop.hat); else drawThumb($("tuCv"), d, null, true);
   const dots = $("tuDots"); dots.textContent = ""; TUTO.forEach((_,k)=>dots.appendChild(el("i", k===i ? "on" : "")));
   $("tuNext").textContent = i===TUTO.length-1 ? "Colorier mon premier dessin" : "Suivant"; $("tuSkip").hidden = i===TUTO.length-1; $("tuto").hidden = false;
 }
@@ -3683,12 +3714,20 @@ const SHOP_BD = [["","Classique",0],["bonbon","Bonbon",5],["pois","Pois",8],["ci
 const SHOP_FX = [["","Étoile",0],["coeur","Cœurs",10],["bulle","Bulles",10],["neige","Flocons",15],["arc","Étoiles arc-en-ciel",25],["fleur","Fleurs",10],["goutte","Gouttes",10],["feuille","Feuilles",12],["soleil","Soleils",12],["lune","Lunes",15],["note","Notes de musique",15],["patte","Pattes",15],["trefle","Trèfles",18],["sourire","Sourires",20],["eclair","Éclairs",20],["flamme","Flammes",25],["diamant","Diamants",30]];
 const SHOP_SND = [["","Clochette",0],["xylo","Xylophone",8],["bit","Jeu vidéo",12],["bulle","Bulles",15],["piano","Piano",20]];
 const SHOP_CF = [["","Confettis",0],["etoile","Étoiles",10],["coeur","Cœurs",10],["neige","Neige",15],["arc","Arc-en-ciel",25]];
+const SHOP_HAT = [["","Rien",0],["noeud","Nœud rose",15],["fleur","Fleur",15],["casquette","Casquette",20],["tuque","Tuque",20],["fete","Chapeau de fête",25],["antennes","Antennes",30],["hautdeforme","Haut-de-forme",40],["aureole","Auréole",50],["couronne","Couronne en or",80]];
+/* Accessoires en pixels, posés sur la tête de la pieuvre (lignes du haut vers le bas) */
+const HAT_COL = {K:"#1d1b3a", R:"#e03131", Y:"#ffd43b", O:"#e8a400", B:"#1c7ed6", L:"#74c0fc", P:"#f783ac", M:"#c2255c", W:"#ffffff", G:"#2f9e44", V:"#7048e8"};
+const HATS = {
+  noeud:["PP...PP","PPPMPPP","PP...PP"], fleur:[".P.P.","PPYPP",".P.P.","..G.."], casquette:[".BBBBB..","BBBBBBB.","BBBBBBBLL"], tuque:["..W..",".RRR.","RRRRR","WWWWW"],
+  fete:["..Y..","..V..",".VYV.",".YVY.","VYVYV"], antennes:["Y.....Y","K.....K",".K...K.",".K...K."], hautdeforme:[".KKKKK.",".KKKKK.",".KRRRK.",".KKKKK.","KKKKKKK"],
+  aureole:[".YYYYY.","Y.....Y",".YYYYY.","......."], couronne:["Y.Y.Y.Y","YYYYYYY","YRYBYRY","OOOOOOO"]
+};
 const SHOP_TH = [["","Classique",0,"#1d1b3a","#f3f1fa","#c81fd0"],["ocean","Océan",15,"#0b3d70","#e7f5ff","#1971c2"],["foret","Forêt",15,"#1b4332","#ebfbee","#2f9e44"],["soleil","Coucher de soleil",20,"#7a2e0e","#fff4e6","#e8590c"],["raisin","Raisin",20,"#4a1d6e","#f8f0fc","#9c36b5"],["nuit","Nuit",30,"#07070d","#e3e6ee","#364fc7"]];
 let shop = store.get("cpn.shop", null), lastStars = 0, shopTab = "av", albumMax = 40;
 if(!shop || typeof shop!=="object" || !Array.isArray(shop.own)) shop = {spent:0, own:[], fr:"", bd:""};
 shop.spent = Math.max(0, +shop.spent||0); shop.fr = shop.fr||""; shop.bd = shop.bd||"";
 if(!SHOP_FR.some(f=>f[0]===shop.fr)) shop.fr = ""; if(!SHOP_BD.some(f=>f[0]===shop.bd)) shop.bd = "";
-for(const [k,L] of [["fx",SHOP_FX],["snd",SHOP_SND],["cf",SHOP_CF],["th",SHOP_TH]]) if(!L.some(f=>f[0]===shop[k])) shop[k] = "";
+for(const [k,L] of [["fx",SHOP_FX],["snd",SHOP_SND],["cf",SHOP_CF],["th",SHOP_TH],["hat",SHOP_HAT]]) if(!L.some(f=>f[0]===shop[k])) shop[k] = "";
 const shopOwns = key => shop.own.includes(key);
 const shopBal = () => Math.max(0, lastStars - shop.spent);
 function applyShop(){ $("meBtn").dataset.fr = shop.fr; $("stage").dataset.bd = shop.bd; document.body.dataset.th = shop.th; }
@@ -3745,7 +3784,7 @@ function shopUse(kind, id){
   else { shop[kind] = id; store.set("cpn.shop", shop); }
   applyShop(); if(kind==="snd"){ lastS = 0; sPaint(); }
 }
-const AV_LOCKED = [["W_fusee",200],["W_soucoupe",400],["W_lion",600],["W_panda",800],["W_renard",1000],["W_hibou",1500],["W_nl_pere",2000],["W_astronaute",3000],["W_noel_etoile",4000],["W_emo_cool",5000],["W_trophee",7000],["O_arcenciel",10000]];
+const AV_LOCKED = [["W_fusee",10],["W_soucoupe",25],["W_lion",40],["W_panda",60],["W_renard",90],["W_hibou",130],["W_nl_pere",180],["W_astronaute",250],["W_noel_etoile",350],["W_emo_cool",500],["W_trophee",700],["O_arcenciel",1000]];
 function badges(S){
   return [
     ["Premier dessin","Termine un dessin.",S.fin,1,"#f0b429","W_eco_crayon",2],["Dix dessins","Termine 10 dessins.",S.fin,10,"#f0b429","W_medaille",5],["Vingt-cinq dessins","Termine 25 dessins.",S.fin,25,"#f0b429","W_artifice",10],
@@ -4212,7 +4251,7 @@ function celebrate(nStars, title){
   const f = $("fin"); f.hidden = false;
   $("finT").textContent = title || "Bravo !"; $("finTxt").textContent = $("winTxt").textContent;
   $("finTime").hidden = !finTimeTxt; $("finTime").textContent = finTimeTxt ? "Temps : "+finTimeTxt : "";
-  $("finPet").hidden = false; $("finPet").textContent = `${xs.pet} : « ${PET_SAY[Math.floor(Math.random()*PET_SAY.length)]} »`;
+  $("finPetRow").hidden = false; petCanvas($("finPetCv"), petState().d, shop.hat); $("finPet").textContent = `${xs.pet} : « ${PET_SAY[Math.floor(Math.random()*PET_SAY.length)]} »`;
   drawThumb($("finCv"), cur, done);
   const st = $("finStars"); st.textContent = "";
   for(let k=0;k<nStars;k++){ const i = el("i",null,"★"); i.style.animationDelay = (.55+k*.22)+"s"; st.appendChild(i); if(!calmFx) setTimeout(()=>{ const a = audio(); if(a && !$("fin").hidden) tone(880*Math.pow(2,k/6), a.currentTime, .16, .1, "triangle"); }, 550+k*220); }
@@ -4452,7 +4491,7 @@ function paintCell(i){
     const pw = PLANETS.find(p=>p.key===cur.cat);
     if(pw){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
-      $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
+      $("winTxt").textContent = full ? `${pw.name} complétée ! ★ ${PLANET_R} en bonus.` : "Dessin terminé !";
     }
     if(cur.weekly){ if(xs.wk!==cur.wk){ xs.wk = cur.wk; xsAdd("h", cur.name, WEEK_R); $("winTxt").textContent = `Défi de la semaine réussi ! +${WEEK_R} étoiles`; } else $("winTxt").textContent = "Grand dessin terminé !"; }
     else if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
@@ -4699,9 +4738,9 @@ function showLand(mode){
   $("syncBox").hidden = mode==="edit" || (mode==="create" && users.length>0); renderSync();
   drawThumb($("ldLogo"), BUILTIN.find(d=>d.id==="O_rose"), null, true);
   $("ldTitle").textContent = choose ? "Qui joue ?" : mode==="edit" ? "Mon profil" : "Pixelo";
-  $("ldTag").textContent = choose ? "Choisis ton joueur pour retrouver tes dessins." : mode==="edit" ? "Change ton prénom ou ton avatar." : users.length ? "Crée un nouveau joueur : il aura ses propres dessins et ses propres points." : "Crée ton joueur, choisis ton avatar, puis commence à colorier.";
+  $("ldTag").textContent = choose ? "Choisis ton joueur pour retrouver tes dessins." : mode==="edit" ? "Change ton prénom ou ton avatar." : users.length ? "Crée un nouveau joueur : il aura ses propres dessins et ses propres étoiles." : "Crée ton joueur, choisis ton avatar, puis commence à colorier.";
   const ft = $("ldFeat"); ft.textContent = "";
-  if(mode==="create") [["#ff6fae",`${all().length} dessins à colorier, des pieuvres aux mots en français`],["#4dabf7","Six planètes à compléter pour gagner des points"],["#ffd43b","Un mode libre avec tes couleurs et des dégradés"]].forEach(([c,t])=>{ const li = el("li"), sq = el("i"); sq.style.background = c; li.append(sq, document.createTextNode(t)); ft.appendChild(li); });
+  if(mode==="create") [["#ff6fae",`${all().length} dessins à colorier, des pieuvres aux mots en français`],["#4dabf7","Six planètes à compléter pour gagner des étoiles"],["#ffd43b","Un mode libre avec tes couleurs et des dégradés"]].forEach(([c,t])=>{ const li = el("li"), sq = el("i"); sq.style.background = c; li.append(sq, document.createTextNode(t)); ft.appendChild(li); });
   if(choose){
     const pl = $("ldPlayers"); pl.textContent = "";
     for(const u of users){
@@ -4733,8 +4772,8 @@ function showLand(mode){
   AVATARS.map(id=>[id,0]).concat(mode==="edit" ? SHOP_AV.filter(a=>shopOwns("av:"+a[0])).map(a=>[a[0],0]).concat(xs.colAv.map(id=>[id,0])) : [], AV_LOCKED).forEach(([id,cost])=>{
     const d = BUILTIN.find(x=>x.id===id); if(!d) return; const locked = pts<cost;
     const b = el("button","av" + (id===ldAv ? " on" : "") + (locked ? " lock" : "")); b.type = "button"; b.disabled = locked;
-    b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} points` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
-    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c); if(locked) b.appendChild(el("span","cost","◆ "+fmt(cost)));
+    b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} étoiles gagnées` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
+    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c); if(locked) b.appendChild(el("span","cost","★ "+fmt(cost)));
     b.onclick = () => { ldAv = id; g.querySelectorAll(".av").forEach(x=>{ x.classList.toggle("on", x===b); x.setAttribute("aria-pressed", x===b); }); };
     g.appendChild(b);
   });

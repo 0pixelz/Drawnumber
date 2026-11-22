@@ -34,6 +34,7 @@ Pixelo : jeu de coloriage par numéros, en une seule page web (`index.html`) acc
 - Histoires : quatre histoires de cinq chapitres à écouter et à colorier, ★ 10 par histoire
 - Album : tous les dessins terminés avec date, temps, replay et image PNG à enregistrer ou partager
 - Accueil : trois gros boutons (Colorier, Jouer à deux, Apprendre), tiroir rangé par groupes, tutoriel au premier lancement
+- Étoiles seulement : plus de points ; le mode Monde donne ★ 10 par planète complétée, le dessin du jour ★ 3 en bonus, les avatars à débloquer se comptent en étoiles gagnées ; neuf accessoires en pixels pour la pieuvre (onglet Compagnon du magasin), qui bouge et répond quand on la touche
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
