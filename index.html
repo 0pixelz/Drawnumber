@@ -307,6 +307,8 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
 #finCv{width:100%;height:auto;display:block;border-radius:16px;border:3px solid var(--ink);background:#eceaf5}
 .fin-stars{display:flex;gap:4px;min-height:38px;font-size:38px;line-height:1;color:#e8a400}
 .fin-stars i{font-style:normal;display:inline-block}
+#finTime{margin:0;font-family:var(--display);font-weight:800;font-size:20px;background:#eceaf5;border-radius:999px;padding:4px 14px;font-variant-numeric:tabular-nums}
+#finTime[hidden]{display:none}
 #finTxt{margin:0;text-align:center;font-weight:800;font-size:16px}
 .fin-btns{display:flex;flex-wrap:wrap;gap:8px;width:100%}
 .fin-btns .btn{flex:1 1 44%}
@@ -506,6 +508,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
           <div class="fin-t" id="finT">Bravo !</div>
           <div class="fin-pic"><canvas id="finCv" width="8" height="8"></canvas></div>
           <div class="fin-stars" id="finStars"></div>
+          <p id="finTime" hidden></p>
           <p id="finTxt"></p>
           <div class="fin-btns">
             <button class="btn pink" id="finNext" type="button" hidden></button>
@@ -1878,7 +1881,7 @@ function loadDone(d, math){
   if(typeof s === "string" && s.length === n) for(let i=0;i<n;i++) a[i] = s.charCodeAt(i)===49 ? 1 : 0;
   return a;
 }
-function saveDone(d, a, math){ if(chrono || duel) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); }
+function saveDone(d, a, math){ if(chrono || duel) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); if(d===cur && timeKnown) store.set(tKey(d, math), Math.round(playMs/1000)); }
 function stats(d, done){
   let tot=0, ok=0;
   for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== "."){ tot++; if(done[i]) ok++; }
@@ -1938,7 +1941,7 @@ function makeCard(it, wideCard, clearBtn){
   if(clearBtn){            /* retire le dessin des dessins en cours : sa progression est effacée */
     const rm = el("button","del","Supprimer"); rm.type = "button"; rm.setAttribute("aria-label", `Supprimer la progression de ${d.name}`);
     rm.onclick = e => { e.stopPropagation();
-      if(rm.dataset.sure){ store.del("cpn.p."+d.id); if(store.get("cpn.last","")===d.id) store.del("cpn.last"); renderGallery(); }
+      if(rm.dataset.sure){ store.del("cpn.p."+d.id); store.del("cpn.t."+d.id); if(store.get("cpn.last","")===d.id) store.del("cpn.last"); renderGallery(); }
       else { rm.dataset.sure = 1; rm.textContent = "Tout effacer ?"; setTimeout(()=>{ if(rm.isConnected){ delete rm.dataset.sure; rm.textContent = "Supprimer"; } }, 3000); } };
     meta.appendChild(rm);
   } else if(d.custom){
@@ -2744,7 +2747,7 @@ function duelUI(){
   $("oppName").textContent = duel.opp.name; drawOpp();
   $("hint").textContent = duel.note || `Tu joues contre ${duel.opp.name}.`;
   const c = $("count"); c.hidden = false; let n = 3; c.textContent = n;
-  duel.cd = setInterval(()=>{ n--; if(n>0) c.textContent = n; else if(n===0){ c.textContent = "Partez !"; if(duel){ duel.started = true; duelLoops(); } } else { clearInterval(duel && duel.cd); c.hidden = true; } }, 800);
+  duel.cd = setInterval(()=>{ n--; if(n>0) c.textContent = n; else if(n===0){ c.textContent = "Partez !"; if(duel){ duel.started = true; duel.t0 = performance.now(); duelLoops(); } } else { clearInterval(duel && duel.cd); c.hidden = true; } }, 800);
 }
 function drawOpp(){ if(!duel) return; drawThumb($("oppCv"), cur, duel.oppDone); const tot = stats(cur, done).tot; $("oppPct").textContent = Math.floor(duel.oppN/tot*100)+" %"; }
 function duelLoops(){
@@ -2974,13 +2977,14 @@ function restartCur(){
   if(free){ pushUndo(); fcol.fill(null); freeChanged(); }
   else if(chrono) openChrono(chrono.lv);
   else if(duel) return;
-  else { store.del((mathMode ? "cpn.pm." : "cpn.p.")+cur.id); openDrawing(cur, null, mathMode); }
+  else { store.del((mathMode ? "cpn.pm." : "cpn.p.")+cur.id); store.del(tKey(cur, !!mathMode)); openDrawing(cur, null, mathMode); }
 }
 function hideFin(){ $("fin").hidden = true; cancelAnimationFrame(finRaf); finRaf = 0; }
 function celebrate(nStars, title){
   if(!cur) return;
   const f = $("fin"); f.hidden = false;
   $("finT").textContent = title || "Bravo !"; $("finTxt").textContent = $("winTxt").textContent;
+  $("finTime").hidden = !finTimeTxt; $("finTime").textContent = finTimeTxt ? "Temps : "+finTimeTxt : "";
   drawThumb($("finCv"), cur, done);
   const st = $("finStars"); st.textContent = "";
   for(let k=0;k<nStars;k++){ const i = el("i",null,"★"); i.style.animationDelay = (.55+k*.22)+"s"; st.appendChild(i); if(!calmFx) setTimeout(()=>{ const a = audio(); if(a && !$("fin").hidden) tone(880*Math.pow(2,k/6), a.currentTime, .16, .1, "triangle"); }, 550+k*220); }
@@ -3024,7 +3028,7 @@ function openDrawing(d, ch, math, du){
   hideFin();
   stopDuel(); duel = du || null;
   stopChrono(); chrono = ch || null; mathMode = math || null; document.body.classList.toggle("mathplay", !!mathMode);
-  wandLeft = 3; wandOn = false; blinkT = 0;
+  wandLeft = 3; wandOn = false; blinkT = 0; lastAct = 0; playMs = 0; timeKnown = true; finTimeTxt = "";
   free = false; document.body.classList.remove("freeplay");
   const isWord = d.cat==="mots" || !!d.word;
   $("winTxt").textContent = isWord ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = !isWord || !canSpeak;
@@ -3035,6 +3039,7 @@ function openDrawing(d, ch, math, du){
     idx[i] = d.cells[i]==="." ? -1 : CH.indexOf(d.cells[i]);
     if(idx[i]>=0 && !done[i]) left[idx[i]]++;
   }
+  if(!chrono && !duel){ const tr = store.get(tKey(d, !!mathMode), null), begun = done.some(v=>v); if(tr===null && begun) timeKnown = false; else playMs = (tr||0)*1000; }   /* dessin commencé avant le chronométrage : temps inconnu */
   sel = Math.max(0, left.findIndex(n=>n>0));
   $("pname").textContent = mathMode ? "Calcul · "+d.name : d.name;
   show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI(); updateTools(); duelUI(); if(duel) fit();
@@ -3115,10 +3120,14 @@ function updateProg(){
   $("win").classList.toggle("on", st.ok===st.tot);
 }
 let saveT = 0;
+let playMs = 0, lastAct = 0, timeKnown = true, finTimeTxt = "";
+const tKey = (d, math) => (math ? "cpn.tm." : "cpn.t.")+d.id;
+function fmtDur(sec){ sec = Math.max(1, Math.round(sec)); const h = Math.floor(sec/3600), m = Math.floor(sec%3600/60), r = sec%60; return h ? `${h} h ${String(m).padStart(2,"0")} min` : m ? `${m} min ${String(r).padStart(2,"0")} s` : `${r} s`; }
+function tickPlay(){ const now = performance.now(); playMs += lastAct ? Math.min(now-lastAct, 15000) : 800; lastAct = now; }
 function paintCell(i){
   if(i<0 || idx[i]!==sel || done[i] || (chrono && chrono.over) || (duel && (!duel.started || duel.over))) return false;
   if(chrono && !chrono.started){ chrono.started = true; chrono.t0 = performance.now(); chrono.timer = setInterval(tickChrono, 200); }
-  done[i] = 1; left[sel]--; sparkle(i); if(duel) duel.queue.push(i);
+  done[i] = 1; left[sel]--; sparkle(i); if(duel) duel.queue.push(i); tickPlay();
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done); if(chrono) chronoWin();
     if(duel) duelEnd(true, `Tu as gagné contre ${duel.opp.name} !`);
@@ -3131,6 +3140,7 @@ function paintCell(i){
       $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
     }
     if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
+    finTimeTxt = chrono ? fmtDur(chrono.T-chrono.left) : duel ? fmtDur((performance.now()-(duel.t0||performance.now()))/1000) : timeKnown ? fmtDur(playMs/1000) : "";
     { const who = cur, ns = chrono ? ((chronoRes[chrono.lv]||{}).s||0) : duel ? DUEL_WIN : mathMode ? 0 : starsOf(cur), ttl = duel ? "Victoire !" : chrono ? "Niveau réussi !" : "Bravo !";
       setTimeout(()=>{ if(cur===who) celebrate(ns, ttl); }, 650); }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
