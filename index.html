@@ -307,6 +307,8 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .kinds button{border:3px solid var(--line);border-radius:16px;background:var(--card);padding:6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:12px;color:var(--ink)}
 .kinds button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .kinds canvas{width:100%;aspect-ratio:1;border-radius:10px;image-rendering:pixelated}
+.block h3{font-family:var(--display);font-weight:800;font-size:18px;margin:4px 0 0}
+.shop .card .need{display:block}
 .pet .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
 .pet .mini .bar{height:7px}
 
@@ -3012,6 +3014,9 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     const dab = i => { if(i<0 || petWorld[i]===CH[petUI.col]) return; petWorld = petWorld.slice(0,i)+CH[petUI.col]+petWorld.slice(i+1); worldRender(); clearTimeout(dab.t); dab.t = setTimeout(()=>store.set("cpn.petworld", petWorld), 400); };
     cv.onpointerdown = e => { e.preventDefault();
       if(petUI.mode==="game"){ const g = petUI.game; if(g && g.over){ petPlay(); renderGallery(); } else petJump(); return; }
+      if(petUI.mode==="world" && petUI.wtab==="items"){ const r = cv.getBoundingClientRect(), hx = Math.floor((e.clientX-r.left)/r.width*WORLD_W*WK/OPX), hy = Math.floor((e.clientY-r.top)/r.height*WORLD_H*WK/OPX);
+        if(petUI.hand && xs.wo.inv[petUI.hand]>0){ objPlace(petUI.hand, hx, hy); if(!(xs.wo.inv[petUI.hand]>0)) petUI.hand = ""; petUI.sel = -1; } else { petUI.sel = objAt(hx, hy); petUI.hand = ""; }
+        renderGallery(); return; }
       if(petUI.mode==="world"){ down = true; try{ cv.setPointerCapture(e.pointerId); }catch(x){} lastI = cell(e); dab(lastI); return; }
       if(!petUI.anim){ petUI.anim = {type:"hop", t:0}; PT.j = clamp100(PT.j+1); sColor(); } };
     cv.onpointermove = e => { if(!down) return; const i = cell(e); if(i<0 || i===lastI) return;
@@ -3019,12 +3024,41 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     cv.onpointerup = cv.onpointercancel = () => { down = false; lastI = -1; };
     worldRender(); petLoop(cv);
     if(petUI.mode==="world"){
-      const b1 = el("div","block"); b1.appendChild(el("h2",null,`Dessine le monde de ${ps.name}`));
-      b1.appendChild(el("p","empty",`Peins le ciel, le sol, des arbres, une maison… ${ps.name} marche sur la ligne rouge. Ce monde sert aussi de décor au jeu de saut.`));
-      const pal = el("div","edpal"); WORLD_COLS.forEach((h,k)=>{ const b = el("button", petUI.col===k ? "on" : ""); b.type = "button"; b.style.background = h; b.setAttribute("aria-label","Couleur "+(k+1)); b.onclick = () => { petUI.col = k; pal.querySelectorAll("button").forEach((x,j)=>x.classList.toggle("on", j===k)); }; pal.appendChild(b); });
-      const r = el("div","quick"); mk("Terminer","pink",()=>{ store.set("cpn.petworld", petWorld); petUI.mode = "home"; renderGallery(); },r);
-      const rs = mk("Décor de départ","line",()=>{ if(rs.dataset.sure){ petWorld = worldDefault(); store.set("cpn.petworld", petWorld); worldRender(); renderGallery(); } else { rs.dataset.sure = "1"; rs.textContent = "Sûr ? Tout remplacer"; setTimeout(()=>{ delete rs.dataset.sure; rs.textContent = "Décor de départ"; }, 3000); } },r);
-      b1.append(pal, r); pg.appendChild(b1); return;
+      const b1 = el("div","block"); b1.appendChild(el("h2",null,`Le monde de ${ps.name}`));
+      const tabs = el("div","filters"); [["paint","Peindre"],["items","Objets"]].forEach(([k,l])=>{ const t = el("button","fl sb" + (petUI.wtab===k ? " on" : ""), l); t.type = "button"; t.style.setProperty("--c","#d6336c"); t.setAttribute("aria-pressed", petUI.wtab===k); t.onclick = () => { petUI.wtab = k; petUI.sel = -1; petUI.hand = ""; renderGallery(); }; tabs.appendChild(t); });
+      b1.appendChild(tabs);
+      const fin = () => mk("Terminer","pink",()=>{ store.set("cpn.petworld", petWorld); petUI.mode = "home"; petUI.sel = -1; petUI.hand = ""; renderGallery(); },el("div"));
+      if(petUI.wtab==="paint"){
+        b1.appendChild(el("p","empty",`Peins le ciel, le sol, des collines… ${ps.name} marche sur la ligne rouge. Ce monde sert aussi de décor au jeu de saut.`));
+        const pal = el("div","edpal"); WORLD_COLS.forEach((h,k)=>{ const b = el("button", petUI.col===k ? "on" : ""); b.type = "button"; b.style.background = h; b.setAttribute("aria-label","Couleur "+(k+1)); b.onclick = () => { petUI.col = k; pal.querySelectorAll("button").forEach((x,j)=>x.classList.toggle("on", j===k)); }; pal.appendChild(b); });
+        const r = el("div","quick"); r.appendChild(fin());
+        const rs = mk("Décor de départ","line",()=>{ if(rs.dataset.sure){ petWorld = worldDefault(); store.set("cpn.petworld", petWorld); worldRender(); renderGallery(); } else { rs.dataset.sure = "1"; rs.textContent = "Sûr ? Repeindre tout"; setTimeout(()=>{ delete rs.dataset.sure; rs.textContent = "Décor de départ"; }, 3000); } },r);
+        b1.append(pal, r); pg.appendChild(b1); return;
+      }
+      const selP = xs.wo.put[petUI.sel], invIds = Object.keys(xs.wo.inv).filter(id=>xs.wo.inv[id]>0 && objOf(id));
+      if(selP){ const o = objOf(selP[0]), box = el("div","chal"), ct = el("div","ct"); ct.append(el("b",null,o[1]), el("small",null,"Objet choisi dans le monde")); box.appendChild(ct);
+        mk("Déplacer","small line",()=>{ const id = selP[0]; objTake(petUI.sel); petUI.sel = -1; petUI.hand = id; renderGallery(); },box);
+        mk("Ranger","small line",()=>{ objTake(petUI.sel); petUI.sel = -1; renderGallery(); },box);
+        mk(`Vendre ★ ${objRefund(o[0])}`,"small danger",()=>{ const id = selP[0]; objTake(petUI.sel); petUI.sel = -1; objSell(id); renderGallery(); },box); b1.appendChild(box); }
+      else b1.appendChild(el("p","empty", petUI.hand ? `Touche le monde à l'endroit où tu veux poser : ${objOf(petUI.hand)[1]}.` : "Touche un objet du monde pour le déplacer, le ranger ou le vendre. Choisis un objet ci-dessous pour le poser."));
+      b1.appendChild(el("h3",null,"Mes objets à poser"));
+      if(!invIds.length) b1.appendChild(el("p","empty","Aucun objet en attente. Achète-en dans la boutique juste en dessous."));
+      else { const kg = el("div","kinds"); invIds.forEach(id=>{ const o = objOf(id), b = el("button", petUI.hand===id ? "on" : ""); b.type = "button"; b.setAttribute("aria-pressed", petUI.hand===id);
+          const c2 = el("canvas"); c2.width = c2.height = 90; const cc = c2.getContext("2d"); cc.fillStyle = "#d0ebff"; cc.fillRect(0,0,90,90); const k = Math.max(4, Math.floor(74/Math.max(o[3][0].length, o[3].length))); objDraw(cc, o, Math.floor((90-o[3][0].length*k)/2), Math.floor((90-o[3].length*k)/2), k);
+          b.append(c2, document.createTextNode(`${o[1]} × ${xs.wo.inv[id]}`)); b.onclick = () => { petUI.hand = petUI.hand===id ? "" : id; petUI.sel = -1; renderGallery(); }; kg.appendChild(b); });
+        b1.appendChild(kg);
+        if(petUI.hand && xs.wo.inv[petUI.hand]>0){ const o = objOf(petUI.hand); mk(`Vendre un « ${o[1]} » pour ★ ${objRefund(o[0])}`,"small ghost",()=>{ objSell(petUI.hand); if(!(xs.wo.inv[petUI.hand]>0)) petUI.hand = ""; renderGallery(); },b1).style.alignSelf = "flex-start"; } }
+      { const r = el("div","quick"); r.appendChild(fin()); b1.appendChild(r); }
+      pg.appendChild(b1);
+      const b2 = el("div","block shop"), sh2 = el("div","sec"); sh2.append(el("h2",null,"Boutique d'objets"), el("span","eyebrow",`★ ${fmt(bal)} à dépenser · revente à moitié prix`)); b2.appendChild(sh2);
+      const g = el("div","grid");
+      OBJS.forEach(o=>{ const card = el("div","card"), th = el("div","th"), c2 = el("canvas"); c2.width = c2.height = 120; const cc = c2.getContext("2d"); cc.fillStyle = "#d0ebff"; cc.fillRect(0,0,120,120); cc.fillStyle = "#51cf66"; cc.fillRect(0,100,120,20);
+        const k = Math.max(5, Math.floor(88/Math.max(o[3][0].length, o[3].length))); objDraw(cc, o, Math.floor((120-o[3][0].length*k)/2), 100-o[3].length*k+(["nuage","soleil","lune","etoile","arcenciel","montgolfiere","ballon"].includes(o[0]) ? -30 : 0), k);
+        th.append(c2, el("span","badge","★ "+o[2])); const b = el("button","btn small pink",`Acheter ★ ${o[2]}`); b.type = "button";
+        card.append(th, el("div","nm",o[1]), b);
+        if(bal<o[2]){ b.disabled = true; card.appendChild(el("div","need",`Il te manque ★ ${o[2]-bal}`)); } else b.onclick = () => { if(objBuy(o[0])){ petUI.hand = o[0]; petUI.sel = -1; renderGallery(); const pc = $("petcv"); if(pc) pc.scrollIntoView({block:"start", behavior:"smooth"}); } };
+        g.appendChild(card); });
+      b2.appendChild(g); pg.appendChild(b2); return;
     }
     if(petUI.mode==="game"){
       const b1 = el("div","block"); const g = petUI.game;
@@ -3038,7 +3072,7 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     mk("Nourrir","pink",()=>{ petFeed(); renderGallery(); },acts,`${PT.food} ${PT.food>1 ? "pommes" : "pomme"}`);
     mk("Sieste","line",()=>{ petNap(); renderGallery(); },acts,"Redonne de l'énergie");
     mk("Jouer à sauter","line",()=>{ petPlay(); renderGallery(); },acts,"Coûte 15 d'énergie");
-    mk("Dessiner son monde","line",()=>{ petUI.mode = "world"; petUI.msg = ""; renderGallery(); },acts,"Son décor, à ton goût");
+    mk("Décorer son monde","line",()=>{ petUI.mode = "world"; petUI.msg = ""; renderGallery(); },acts,"Peindre et poser des objets");
     mk("Changer de compagnon","line",()=>{ petUI.pick = !petUI.pick; renderGallery(); },acts,(PET_KINDS.find(x=>x[0]===PT.kind)||PET_KINDS[0])[1]);
     mk("Accessoires","line",()=>{ shopTab = "hat"; setPage("magasin"); },acts,"Au magasin");
     b1.appendChild(acts);
@@ -3723,8 +3757,34 @@ function worldDefault(){ let o = ""; for(let y=0;y<WORLD_H;y++) for(let x=0;x<WO
 let petWorld = store.get("cpn.petworld", ""); if(typeof petWorld!=="string" || petWorld.length!==WORLD_W*WORLD_H) petWorld = worldDefault();
 let worldCv = null;
 function worldRender(){ if(!worldCv){ worldCv = document.createElement("canvas"); worldCv.width = WORLD_W*WK; worldCv.height = WORLD_H*WK; } const c = worldCv.getContext("2d");
-  for(let i=0;i<petWorld.length;i++){ c.fillStyle = WORLD_COLS[CH.indexOf(petWorld[i])] || WORLD_COLS[0]; c.fillRect((i%WORLD_W)*WK, Math.floor(i/WORLD_W)*WK, WK, WK); } return worldCv; }
-let petUI = {mode:"home", anim:null, game:null, col:9, pick:false, name:false, msg:""};
+  for(let i=0;i<petWorld.length;i++){ c.fillStyle = WORLD_COLS[CH.indexOf(petWorld[i])] || WORLD_COLS[0]; c.fillRect((i%WORLD_W)*WK, Math.floor(i/WORLD_W)*WK, WK, WK); }
+  xs.wo.put.slice().sort((a,b)=>(a[2]+objOf(a[0])[3].length)-(b[2]+objOf(b[0])[3].length)).forEach(p=>objDraw(c, objOf(p[0]), p[1]*OPX, p[2]*OPX, OPX)); return worldCv; }
+/* ---------- Objets du monde : dessins tout faits à acheter, poser, ranger ou revendre ---------- */
+const OBJ_COL = {K:"#1d1b3a", R:"#e03131", Y:"#ffd43b", O:"#e8a400", B:"#1c7ed6", L:"#74c0fc", P:"#f783ac", M:"#c2255c", W:"#ffffff", G:"#51cf66", D:"#2b8a3e", V:"#7048e8", T:"#8b5a2b", N:"#c68b59", S:"#adb5bd", H:"#495057", E:"#ff922b", C:"#22b8cf"};
+const OBJS = [
+  ["fleur","Fleur",3,[".P.","PYP",".P.",".D.",".D."]], ["tulipe","Tulipe",3,["R.R","RRR",".D.","DD."]], ["etoile","Étoile",3,[".Y.","YYY",".Y."]],
+  ["champignon","Champignon",4,[".RRR.","RWRWR","RRRRR","..W..","..W.."]], ["rocher","Rocher",4,[".SS..","SSHS.","HSSHS"]], ["nuage","Nuage",4,[".WWW..","WWWWWW",".WWWW."]], ["ballon","Ballon",4,[".R.","RRR","RRR",".R.",".K.",".K."]],
+  ["buisson","Buisson",5,[".GGG.","GGDGG","DGGGD"]], ["cloture","Clôture",5,["N.N.N.N","NNNNNNN","N.N.N.N"]], ["drapeau","Drapeau",5,["KRRR","KRRR","K...","K...","K..."]],
+  ["banc","Banc",6,["TTTTTT","NNNNNN","T....T"]], ["cactus","Cactus",6,["..G..","G.G.G","GGGGG","..G..","..G.."]], ["soleil","Soleil",6,["Y.Y.Y",".YYY.","YYYYY",".YYY.","Y.Y.Y"]], ["lune","Lune",6,[".YY.","YY..","YY..","YY..",".YY."]],
+  ["arbre","Arbre",8,[".GGG.","GGGGG","GGDGG",".GGG.","..T..","..T.."]], ["sapin","Sapin",8,["..D..",".DDD.",".DGD.","DDDDD","DGDGD","..T.."]], ["etang","Étang",8,[".LLLLL.","LLBLLLL","LLLLBLL",".LLLLL."]],
+  ["pommier","Pommier",10,[".GGG.","GRGGG","GGGRG",".GGG.","..T..","..T.."]], ["palmier","Palmier",10,["DD.DD",".DDD.","D.T.D","..T..","..T..","..T.."]], ["bonhomme","Bonhomme de neige",10,[".KKK.",".WWW.",".WKW.","WWWWW","WWEWW","WWWWW"]],
+  ["tente","Tente",12,["...E...","..EEE..",".EEKEE.","EEEKEEE"]], ["arcenciel","Arc-en-ciel",15,["..RRR..",".REEER.","REYYYER","REY.YER"]], ["montgolfiere","Montgolfière",15,[".RRR.","RYRYR","RYRYR",".RRR.","..K..",".TTT."]],
+  ["maison","Maison",20,["..RRR..",".RRRRR.","RRRRRRR","NNNNNNN","NLNNTNN","NNNNTNN"]], ["chateau","Château",40,["R.......R","S.S.S.S.S","SSSSSSSSS","SHSSSSSHS","SSSSTSSSS","SSSSTSSSS"]]
+];
+const OPX = 10, objOf = id => OBJS.find(o=>o[0]===id);
+if(!xs.wo || typeof xs.wo!=="object") xs.wo = {}; if(!xs.wo.inv || typeof xs.wo.inv!=="object") xs.wo.inv = {}; if(!Array.isArray(xs.wo.put)) xs.wo.put = [];
+xs.wo.put = xs.wo.put.filter(p=>Array.isArray(p) && objOf(p[0]));
+function objDraw(c, o, px, py, k){ o[3].forEach((r,ry)=>[...r].forEach((ch,rx)=>{ if(ch==="." || !OBJ_COL[ch]) return; c.fillStyle = OBJ_COL[ch]; c.fillRect(px+rx*k, py+ry*k, k, k); })); }
+const objBox = p => { const o = objOf(p[0]); return {x:p[1], y:p[2], w:o[3][0].length, h:o[3].length}; };
+function objBuy(id){ const o = objOf(id); if(!o || shopBal()<o[2]) return false; shop.spent += o[2]; store.set("cpn.shop", shop); xs.wo.inv[id] = (xs.wo.inv[id]||0)+1; saveXs(); sWin(); return true; }
+const objRefund = id => Math.floor(objOf(id)[2]/2);
+function objSell(id){ if(!(xs.wo.inv[id]>0)) return; xs.wo.inv[id]--; if(!xs.wo.inv[id]) delete xs.wo.inv[id]; shop.spent = Math.max(0, shop.spent-objRefund(id)); store.set("cpn.shop", shop); saveXs(); sColor(); }
+function objPlace(id, hx, hy){ const o = objOf(id); if(!o || !(xs.wo.inv[id]>0)) return; const w = o[3][0].length, h = o[3].length, W2 = WORLD_W*WK/OPX, H2 = WORLD_H*WK/OPX;
+  const x = Math.max(0, Math.min(W2-w, hx-Math.floor(w/2))), y = Math.max(0, Math.min(H2-h, hy-h+1));
+  xs.wo.inv[id]--; if(!xs.wo.inv[id]) delete xs.wo.inv[id]; xs.wo.put.push([id, x, y]); saveXs(); worldRender(); sColor(); }
+function objTake(i){ const p = xs.wo.put[i]; if(!p) return; xs.wo.put.splice(i,1); xs.wo.inv[p[0]] = (xs.wo.inv[p[0]]||0)+1; saveXs(); worldRender(); }
+function objAt(hx, hy){ for(let i=xs.wo.put.length-1;i>=0;i--){ const b = objBox(xs.wo.put[i]); if(hx>=b.x-1 && hx<=b.x+b.w && hy>=b.y-1 && hy<=b.y+b.h) return i; } return -1; }
+let petUI = {mode:"home", anim:null, game:null, col:9, pick:false, name:false, msg:"", wtab:"paint", hand:"", sel:-1};
 function petFeed(){ petTick(); if(PT.food<=0){ petUI.msg = "Plus de pommes ! Termine un dessin pour en gagner une."; return; } if(PT.h>=98){ petUI.msg = `${xs.pet} n'a plus faim.`; return; }
   PT.food--; PT.h = clamp100(PT.h+25); PT.j = clamp100(PT.j+4); saveXs(); petUI.anim = {type:"eat", t:0}; petUI.msg = ""; sColor(); }
 function petNap(){ petTick(); if(PT.e>=90){ petUI.msg = `${xs.pet} n'est pas fatigué.`; return; } petUI.anim = {type:"nap", t:0}; petUI.msg = ""; }
@@ -3754,10 +3814,11 @@ function petFrame(cv, c, dt, now){
     return;
   }
   c.drawImage(wc, 0, 0);
-  if(petUI.mode==="world"){ c.strokeStyle = "rgba(29,27,58,.16)"; c.lineWidth = 1; c.beginPath(); for(let x=1;x<WORLD_W;x++){ c.moveTo(x*WK+.5,0); c.lineTo(x*WK+.5,cv.height); } for(let y=1;y<WORLD_H;y++){ c.moveTo(0,y*WK+.5); c.lineTo(Wd,y*WK+.5); } c.stroke();
-    c.strokeStyle = "#e03131"; c.setLineDash([8,6]); c.lineWidth = 2; c.beginPath(); c.moveTo(0,gy); c.lineTo(Wd,gy); c.stroke(); c.setLineDash([]); }
+  if(petUI.mode==="world"){ c.strokeStyle = petUI.wtab==="items" ? "rgba(29,27,58,0)" : "rgba(29,27,58,.16)"; c.lineWidth = 1; c.beginPath(); for(let x=1;x<WORLD_W;x++){ c.moveTo(x*WK+.5,0); c.lineTo(x*WK+.5,cv.height); } for(let y=1;y<WORLD_H;y++){ c.moveTo(0,y*WK+.5); c.lineTo(Wd,y*WK+.5); } c.stroke();
+    c.strokeStyle = "#e03131"; c.setLineDash([8,6]); c.lineWidth = 2; c.beginPath(); c.moveTo(0,gy); c.lineTo(Wd,gy); c.stroke(); c.setLineDash([]);
+    if(petUI.wtab==="items" && xs.wo.put[petUI.sel]){ const b = objBox(xs.wo.put[petUI.sel]); c.strokeStyle = "#c81fd0"; c.lineWidth = 3; c.strokeRect(b.x*OPX-3, b.y*OPX-3, b.w*OPX+6, b.h*OPX+6); } }
   const an = petUI.anim; if(an) an.t += dt;
-  const sh = petUI.mode==="world" ? 70 : 104, sw = sp.width/sp.height*sh, t = now/1000;
+  const sh = petUI.mode==="world" ? 70 : 104, hideGrid = 0, sw = sp.width/sp.height*sh, t = now/1000;
   let px = Wd/2-sw/2 + (petUI.mode==="world" ? 150 : Math.sin(t*.45)*110), py = gy-sh-Math.abs(Math.sin(t*2.2))*5, alpha = petUI.mode==="world" ? .55 : 1;
   if(an && an.type==="hop"){ py -= Math.sin(Math.min(1, an.t/.5)*Math.PI)*46; if(an.t>.5) petUI.anim = null; }
   if(an && an.type==="eat"){ px = Wd/2-sw/2; const k = Math.min(1, an.t/.7), ax = Wd/2, ay = 20+(gy-sh*.55-20)*k; if(an.t<.7){ c.fillStyle = "#e03131"; c.fillRect(ax-9, ay-9, 18, 18); c.fillStyle = "#2f9e44"; c.fillRect(ax-2, ay-15, 8, 6); c.fillStyle = "#ff8787"; c.fillRect(ax-6, ay-6, 5, 5); }
