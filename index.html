@@ -146,7 +146,7 @@ body.drawer-open #scrim{opacity:1;pointer-events:auto}
 .content>*{flex:0 0 auto}
 .appbar{position:sticky;top:0;z-index:2;background:var(--ink);color:#fff;display:flex;align-items:center;gap:12px;padding:calc(10px + var(--st)) calc(14px + var(--sr)) 10px calc(14px + var(--sl))}
 .ab-t{flex:1;min-width:0;font-family:var(--display);font-weight:800;font-size:19px;line-height:1.05;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pill{background:#322f61;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill{border:0;color:#fff;cursor:pointer;font-family:inherit;background:#322f61;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}
 .pix{height:8px;background:repeating-linear-gradient(90deg,#d6336c 0 10px,#3b5bdb 10px 20px,#e8590c 20px 30px,#2f9e44 30px 40px,#0c8599 40px 50px,#7048e8 50px 60px);position:sticky;top:calc(64px + var(--st));z-index:2}
 .btn{border:0;border-radius:14px;padding:11px 16px;font-weight:800;background:var(--accent);color:var(--accent-ink);box-shadow:0 3px 0 #8d1493}
 .btn:active{transform:translateY(2px);box-shadow:0 1px 0 #8d1493}
@@ -334,6 +334,12 @@ body.chrono #reset{display:none}
 .lvl.lock{opacity:.55;cursor:default}
 .lvl.lock:active{transform:none;box-shadow:0 4px 0 var(--ink)}
 
+.slist{display:flex;flex-direction:column;background:var(--card);border:2px solid var(--ink);border-radius:18px;overflow:hidden}
+.srow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;font-weight:700;font-size:15px}
+.srow + .srow{border-top:2px solid var(--line)}
+.srow small{display:block;color:var(--muted);font-size:12px;font-weight:700}
+.srow b{flex:0 0 auto;font-family:var(--display);font-size:17px;color:#b07d00;font-variant-numeric:tabular-nums;white-space:nowrap}
+.slist .empty{padding:14px}
 .bdg{cursor:default}
 .bdg:active{transform:none;box-shadow:0 4px 0 var(--ink)}
 .bdg .th canvas{background:#eceaf5}
@@ -432,7 +438,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
       <header class="appbar">
         <button class="icon" id="drawerBtn" type="button" aria-label="Afficher ou masquer les catégories" aria-controls="drawer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
         <div class="ab-t" id="abTitle"></div>
-        <span class="pill" id="ovPill"></span>
+        <button class="pill" id="ovPill" type="button"></button>
         <button class="me" id="meBtn" type="button" aria-label="Mon profil et les joueurs"><canvas id="meCv" width="8" height="8"></canvas></button>
       </header>
       <div class="pix"></div>
@@ -1804,7 +1810,7 @@ const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorat
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -1847,6 +1853,12 @@ function starsOf(d){
   return d._st = diff<350 ? 1 : diff<650 ? 2 : diff<950 ? 3 : diff<1400 ? 4 : 5;
 }
 const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
+/* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
+let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
+function logStar(kind, ref, n){
+  if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
+  starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
+}
 const catColor = key => { const p = PLANETS.find(q=>q.key===key); return p ? p.c : (CATS.find(c=>c[0]===key) || CATS[0])[2]; };
 function makeCard(it, wideCard){
   const d = it.d, card = document.createElement("div");
@@ -2094,6 +2106,39 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Mes étoiles : d'où elles viennent */
+  if(page === "etoiles"){
+    $("abTitle").textContent = "Mes étoiles";
+    const doneItems = items.filter(i=>i.pct===100), sDraw = doneItems.reduce((a,i)=>a+starsOf(i.d),0), sDuel = duelRec.w*DUEL_WIN+duelRec.l*DUEL_LOSS;
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${fmt(totalStars)}`));
+    hd.append(sc, el("p",null,"Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Le chrono et les duels en donnent aussi."));
+    b0.append(bk, hd); pg.appendChild(b0);
+    const b1 = el("div","block"); b1.appendChild(el("h2",null,"D'où viennent tes étoiles"));
+    const tb = el("div","slist");
+    [[`Dessins terminés (${doneItems.length})`, sDraw], [`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], [`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel]].forEach(([l,n])=>{ const r = el("div","srow"); r.append(el("span",null,l), el("b",null,`★ ${fmt(n)}`)); tb.appendChild(r); });
+    b1.appendChild(tb); pg.appendChild(b1);
+    const b2 = el("div","block"); b2.appendChild(el("h2",null,"Historique"));
+    const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
+    const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
+    starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
+      const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
+      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : `Duel contre ${ref}`;
+      const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
+    });
+    if(!starLog.length) hl.appendChild(el("p","empty","Rien pour l'instant. Termine un dessin pour gagner tes premières étoiles."));
+    b2.appendChild(hl); pg.appendChild(b2);
+    const old = doneItems.filter(i=>!logged.has(i.d.id)).sort((a,b)=>starsOf(b.d)-starsOf(a.d));
+    if(old.length){
+      const b3 = el("div","block"); b3.appendChild(el("h2",null,"Dessins terminés avant l'historique"));
+      b3.appendChild(el("p","empty","Ces dessins comptent dans ton total, mais leur date n'a pas été notée."));
+      const ol = el("div","slist"); old.slice(0,150).forEach(i=>{ const r = el("div","srow"); r.append(el("span",null,i.d.name), el("b",null,`+${starsOf(i.d)} ★`)); ol.appendChild(r); });
+      b3.appendChild(ol); pg.appendChild(b3);
+    }
     return;
   }
 
@@ -2553,7 +2598,7 @@ function duelEnd(won, text){
   duel.over = true; clearInterval(duel.tx); clearInterval(duel.bot);
   if(won && duel.net){ if(duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); duel.net.send({t:"done"}); }
   if(won) duelRec.w++; else duelRec.l++; store.set("cpn.duel", duelRec);
-  const ns = won ? DUEL_WIN : DUEL_LOSS;
+  const ns = won ? DUEL_WIN : DUEL_LOSS; logStar(won ? "w" : "l", duel.opp.name, ns);
   $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; $("say").hidden = true; $("win").classList.add("on");
   if(!won){ const a = audio(); if(a) [392,330,262].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .12, "triangle")); }
 }
@@ -2610,6 +2655,7 @@ function chronoLose(){
 function chronoWin(){
   chrono.won = true; stopChrono();
   const r = chrono.left/chrono.T, stars = r>=.5 ? 3 : r>=.25 ? 2 : 1, prev = chronoRes[chrono.lv];
+  if(stars > (prev ? prev.s : 0)) logStar("c", chrono.lv, stars-(prev ? prev.s : 0));
   if(!prev || stars>prev.s || (stars===prev.s && chrono.left>prev.l)){ chronoRes[chrono.lv] = {s:stars, l:Math.round(chrono.left)}; store.set("cpn.chrono", chronoRes); }
   $("winTxt").textContent = `Niveau ${chrono.lv+1} réussi ! ${starTxt(stars)} Il te restait ${mmss(chrono.left)}.`;
   if(chrono.lv+1 < LEVELS.length){ $("winNext").textContent = "Niveau suivant"; $("winNext").hidden = false; }
@@ -2865,7 +2911,7 @@ function paintCell(i){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
       $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
     }
-    if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
+    if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
@@ -3142,6 +3188,7 @@ $("ldEdit").onclick = () => showLand("edit");
 $("ldNew").onclick = () => showLand("create");
 $("ldClose").onclick = () => { $("land").hidden = true; };
 $("meBtn").onclick = () => showLand(me ? "choose" : "create");
+$("ovPill").onclick = () => setPage("etoiles");
 
 renderGallery();
 /* Jeu hors ligne : seulement sur le vrai site, pas dans un aperçu intégré */
