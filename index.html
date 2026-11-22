@@ -187,6 +187,9 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .wkbox .wkt b{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
 .wkbox .wkt small{font-size:13px;font-weight:800;color:var(--muted)}
 
+.qrbox{display:flex;flex-direction:column;align-items:center;gap:8px}
+.qrbox canvas{width:min(62vw,230px);height:auto;image-rendering:pixelated;border-radius:12px;border:3px solid var(--ink);background:#fff}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -2501,7 +2504,13 @@ function renderGallery(){
     const card = (title, text) => { const c = el("div","dcard"); c.append(el("h3",null,title), el("p",null,text)); g.appendChild(c); return c; };
     const B = (label, cls, fn, parent) => { const b = el("button","btn "+cls, label); b.type = "button"; b.onclick = fn; parent.appendChild(b); return b; };
     if(lob.view==="host"){
-      const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code)); c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
+      const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code));
+      { const link = duelLink(lob.code), qc = link ? qrCanvas(link) : null;
+        if(qc){ const qb = el("div","qrbox"); qc.setAttribute("role","img"); qc.setAttribute("aria-label","Code QR pour rejoindre la partie "+lob.code); qb.append(qc, el("p",null,"Ou scanne ce code QR avec l'appareil photo de l'autre téléphone : il rejoint la partie directement."));
+          if(navigator.share){ const sb = el("button","btn line small","Envoyer le lien"); sb.type = "button"; sb.onclick = () => { navigator.share({title:"Duel de coloriage", text:"Rejoins mon duel de coloriage ! Code : "+lob.code, url:link}).catch(()=>{}); }; qb.appendChild(sb); }
+          c.appendChild(qb); }
+        else c.appendChild(el("p",null,"Le code QR s'affiche quand tu joues sur le site du jeu (pas dans cet aperçu).")); }
+      c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else if(lob.view==="joining"){
       const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else if(lob.view==="seek"){
@@ -4048,6 +4057,53 @@ renderGallery();
 try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.top===window) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
 if(!me) showLand("create"); else if(users.length>1 && !sessFlag(false)) showLand("choose");
 syncStart();
+
+/* ---------- Code QR (mode octet, correction L, versions 1 à 5) pour rejoindre un duel ---------- */
+function qrMatrix(text){
+  const bytes = Array.from(new TextEncoder().encode(text)), CAP = [19,34,55,80,108], ECL = [7,10,15,20,26];
+  const v = CAP.findIndex(c=>bytes.length+2<=c)+1; if(!v) return null;
+  const nData = CAP[v-1], nEc = ECL[v-1], size = 17+4*v, bits = [];
+  const put = (val, n) => { for(let i=n-1;i>=0;i--) bits.push((val>>>i)&1); };
+  put(4,4); put(bytes.length,8); bytes.forEach(b=>put(b,8)); put(0, Math.min(4, nData*8-bits.length)); while(bits.length%8) bits.push(0);
+  const data = []; for(let i=0;i<bits.length;i+=8) data.push(parseInt(bits.slice(i,i+8).join(""),2));
+  for(let k=0; data.length<nData; k++) data.push(k%2 ? 0x11 : 0xEC);
+  const mul = (x,y) => { let z = 0; for(let i=7;i>=0;i--){ z = (z<<1)^((z>>>7)*0x11D); z ^= ((y>>>i)&1)*x; } return z; };
+  const gen = new Array(nEc).fill(0); gen[nEc-1] = 1; let root = 1;
+  for(let i=0;i<nEc;i++){ for(let j=0;j<nEc;j++){ gen[j] = mul(gen[j], root); if(j+1<nEc) gen[j] ^= gen[j+1]; } root = mul(root, 2); }
+  const ec = new Array(nEc).fill(0);
+  for(const b of data){ const f = b^ec.shift(); ec.push(0); gen.forEach((c,i)=>{ ec[i] ^= mul(c,f); }); }
+  const cw = data.concat(ec), M = [], F = [];
+  for(let y=0;y<size;y++){ M.push(new Array(size).fill(0)); F.push(new Array(size).fill(0)); }
+  const set = (x,y,d) => { M[y][x] = d ? 1 : 0; F[y][x] = 1; };
+  for(let i=0;i<size;i++){ set(6,i,i%2===0); set(i,6,i%2===0); }
+  for(const [cx,cy] of [[3,3],[size-4,3],[3,size-4]]) for(let dy=-4;dy<=4;dy++) for(let dx=-4;dx<=4;dx++){ const x = cx+dx, y = cy+dy, d = Math.max(Math.abs(dx),Math.abs(dy)); if(x>=0 && x<size && y>=0 && y<size) set(x,y,d!==2 && d!==4); }
+  if(v>=2){ const c = size-7; for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++) set(c+dx, c+dy, Math.max(Math.abs(dx),Math.abs(dy))!==1); }
+  const fdata = (1<<3)|0; let rem = fdata; for(let i=0;i<10;i++) rem = (rem<<1)^((rem>>>9)*0x537);
+  const fb = ((fdata<<10)|rem)^0x5412, bit = i => (fb>>>i)&1;
+  for(let i=0;i<=5;i++) set(8,i,bit(i)); set(8,7,bit(6)); set(8,8,bit(7)); set(7,8,bit(8)); for(let i=9;i<15;i++) set(14-i,8,bit(i));
+  for(let i=0;i<8;i++) set(size-1-i,8,bit(i)); for(let i=8;i<15;i++) set(8,size-15+i,bit(i)); set(8,size-8,1);
+  let k = 0;
+  for(let right=size-1; right>=1; right-=2){ if(right===6) right = 5;
+    for(let vert=0;vert<size;vert++) for(let j=0;j<2;j++){ const x = right-j, up = ((right+1)&2)===0, y = up ? size-1-vert : vert;
+      if(!F[y][x]){ const d = k<cw.length*8 ? (cw[k>>>3]>>>(7-(k&7)))&1 : 0; k++; M[y][x] = d^((x+y)%2===0 ? 1 : 0); } } }
+  return M;
+}
+function qrCanvas(text){
+  const M = qrMatrix(text); if(!M) return null;
+  const n = M.length, q = 4, K = 6, cv = el("canvas"); cv.width = cv.height = (n+q*2)*K;
+  const c = cv.getContext("2d"); c.fillStyle = "#fff"; c.fillRect(0,0,cv.width,cv.height); c.fillStyle = "#000";
+  for(let y=0;y<n;y++) for(let x=0;x<n;x++) if(M[y][x]) c.fillRect((x+q)*K, (y+q)*K, K, K);
+  return cv;
+}
+/* Lien d'invitation : seulement sur le vrai site (pas dans un aperçu intégré) */
+function duelLink(code){ try{ if(!/^https?:$/.test(location.protocol) || window.top!==window) return ""; }catch(e){ return ""; } return location.origin+location.pathname+"?duel="+code; }
+(function(){
+  let code = ""; try{ code = (new URLSearchParams(location.search).get("duel")||"").replace(/\D/g,""); }catch(e){}
+  if(code.length!==4) return;
+  const t = setInterval(()=>{ const sp = $("splash"); if(!me || !$("land").hidden || (sp && !sp.hidden && getComputedStyle(sp).display!=="none")) return; clearInterval(t);
+    try{ history.replaceState(null, "", location.pathname); }catch(e){}
+    if(cur) goHome(); page = "duel"; store.set("cpn.page", "duel"); duelJoin(code); }, 400);
+})();
 
 /* ---------- Écran de chargement ---------- */
 (function(){

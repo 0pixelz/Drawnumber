@@ -25,6 +25,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Collections : chaque sous-catégorie, catégorie ou lettre complétée donne des étoiles (★ 3 à ★ 30) et souvent un avatar exclusif
 - Défi de la semaine : un grand dessin 44 × 44 (quatre dessins assemblés) qui change le lundi, ★ 40
 - Duel : cadre d'avatar visible par l'adversaire et au classement, choix du dessin, meilleur de 3, revanche en un bouton
+- Duel par code QR : l'hôte affiche un code QR (généré dans la page, sans service externe) et un lien `?duel=1234` qui fait rejoindre la partie directement
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
