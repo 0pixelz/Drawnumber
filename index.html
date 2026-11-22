@@ -79,6 +79,13 @@ canvas{image-rendering:pixelated}
 #syncBox .err{color:#b3261e}
 .ldnote{margin:0;font-size:12px;font-weight:700;color:var(--muted);text-align:center}
 .players{display:flex;flex-direction:column;gap:8px}
+.plrow{display:flex;gap:8px;align-items:stretch}
+.plrow .plb{flex:1;min-width:0}
+.pldel{flex:0 0 46px;border:2px solid var(--line);border-radius:16px;background:var(--card);color:#b3261e;display:grid;place-items:center;padding:0}
+.pldel svg{width:22px;height:22px}
+.plask{border:2px solid #b3261e;border-radius:16px;padding:12px;background:#fff5f5;display:flex;flex-direction:column;gap:10px}
+.plask p{margin:0;font-weight:800;font-size:14px;color:#7a0c0c}
+.btn.danger{background:#e03131;color:#fff;box-shadow:0 3px 0 #7a0c0c}
 .plb{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:16px;padding:8px;background:var(--card);text-align:left}
 .plb canvas{width:50px;height:50px;border-radius:13px;flex:0 0 auto}
 .plb b{font-family:var(--display);font-size:20px;display:block;line-height:1.1}
@@ -4675,6 +4682,17 @@ const AVATARS = ["O_rose","O_pirate","O_reine","O_lunettes","chat","W_robot1","W
 const avatarOf = u => BUILTIN.find(d=>d.id===(u && u.av)) || BUILTIN.find(d=>d.id==="O_rose");
 let ldMode = "create", ldAv = AVATARS[0];
 function sessFlag(set){ try{ if(set) sessionStorage.setItem("cpn.chosen","1"); return sessionStorage.getItem("cpn.chosen")==="1"; }catch(e){ return false; } }
+/* Supprime un joueur et tout son espace (dessins, étoiles, achats) sur cet appareil */
+function deletePlayer(u){
+  const keep = ["cpn.users","cpn.user","cpn.mute","cpn.drawerOff","cpn.sync","cpn.tutoTodo"], gone = [];
+  try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(!k) continue;
+      if(u.pfx ? k.startsWith("cpn@"+u.pfx+".") : (k.startsWith("cpn.") && !keep.includes(k))) gone.push(k); }
+    gone.forEach(k=>localStorage.removeItem(k)); }catch(e){}
+  const wasMe = me && me.id===u.id;
+  users = users.filter(x=>x.id!==u.id); RAW.set("cpn.users", users);
+  if(wasMe){ RAW.set("cpn.user", users.length ? users[0].id : ""); sessFlag(true); location.reload(); return; }
+  markDirty(); showLand("choose");
+}
 function showLand(mode){
   ldMode = mode; const choose = mode==="choose";
   $("land").hidden = false; $("ldChoose").hidden = !choose; $("ldForm").hidden = choose; $("ldErr").hidden = true;
@@ -4692,7 +4710,16 @@ function showLand(mode){
       const t = el("span"); t.append(el("b",null,u.name), el("small",null, me && u.id===me.id ? "Joueur actuel" : "Toucher pour jouer"));
       b.append(c, t);
       b.onclick = () => { if(me && u.id===me.id){ $("land").hidden = true; return; } RAW.set("cpn.user", u.id); sessFlag(true); location.reload(); };
-      pl.appendChild(b);
+      const row = el("div","plrow"), del = el("button","pldel"); del.type = "button"; del.setAttribute("aria-label","Supprimer le joueur "+u.name);
+      del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M10 7V4h4v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
+      row.append(b, del); pl.appendChild(row);
+      del.onclick = () => {
+        pl.querySelectorAll(".plask").forEach(x=>x.remove());
+        const ask = el("div","plask"); ask.setAttribute("role","alertdialog");
+        ask.appendChild(el("p",null,`Es-tu sûr de vouloir supprimer ${u.name} ? Tous ses dessins, ses étoiles et ses achats seront effacés pour toujours.`));
+        const r = el("div","row"), no = el("button","btn ghost","Annuler"), yes = el("button","btn danger","Oui, supprimer"); no.type = "button"; yes.type = "button"; no.style.flex = yes.style.flex = "1";
+        no.onclick = () => ask.remove(); yes.onclick = () => deletePlayer(u); r.append(no, yes); ask.appendChild(r); row.after(ask); no.focus();
+      };
     }
     $("ldEdit").hidden = !me;
     return;
