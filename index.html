@@ -144,7 +144,6 @@ canvas{image-rendering:pixelated}
 .srow .btn.rp{flex:0 0 auto;padding:5px 10px;font-size:13px}
 
 /* Défis, cadeau du jour, récompenses de trophées */
-.modes .md:last-child:nth-child(odd){grid-column:1/-1}
 .wbanner.gift{background:#7048e8}
 .wbanner.gift small{color:#e5dbff}
 .days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
@@ -161,6 +160,32 @@ canvas{image-rendering:pixelated}
 .chal .rw{flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:18px;color:#b07d00}
 .bdg .btn{width:100%;padding:7px 6px;font-size:14px}
 .bdg .rw{font-size:12px;font-weight:800;color:#b07d00}
+
+/* Thèmes du menu, onglets du magasin, aperçus */
+body[data-th="ocean"]{--paper:#e7f5ff;--accent:#1971c2} body[data-th="ocean"] .appbar,body[data-th="ocean"] #drawer{background:#0b3d70}
+body[data-th="foret"]{--paper:#ebfbee;--accent:#2f9e44} body[data-th="foret"] .appbar,body[data-th="foret"] #drawer{background:#1b4332}
+body[data-th="soleil"]{--paper:#fff4e6;--accent:#e8590c} body[data-th="soleil"] .appbar,body[data-th="soleil"] #drawer{background:#7a2e0e}
+body[data-th="raisin"]{--paper:#f8f0fc;--accent:#9c36b5} body[data-th="raisin"] .appbar,body[data-th="raisin"] #drawer{background:#4a1d6e}
+body[data-th="nuit"]{--paper:#e3e6ee;--accent:#364fc7} body[data-th="nuit"] .appbar,body[data-th="nuit"] #drawer{background:#07070d}
+body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
+.tprev{aspect-ratio:1;border-radius:11px;overflow:hidden;display:flex;flex-direction:column;border:2px solid var(--line)}
+.tprev i{flex:0 0 34%;display:block}
+.tprev span{flex:1;display:grid;place-items:center}
+.tprev u{width:46%;height:38%;border-radius:999px;display:block}
+.th.tap{cursor:pointer}
+#opp #oppAv{width:28px;height:28px;border-radius:9px;margin:0 auto}
+.dpick{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;-webkit-overflow-scrolling:touch}
+.dpick button{flex:0 0 auto;width:58px;height:58px;border-radius:13px;border:3px solid var(--line);background:var(--card);padding:0;overflow:hidden;font-weight:800;font-size:11px;color:var(--ink);line-height:1.1}
+.dpick button.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.dpick canvas{width:100%;height:100%;display:block}
+.colrw{display:flex;justify-content:space-between;gap:6px;font-size:12px;font-weight:800;color:#b07d00}
+.card.col.got{border-color:var(--good);box-shadow:0 4px 0 var(--good)}
+.card.col .btn{width:100%;padding:7px 6px;font-size:14px}
+.wkbox{background:var(--card);border:2px solid var(--ink);border-radius:20px;box-shadow:0 4px 0 var(--ink);padding:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.wkbox canvas{width:120px;height:120px;border-radius:12px;background:#eceaf5;flex:0 0 auto;border:2px solid var(--ink)}
+.wkbox .wkt{flex:1 1 170px;min-width:0;display:flex;flex-direction:column;gap:6px}
+.wkbox .wkt b{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
+.wkbox .wkt small{font-size:13px;font-weight:800;color:var(--muted)}
 
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
@@ -595,7 +620,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
           </div>
         </div>
       </div>
-      <div id="opp" hidden><canvas id="oppCv" width="8" height="8"></canvas><div class="ot"><b id="oppName"></b><span id="oppPct"></span></div></div>
+      <div id="opp" hidden><canvas id="oppCv" width="8" height="8"></canvas><div class="ot"><canvas id="oppAv" width="8" height="8"></canvas><b id="oppName"></b><span id="oppPct"></span></div></div>
       <div id="count" hidden></div>
       <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="winRep" type="button">Replay</button><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small pink" id="winNext" type="button" hidden></button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
@@ -2081,7 +2106,7 @@ const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorat
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","contes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && page !== "magasin" && page !== "defis" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && page !== "magasin" && page !== "defis" && page !== "collections" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -2127,7 +2152,7 @@ const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 /* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
 let starOpen = "";
 let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
-const xLabel = (k, ref) => k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : `Défi : ${ref}`;
+const xLabel = (k, ref) => k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
 function logStar(kind, ref, n){
   if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
   starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
@@ -2206,6 +2231,7 @@ function renderGallery(){
     stars: totalStars, free: flist.length, best: Math.max(streak.best||0, streakNow()), noel: byCat("noel").filter(i=>i.pct===100).length};
   const BG = badges(STATE), nBadges = BG.filter(b=>b[2]>=b[3]).length, trReady = BG.filter(b=>b[2]>=b[3] && !xs.tr.includes(b[0])).length;
   const lg = loginState(), chNow = chalEnsure(), chReady = chalReady(), toClaim = (lg.claimed ? 0 : 1)+chReady;
+  const COLS = collections(items), colReady = COLS.filter(c=>c.full && !c.got).length, colDone = COLS.filter(c=>c.full).length;
   lastStars = totalStars; const bal = shopBal();
   $("ovPill").textContent = `★ ${fmt(bal)}`;
   $("ovPill").setAttribute("aria-label", `${bal} étoiles à dépenser`);
@@ -2231,7 +2257,8 @@ function renderGallery(){
    ["trophees","Trophées",trReady ? `${trReady} à réclamer` : `${nBadges} / ${BG.length} gagnés`,"#f0b429",'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4c0 3 1.5 4 3 4M17 6h3c0 3-1.5 4-3 4M12 14v4M8.5 20h7"/>',page==="trophees"],
    ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"],
    ["magasin","Magasin",`★ ${fmt(bal)} à dépenser`,"#e64980",'<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',page==="magasin"],
-   ["defis","Défis et cadeau", toClaim ? `${toClaim} à réclamer` : `${chNow.got.filter(Boolean).length} / 3 défis faits`,"#7048e8",'<path d="M4 10h16v10H4zM3 6h18v4H3zM12 6v14M12 6c-2-4-6-3-5 0M12 6c2-4 6-3 5 0"/>',page==="defis"]
+   ["defis","Défis et cadeau", toClaim ? `${toClaim} à réclamer` : `${chNow.got.filter(Boolean).length} / 3 défis faits`,"#7048e8",'<path d="M4 10h16v10H4zM3 6h18v4H3zM12 6v14M12 6c-2-4-6-3-5 0M12 6c2-4 6-3 5 0"/>',page==="defis"],
+   ["collections","Collections", colReady ? `${colReady} à réclamer` : `${colDone} / ${COLS.length} complètes`,"#2f9e44",'<path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v6H4zM13 14h7v6h-7z"/>',page==="collections"]
   ].forEach(([key,label,sub,color,path,on])=>{
     const b = el("button","md" + (on ? " on" : "")); b.type = "button"; b.style.setProperty("--c", color); if(on) b.setAttribute("aria-current","page");
     const i2 = el("span","ic"); i2.innerHTML = SVG(path);
@@ -2316,7 +2343,7 @@ function renderGallery(){
     q.append(b1, b2, b3, b4, b5);
     const top = el("div","block"); top.append(f, q); pg.appendChild(top);
     const gb = el("button","wbanner gift"); gb.type = "button";
-    const gt = el("span","wt"); gt.append(el("b",null, lg.claimed ? "Défis du jour" : `Cadeau du jour : ★ ${lg.reward}`), el("small",null, (lg.claimed ? `Cadeau reçu · jour ${lg.day} de suite` : `Jour ${lg.day} de suite · reviens chaque jour !`) + ` · ${chNow.got.filter(Boolean).length} / 3 défis` + (chReady ? ` · ${chReady} à réclamer` : "") + (trReady ? ` · ${trReady} ${trReady>1 ? "trophées" : "trophée"} à réclamer` : "")));
+    const gt = el("span","wt"); gt.append(el("b",null, lg.claimed ? "Défis du jour" : `Cadeau du jour : ★ ${lg.reward}`), el("small",null, (lg.claimed ? `Cadeau reçu · jour ${lg.day} de suite` : `Jour ${lg.day} de suite · reviens chaque jour !`) + ` · ${chNow.got.filter(Boolean).length} / 3 défis` + (chReady ? ` · ${chReady} à réclamer` : "") + (trReady ? ` · ${trReady} ${trReady>1 ? "trophées" : "trophée"} à réclamer` : "") + (colReady ? ` · ${colReady} ${colReady>1 ? "collections" : "collection"} à réclamer` : "")));
     gb.append(gt, el("span","btn pink", lg.claimed ? (chReady ? "Réclamer" : "Voir") : "Réclamer")); gb.onclick = () => setPage("defis");
     pg.appendChild(gb);
     const bn = el("button","wbanner"); bn.type = "button";
@@ -2411,7 +2438,7 @@ function renderGallery(){
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"D'où viennent tes étoiles"));
     const tb = el("div","slist");
     const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
-    [["d",`Dessins terminés (${doneItems.length})`, sDraw], ["c",`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], ["u",`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel], ["x","Récompenses (trophées, cadeaux du jour, défis)", xs.n]].forEach(([k,l,n])=>{
+    [["d",`Dessins terminés (${doneItems.length})`, sDraw], ["c",`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], ["u",`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel], ["x","Récompenses (trophées, cadeaux, défis, collections)", xs.n]].forEach(([k,l,n])=>{
       const r = el("button","srow tap" + (starOpen===k ? " on" : "")); r.type = "button"; r.setAttribute("aria-expanded", starOpen===k);
       const tx = el("span"); tx.append(document.createTextNode(l), el("small",null, starOpen===k ? "Toucher pour refermer" : "Toucher pour voir le détail"));
       r.append(tx, el("b",null,`★ ${fmt(n)}`)); r.onclick = () => { starOpen = starOpen===k ? "" : k; renderGallery(); }; tb.appendChild(r);
@@ -2435,7 +2462,7 @@ function renderGallery(){
       else { const cl = el("div","slist"); du.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(k==="w" ? `Gagné contre ${ref}` : `Perdu contre ${ref}`), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les duels"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("duel"); b1.appendChild(go);
     } else if(starOpen==="x"){
-      const xl = starLog.filter(e=>"tjf".includes(e[1])).reverse();
+      const xl = starLog.filter(e=>"tjfkh".includes(e[1])).reverse();
       if(!xl.length) b1.appendChild(el("p","empty","Aucune récompense pour l'instant. Réclame ton cadeau du jour, tes défis et tes trophées."));
       else { const cl = el("div","slist"); xl.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(xLabel(k, ref)), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les défis"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("defis"); b1.appendChild(go);
@@ -2445,7 +2472,7 @@ function renderGallery(){
     const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
     starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
       const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
-      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjf".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
+      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkh".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
       const r = el(d ? "button" : "div","srow" + (d ? " tap" : "")), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t)));
       if(d){ r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, d, null, true); r.appendChild(cv); r.onclick = () => openDrawing(d); r.setAttribute("aria-label", label+", ouvrir le dessin"); }
       r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
@@ -2480,6 +2507,14 @@ function renderGallery(){
     } else if(lob.view==="seek"){
       const c = card("Recherche d'un joueur","On cherche quelqu'un qui veut jouer en ce moment. Si personne ne répond en 15 secondes, tu joueras contre le robot."); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else {
+      const c0 = card("Options de la partie","Pour jouer avec un ami ou contre le robot. La recherche d'un joueur reste en une manche, dessin au hasard.");
+      const seg = el("div","quick"); c0.appendChild(seg);
+      [[1,"1 manche"],[3,"Meilleur de 3"]].forEach(([n,l])=>{ const b = B(l, duelOpt.bo===n ? "pink small" : "line small", ()=>{ duelOpt.bo = n; renderGallery(); }, seg); b.setAttribute("aria-pressed", duelOpt.bo===n); });
+      c0.appendChild(el("p",null,"Dessin de la première manche :"));
+      const dp = el("div","dpick"); c0.appendChild(dp);
+      const rb0 = el("button", duelOpt.pick ? "" : "on", "Au hasard"); rb0.type = "button"; rb0.onclick = () => { duelOpt.pick = ""; renderGallery(); }; dp.appendChild(rb0);
+      duelPool().forEach(d=>{ const b = el("button", duelOpt.pick===d.id ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", d.name); b.setAttribute("aria-pressed", duelOpt.pick===d.id); const cv = el("canvas"); drawThumb(cv, d, null, true); b.appendChild(cv);
+        b.onclick = () => { const x = dp.scrollLeft; duelOpt.pick = d.id; renderGallery(); const n = document.querySelector(".dpick"); if(n) n.scrollLeft = x; }; dp.appendChild(b); });
       const c1 = card("Jouer avec un ami","Crée une partie et donne le code, ou entre le code de ton ami.");
       B("Créer une partie","pink",duelCreate,c1);
       const lab = el("label",null,"Code de la partie"); lab.htmlFor = "duelIn"; lab.style.cssText = "font-size:13px;font-weight:800;color:var(--muted)"; c1.appendChild(lab);
@@ -2493,7 +2528,7 @@ function renderGallery(){
       const bh = el("div","block"); bh.appendChild(el("h2",null,"Derniers adversaires"));
       if(!duelLog.length) bh.appendChild(el("p","empty", duelRec.w+duelRec.l ? "Le détail de tes anciens duels n'a pas été noté. Les prochains apparaîtront ici." : "Aucun duel joué pour l'instant."));
       else { const hl = el("div","slist"); duelLog.slice().reverse().slice(0,20).forEach(([t,name,av,won,did])=>{
-          const r2 = el("div","srow"), cv = el("canvas","sthumb"), ad = BUILTIN.find(x=>x.id===av), dd = BUILTIN.find(x=>x.id===did); if(ad) drawThumb(cv, ad, null, true);
+          const r2 = el("div","srow"), cv = el("canvas","sthumb"), dd = BUILTIN.find(x=>x.id===did); avDraw(cv, av);
           const tx = el("span"); tx.append(document.createTextNode(name), el("small",null, dfm(t)+(dd ? " · "+dd.name : "")));
           r2.append(cv, tx); const dr = duelReps.find(x=>x.t===t); if(dr && dd){ const rb = el("button","btn small line rp","Replay"); rb.type = "button"; rb.onclick = () => openDuelReplay(dr); r2.appendChild(rb); }
           r2.append(el("b", won ? "res ok" : "res ko", won ? "Victoire" : "Défaite")); hl.appendChild(r2); }); bh.appendChild(hl); }
@@ -2504,7 +2539,7 @@ function renderGallery(){
       bl.appendChild(el("p","empty","Les 50 joueurs qui ont le plus de victoires, avec leur pourcentage de victoires. Les duels contre le robot comptent aussi."));
       if(board.rows && board.rows.length){
         const tl = el("div","slist");
-        board.rows.forEach((p2,i)=>{ const mine = me && p2.id===me.id, r2 = el("div","srow" + (mine ? " on" : "")), cv = el("canvas","sthumb"), ad = BUILTIN.find(x=>x.id===p2.av); if(ad) drawThumb(cv, ad, null, true);
+        board.rows.forEach((p2,i)=>{ const mine = me && p2.id===me.id, r2 = el("div","srow" + (mine ? " on" : "")), cv = el("canvas","sthumb"); avDraw(cv, p2.av);
           const tx = el("span"); tx.append(document.createTextNode(String(p2.name||"Joueur").slice(0,14)+(mine ? " (toi)" : "")), el("small",null,`${p2.w} ${p2.w>1 ? "victoires" : "victoire"} · ${p2.l} ${p2.l>1 ? "défaites" : "défaite"}`));
           r2.append(el("b","rank",String(i+1)), cv, tx, el("b",null,rate(p2.w,p2.l)+" %")); tl.appendChild(r2); });
         bl.appendChild(tl);
@@ -2518,13 +2553,36 @@ function renderGallery(){
     return;
   }
 
+  /* Collections */
+  if(page === "collections"){
+    $("abTitle").textContent = "Collections";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Collections complètes"), el("b",null,`${colDone} / ${COLS.length}`));
+    hd.append(sc, el("p",null,"Colorie tous les dessins d'un album pour gagner des étoiles et, souvent, un avatar que personne d'autre ne peut acheter."));
+    b0.append(bk, hd); pg.appendChild(b0);
+    const g = el("div","grid");
+    COLS.slice().sort((a,b)=>((b.full && !b.got)-(a.full && !a.got)) || (a.got-b.got) || (b.ok/b.n-a.ok/a.n)).forEach(c=>{
+      const card = el("div","card col" + (c.got ? " got" : "")); card.style.setProperty("--c", c.color); card.tabIndex = 0; card.setAttribute("role","button"); card.setAttribute("aria-label", `${c.label}, ${c.ok} sur ${c.n}`);
+      const th = el("div","th"), cv = el("canvas"), show = c.av ? c.av : c.list[0].d; drawThumb(cv, show, new Uint8Array(show.cells.length), c.full); th.appendChild(cv);
+      if(c.got) th.appendChild(el("span","badge","✓ Complète"));
+      const rwl = el("div","colrw"); rwl.append(el("span",null,`${c.ok} / ${c.n}`), el("span",null, (c.got ? "✓ " : "")+`★ ${c.rw}`+(c.av ? " + avatar" : "")));
+      card.append(th, el("div","nm",c.label), barEl(c.ok/c.n*100), rwl);
+      if(c.full && !c.got){ const cb = el("button","btn small pink",`Réclamer ★ ${c.rw}`); cb.type = "button"; cb.onclick = e => { e.stopPropagation(); colClaim(c); renderGallery(); }; card.appendChild(cb); }
+      const go = () => setPage(c.page, c.sub); card.onclick = go; card.onkeydown = e => { if(e.key==="Enter") go(); };
+      g.appendChild(card);
+    });
+    const b1 = el("div","block"); b1.appendChild(g); pg.appendChild(b1);
+    return;
+  }
+
   /* Défis et cadeau du jour */
   if(page === "defis"){
     $("abTitle").textContent = "Défis et cadeau";
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${fmt(bal)}`));
-    hd.append(sc, el("p",null,"Reviens chaque jour pour ton cadeau : il grossit de jour en jour, jusqu'à ★ 10 le septième jour. Trois nouveaux défis t'attendent aussi chaque jour."));
+    hd.append(sc, el("p",null,"Reviens chaque jour pour ton cadeau : il grossit de jour en jour, jusqu'à ★ 10 le septième jour. Trois nouveaux défis t'attendent chaque jour, et un grand dessin chaque semaine."));
     b0.append(bk, hd); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"Cadeau du jour"));
     const dg = el("div","days"), wk = Math.floor((lg.day-1)/7)*7;
@@ -2535,6 +2593,13 @@ function renderGallery(){
     gbt.onclick = () => { loginClaim(); renderGallery(); }; b1.appendChild(gbt);
     b1.appendChild(el("p","empty","Si tu sautes une journée, la série recommence au jour 1."));
     pg.appendChild(b1);
+    { const wd = weeklyDrawing(), wi = weekInfo(), wdn = loadDone(wd), wst = stats(wd, wdn), wp = wst.ok===wst.tot ? 100 : Math.floor(wst.ok/wst.tot*100), wgot = xs.wk===wd.wk;
+      const bw = el("div","block"); bw.appendChild(el("h2",null,"Défi de la semaine"));
+      const bx = el("div","wkbox"), cvw = el("canvas"); drawThumb(cvw, wd, wdn);
+      const wt = el("div","wkt"); wt.append(el("b",null,wd.name), el("small",null,`${fmt(wst.tot)} cases · ${wd.palette.length} couleurs · ${wd.parts.join(", ")}`), barEl(wp),
+        el("small",null, wgot ? `✓ Réussi ! ★ ${WEEK_R} reçues · nouveau grand dessin lundi` : `${wp} % · ${wi.left>1 ? "encore "+wi.left+" jours" : "dernier jour"} · récompense ★ ${WEEK_R}`));
+      const wb = el("button","btn " + (wgot ? "line" : "pink"), wst.ok===0 ? "Commencer" : wp===100 ? "Revoir" : "Continuer"); wb.type = "button"; wb.onclick = () => openDrawing(wd); wt.appendChild(wb);
+      bx.append(cvw, wt); bw.appendChild(bx); bw.appendChild(el("p","empty","Un très grand dessin à colorier un peu chaque jour. Il change tous les lundis.")); pg.appendChild(bw); }
     const b2 = el("div","block"); b2.appendChild(el("h2",null,"Défis du jour"));
     chNow.list.forEach((c,i)=>{
       const v = chalVal(chNow, c), okc = v>=c.g, row = el("div","chal" + (chNow.got[i] ? " ok" : "")), ct = el("div","ct");
@@ -2560,7 +2625,7 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","À dépenser"), el("b",null,`★ ${fmt(bal)}`));
-    hd.append(sc, el("p",null,`Achète des avatars, des cadres pour ton avatar et des tableaux pour dessiner. Tu as gagné ★ ${fmt(totalStars)} étoiles en tout` + (shop.spent ? ` et dépensé ★ ${fmt(shop.spent)}.` : ".") + " Termine des dessins pour en gagner d'autres !"));
+    hd.append(sc, el("p",null,`Achète des avatars, des cadres, des tableaux pour dessiner, des brillances, des sons, des confettis et des thèmes. Tu as gagné ★ ${fmt(totalStars)} étoiles en tout` + (shop.spent ? ` et dépensé ★ ${fmt(shop.spent)}.` : ".") + " Termine des dessins pour en gagner d'autres !"));
     b0.append(bk, hd); pg.appendChild(b0);
     const sample = BUILTIN.find(d=>d.id==="O_rose");
     const section = (title, list, kind, cur2, preview) => {
@@ -2573,19 +2638,35 @@ function renderGallery(){
         const b = el("button","btn small " + (used ? "line" : owned ? "ghost" : "pink"), used ? "Utilisé" : owned ? "Utiliser" : `Acheter ★ ${cost}`); b.type = "button";
         card.append(th, el("div","nm",name), b);
         if(used) b.disabled = true;
-        else if(owned) b.onclick = () => { shopUse(kind, id); sColor(); renderGallery(); };
+        else if(owned) b.onclick = () => { shopUse(kind, id); if(kind!=="snd") sColor(); renderGallery(); };
         else if(bal<cost){ b.disabled = true; card.appendChild(el("div","need",`Il te manque ★ ${cost-bal}`)); }
         else b.onclick = () => { if(shopBuy(key, cost)){ shopUse(kind, id); renderGallery(); } };
         g.appendChild(card);
       });
       blk.appendChild(g); pg.appendChild(blk);
     };
-    section("Avatars", SHOP_AV.map(([id,c])=>{ const d = BUILTIN.find(x=>x.id===id); return d ? [id, d.name, c] : null; }).filter(Boolean), "av", me ? me.av : "",
+    const TABS = [["av","Avatars"],["fr","Cadres"],["bd","Tableaux"],["fx","Brillances"],["snd","Sons"],["cf","Confettis"],["th","Thèmes"]];
+    const tabs = el("div","filters");
+    TABS.forEach(([k,l])=>{ const t = el("button","fl sb" + (shopTab===k ? " on" : ""), l); t.type = "button"; t.style.setProperty("--c","#e64980"); t.setAttribute("aria-pressed", shopTab===k); t.onclick = () => { shopTab = k; renderGallery(); }; tabs.appendChild(t); });
+    b0.appendChild(tabs);
+    const mini = (w, h, fn) => { const cv = el("canvas"); cv.width = w; cv.height = h; cv.style.imageRendering = "auto"; fn(cv.getContext("2d")); return cv; };
+    if(shopTab==="av") section("Avatars", SHOP_AV.map(([id,c])=>{ const d = BUILTIN.find(x=>x.id===id); return d ? [id, d.name, c] : null; }).filter(Boolean), "av", me ? me.av : "",
       id => { const cv = el("canvas"); drawThumb(cv, BUILTIN.find(x=>x.id===id), null, true); return cv; });
-    section("Cadres d'avatar", SHOP_FR, "fr", shop.fr,
+    if(shopTab==="fr") section("Cadres d'avatar", SHOP_FR, "fr", shop.fr,
       id => { const w = el("div","fprev"), cv = el("canvas"); drawThumb(cv, avatarOf(me), null, true); cv.dataset.fr = id; w.appendChild(cv); return w; });
-    section("Tableaux pour dessiner", SHOP_BD, "bd", shop.bd,
+    if(shopTab==="bd") section("Tableaux pour dessiner", SHOP_BD, "bd", shop.bd,
       id => { const w = el("div","bprev"), cv = el("canvas"); drawThumb(cv, sample, null, true); w.dataset.bd = id; w.appendChild(cv); return w; });
+    if(shopTab==="fx") section("Brillances quand tu colories", SHOP_FX, "fx", shop.fx,
+      id => mini(120, 120, c => { c.fillStyle = "#8f8aa8"; c.fillRect(0,0,120,120); c.fillStyle = "#c81fd0"; c.fillRect(30,30,60,60); fxShape(c, id, 60, 60, 44, .35, .58); if(id!=="neige" && id!=="bulle") fxShape(c, id, 98, 26, 14, .9, .12); }));
+    if(shopTab==="snd") section("Sons du coloriage (touche l'image pour écouter)", SHOP_SND, "snd", shop.snd,
+      id => { const cols = {"":"#f0b429", xylo:"#e8590c", bit:"#2f9e44", bulle:"#1c7ed6", piano:"#1d1b3a"}, cv = mini(120, 120, c => { c.fillStyle = "#fff3bf"; c.fillRect(0,0,120,120); c.fillStyle = cols[id]; c.beginPath(); c.ellipse(44, 86, 17, 13, -.4, 0, 6.3); c.fill(); c.fillRect(56, 26, 7, 62);
+          c.beginPath(); c.moveTo(56,26); c.lineTo(92,38); c.lineTo(92,58); c.lineTo(56,46); c.closePath(); c.fill(); });
+        cv.onclick = () => { const old = shop.snd; shop.snd = id; lastS = 0; combo = 0; comboT = 0; sPaint(); setTimeout(()=>{ lastS = 0; sPaint(); }, 140); setTimeout(()=>{ lastS = 0; sPaint(); shop.snd = old; }, 280); }; cv.style.cursor = "pointer"; cv.setAttribute("role","button"); cv.setAttribute("aria-label","Écouter ce son"); return cv; });
+    if(shopTab==="cf") section("Confettis de fin de dessin", SHOP_CF, "cf", shop.cf,
+      id => mini(120, 120, c => { c.fillStyle = "#1d1b3a"; c.fillRect(0,0,120,120); const cols = CF_COLS[id] || ["#ff6fae","#4dabf7","#ffd43b","#51cf66","#c81fd0"];
+        for(let n=0;n<16;n++){ c.save(); c.translate(14+(n*37)%96, 12+(n*53)%98); c.rotate(n*.9); cfShape(c, id, id && id!=="arc" ? 17 : 14, cols[n%cols.length]); c.restore(); } }));
+    if(shopTab==="th") section("Thèmes du menu", SHOP_TH, "th", shop.th,
+      id => { const t = SHOP_TH.find(x=>x[0]===id), w = el("div","tprev"), bar = el("i"), body = el("span"), dot = el("u"); bar.style.background = t[3]; body.style.background = t[4]; dot.style.background = t[5]; body.appendChild(dot); w.append(bar, body); return w; });
     return;
   }
 
@@ -2805,8 +2886,14 @@ function sPaint(){
   const now = performance.now(); if(now-lastS < 45) return;
   combo = now-comboT < 600 ? Math.min(combo+1, SCALE.length-1) : 0; comboT = now; lastS = now;
   const f = 523.25*Math.pow(2, SCALE[combo]/12), t = a.currentTime;
-  tone(f, t, .12, .13, "triangle");
-  tone(f*3, t+.03, .16, .05, "sine"); tone(f*4, t+.07, .14, .035, "sine");   /* petit tintement de la brillance */
+  const k = shop.snd;
+  if(k==="bit"){ tone(f/2, t, .08, .06, "square"); tone(f, t+.05, .08, .045, "square"); }
+  else if(k==="xylo"){ tone(f, t, .24, .17, "sine"); tone(f*4, t, .05, .06, "sine"); }
+  else if(k==="piano"){ tone(f/2, t, .5, .14, "triangle"); tone(f, t, .34, .07, "sine"); tone(f*1.5, t+.01, .22, .03, "sine"); }
+  else if(k==="bulle"){ const o = a.createOscillator(), g = a.createGain(); o.type = "sine"; o.frequency.setValueAtTime(f*.45, t); o.frequency.exponentialRampToValueAtTime(f*1.3, t+.11);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.18, t+.02); g.gain.exponentialRampToValueAtTime(.0001, t+.14); o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.17); }
+  else { tone(f, t, .12, .13, "triangle");
+    tone(f*3, t+.03, .16, .05, "sine"); tone(f*4, t+.07, .14, .035, "sine"); }   /* petit tintement de la brillance */
 }
 /* iPhone et iPad ne débloquent le son qu'à la fin d'un toucher : on le réveille à chaque geste */
 let unlocked = false;
@@ -2856,9 +2943,7 @@ function drawSparks(){
     ctx.fillStyle = `rgba(255,255,255,${(1-age)*.6})`; ctx.fillRect(X, Y, s, s);
     const R = Math.max(7, s*.75)*(.35+.65*e), rot = p.rot+age*.9;
     ctx.globalAlpha = 1-age*age;
-    ctx.beginPath();
-    for(let k=0;k<8;k++){ const r = k%2 ? R*.3 : R, a = rot+k*Math.PI/4; ctx[k?"lineTo":"moveTo"](cx+r*Math.cos(a), cy+r*Math.sin(a)); }
-    ctx.closePath(); ctx.fillStyle = "#fff"; ctx.fill(); ctx.strokeStyle = "#ffd23f"; ctx.lineWidth = 1.5; ctx.stroke();
+    fxShape(ctx, shop.fx, cx, shop.fx==="bulle" ? cy-e*s*.5 : cy, R, rot, p.rot/1.5);
     ctx.fillStyle = "#fff6b0";
     for(let k=0;k<3;k++){ const a = p.rot*4+k*2.1, d = R*(.9+e*.8), r = Math.max(1.2, s*.07)*(1-age); ctx.beginPath(); ctx.arc(cx+d*Math.cos(a), cy+d*Math.sin(a), r, 0, 6.3); ctx.fill(); }
     ctx.globalAlpha = 1;
@@ -2919,22 +3004,94 @@ let chalT = 0;
 function chalBump(k, n){ const ch = chalEnsure(); ch.p[k] = (ch.p[k]||0)+(n||1); clearTimeout(chalT); chalT = setTimeout(saveXs, 600); }
 function chalClaim(i){ const ch = chalEnsure(), c = ch.list[i]; if(!c || ch.got[i] || chalVal(ch, c)<c.g) return; ch.got[i] = 1; xsAdd("f", CH_TXT[c.k](c), c.r); }
 const chalReady = () => { const ch = chalEnsure(); return ch.list.filter((c,i)=>!ch.got[i] && chalVal(ch,c)>=c.g).length; };
+/* ---------- Collections : une récompense quand tout un album est colorié ---------- */
+if(!Array.isArray(xs.col)) xs.col = []; if(!Array.isArray(xs.colAv)) xs.colAv = [];
+function collections(items){
+  const out = [];
+  for(const [key,label,color,subs] of CATS){
+    if(key==="photos") continue;
+    const list = items.filter(i=>catOf(i.d)===key && !i.d.custom); if(!list.length) continue;
+    if(key==="mots"){ for(const L of Object.keys(WORDS)){ const l = list.filter(i=>i.d.letter===L); if(l.length) out.push({key:"mots:"+L, label:"Mots en "+L, color, list:l, page:key, sub:L, noAv:true}); } }
+    else if(subs){ for(const [sk,sl] of subs){ const l = list.filter(i=>i.d.sub===sk); if(l.length) out.push({key:key+":"+sk, label:label+" · "+sl, color, list:l, page:key, sub:sk}); } }
+    else out.push({key, label, color, list, page:key, sub:"", noAv: key==="imagier"});
+  }
+  for(const c of out){ c.n = c.list.length; c.ok = c.list.filter(i=>i.pct===100).length; c.full = c.ok===c.n; c.got = xs.col.includes(c.key);
+    c.rw = Math.max(3, Math.min(30, Math.round(c.n/2))); c.av = c.noAv ? null : c.list[c.n-1].d; }
+  return out;
+}
+function colClaim(c){ if(!c.full || xs.col.includes(c.key)) return; xs.col.push(c.key); if(c.av && !xs.colAv.includes(c.av.id)) xs.colAv.push(c.av.id); xsAdd("k", c.label, c.rw); }
+/* ---------- Défi de la semaine : un grand dessin 44 × 44 fait de quatre dessins ---------- */
+const WEEK_R = 40;
+function weekInfo(){ const d = new Date(), k = (d.getDay()+6)%7; d.setDate(d.getDate()-k); return {key: ymd(d), left: 7-k}; }
+let weeklyCache = null;
+function weeklyDrawing(){
+  const wk = weekInfo().key; if(weeklyCache && weeklyCache.wk===wk) return weeklyCache;
+  let h = 11; for(const c of wk) h = (h*33+c.charCodeAt(0))>>>0;
+  const rnd = () => { h = (Math.imul(h, 1664525)+1013904223)>>>0; return h/4294967296; };
+  const keys = ["animaux","nourriture","transports","contes","fetes","decouvertes","noel","nature","pieuvres"];
+  let best = null;
+  for(let t=0;t<40 && !best;t++){
+    const key = keys[Math.floor(rnd()*keys.length)], pool = BUILTIN.filter(d=>d.cat===key && d.cols===22 && d.rows===22); if(pool.length<4) continue;
+    const pick = []; while(pick.length<4){ const d = pool[Math.floor(rnd()*pool.length)]; if(!pick.includes(d)) pick.push(d); }
+    const pal = []; for(const d of pick) for(const c of d.palette) if(!pal.includes(c)) pal.push(c);
+    if(pal.length<=CH.length) best = {key, pick, pal};
+  }
+  if(!best){ const d = BUILTIN.find(x=>x.cols===22 && x.rows===22); best = {key:d.cat, pick:[d,d,d,d], pal:d.palette.slice()}; }
+  let cells = "";
+  for(let y=0;y<44;y++) for(let x=0;x<44;x++){ const d = best.pick[(y>=22 ? 2 : 0)+(x>=22 ? 1 : 0)], ch = d.cells[(y%22)*22+(x%22)]; cells += ch==="." ? "." : CH[best.pal.indexOf(d.palette[CH.indexOf(ch)])]; }
+  const lab = (CATS.find(c=>c[0]===best.key)||[,best.key])[1];
+  return weeklyCache = {wk, id:"WK_"+wk, name:"Grand dessin : "+lab, cat:best.key, cols:44, rows:44, palette:best.pal, cells, weekly:true, parts:best.pick.map(d=>d.name)};
+}
 /* ---------- Magasin : on dépense ses étoiles ---------- */
 const SHOP_AV = [["W_ct_bebedragon",5],["W_ct_chat",8],["W_ct_licorne",10],["W_ct_pingouin",12],["W_ct_fee",15],["W_ct_chevalier",15],["W_ct_sirene",20],["W_ct_bonhomme",20],["W_ct_princesse1",25],["W_ct_sorcier",30],["W_ct_dragon",40],["W_ct_phenix",60]];
 const SHOP_FR = [["","Sans cadre",0],["argent","Argent",5],["or","Or",10],["glace","Glace",12],["jungle","Jungle",12],["bonbon","Bonbon",15],["feu","Feu",15],["damier","Damier",20],["arcenciel","Arc-en-ciel",30],["galaxie","Galaxie",50]];
 const SHOP_BD = [["","Classique",0],["bonbon","Bonbon",5],["pois","Pois",8],["ciel","Ciel",10],["prairie","Prairie",12],["pastel","Arc-en-ciel pastel",15],["bois","Bois",15],["ardoise","Tableau noir",20],["ocean","Océan",25],["nuit","Nuit étoilée",30],["espace","Espace",50]];
-let shop = store.get("cpn.shop", null), lastStars = 0;
+const SHOP_FX = [["","Étoile",0],["coeur","Cœurs",10],["bulle","Bulles",10],["neige","Flocons",15],["arc","Étoiles arc-en-ciel",25]];
+const SHOP_SND = [["","Clochette",0],["xylo","Xylophone",8],["bit","Jeu vidéo",12],["bulle","Bulles",15],["piano","Piano",20]];
+const SHOP_CF = [["","Confettis",0],["etoile","Étoiles",10],["coeur","Cœurs",10],["neige","Neige",15],["arc","Arc-en-ciel",25]];
+const SHOP_TH = [["","Classique",0,"#1d1b3a","#f3f1fa","#c81fd0"],["ocean","Océan",15,"#0b3d70","#e7f5ff","#1971c2"],["foret","Forêt",15,"#1b4332","#ebfbee","#2f9e44"],["soleil","Coucher de soleil",20,"#7a2e0e","#fff4e6","#e8590c"],["raisin","Raisin",20,"#4a1d6e","#f8f0fc","#9c36b5"],["nuit","Nuit",30,"#07070d","#e3e6ee","#364fc7"]];
+let shop = store.get("cpn.shop", null), lastStars = 0, shopTab = "av";
 if(!shop || typeof shop!=="object" || !Array.isArray(shop.own)) shop = {spent:0, own:[], fr:"", bd:""};
 shop.spent = Math.max(0, +shop.spent||0); shop.fr = shop.fr||""; shop.bd = shop.bd||"";
 if(!SHOP_FR.some(f=>f[0]===shop.fr)) shop.fr = ""; if(!SHOP_BD.some(f=>f[0]===shop.bd)) shop.bd = "";
+for(const [k,L] of [["fx",SHOP_FX],["snd",SHOP_SND],["cf",SHOP_CF],["th",SHOP_TH]]) if(!L.some(f=>f[0]===shop[k])) shop[k] = "";
 const shopOwns = key => shop.own.includes(key);
 const shopBal = () => Math.max(0, lastStars - shop.spent);
-function applyShop(){ $("meBtn").dataset.fr = shop.fr; $("stage").dataset.bd = shop.bd; }
+function applyShop(){ $("meBtn").dataset.fr = shop.fr; $("stage").dataset.bd = shop.bd; document.body.dataset.th = shop.th; }
+/* Avatar + cadre d'un autre joueur : "idAvatar~cadre" */
+const avPack = o => (o && o.av || "") + (o && o.fr ? "~"+o.fr : "");
+const myAv = () => me ? me.av + (shop.fr ? "~"+shop.fr : "") : "O_rose";
+function avDraw(cv, packed){
+  const [id, fr] = String(packed||"").split("~"), ad = BUILTIN.find(x=>x.id===id); delete cv.dataset.fr;
+  if(ad) drawThumb(cv, ad, null, true); if(fr && SHOP_FR.some(f=>f[0]===fr)) cv.dataset.fr = fr; return !!ad;
+}
+/* Formes partagées : brillance du coloriage, confettis, aperçus du magasin */
+function fxShape(c, kind, cx, cy, R, rot, seed){
+  c.beginPath();
+  if(kind==="coeur"){ c.moveTo(cx, cy+R*.8); c.bezierCurveTo(cx-R*1.35, cy-R*.1, cx-R*.6, cy-R*1.05, cx, cy-R*.35); c.bezierCurveTo(cx+R*.6, cy-R*1.05, cx+R*1.35, cy-R*.1, cx, cy+R*.8);
+    c.closePath(); c.fillStyle = "#ff6fae"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = Math.max(1.2, R*.12); c.stroke(); }
+  else if(kind==="bulle"){ c.arc(cx, cy, R*.75, 0, 6.3); c.fillStyle = "rgba(165,216,255,.5)"; c.fill(); c.strokeStyle = "#fff"; c.lineWidth = Math.max(1.5, R*.14); c.stroke();
+    c.beginPath(); c.arc(cx-R*.28, cy-R*.28, R*.16, 0, 6.3); c.fillStyle = "#fff"; c.fill(); }
+  else if(kind==="neige"){ for(const [col,lw] of [["#4dabf7",Math.max(3, R*.3)],["#fff",Math.max(1.5, R*.14)]]){ c.beginPath();
+      for(let k=0;k<6;k++){ const a = rot+k*Math.PI/3, ux = Math.cos(a), uy = Math.sin(a); c.moveTo(cx, cy); c.lineTo(cx+ux*R, cy+uy*R);
+        for(const sg of [-1,1]){ const b2 = a+sg*Math.PI/3.2; c.moveTo(cx+ux*R*.6, cy+uy*R*.6); c.lineTo(cx+ux*R*.6+Math.cos(b2)*R*.3, cy+uy*R*.6+Math.sin(b2)*R*.3); } }
+      c.strokeStyle = col; c.lineWidth = lw; c.lineCap = "round"; c.stroke(); } }
+  else { for(let k=0;k<8;k++){ const r = k%2 ? R*.3 : R, a = rot+k*Math.PI/4; c[k?"lineTo":"moveTo"](cx+r*Math.cos(a), cy+r*Math.sin(a)); }
+    c.closePath(); c.fillStyle = kind==="arc" ? `hsl(${Math.round((seed||0)*360)},90%,58%)` : "#fff"; c.fill(); c.strokeStyle = kind==="arc" ? "#fff" : "#ffd23f"; c.lineWidth = 1.5; c.stroke(); }
+}
+const CF_COLS = {coeur:["#ff6fae","#e03131","#ffa8c5"], neige:["#ffffff","#d0ebff","#a5d8ff"], arc:["#e03131","#ff922b","#ffd43b","#51cf66","#4dabf7","#7048e8","#f783ac"]};
+function cfShape(c, kind, s, col){
+  c.fillStyle = col;
+  if(kind==="etoile"){ c.beginPath(); for(let k=0;k<10;k++){ const r = k%2 ? s*.32 : s*.75, a = k*Math.PI/5; c[k?"lineTo":"moveTo"](r*Math.sin(a), -r*Math.cos(a)); } c.closePath(); c.fill(); }
+  else if(kind==="coeur"){ const R = s*.6; c.beginPath(); c.moveTo(0, R*.8); c.bezierCurveTo(-R*1.35, -R*.1, -R*.6, -R*1.05, 0, -R*.35); c.bezierCurveTo(R*.6, -R*1.05, R*1.35, -R*.1, 0, R*.8); c.fill(); }
+  else if(kind==="neige"){ c.beginPath(); c.arc(0, 0, s*.42, 0, 6.3); c.fill(); }
+  else c.fillRect(-s/2, -s/2, s, s*.7);
+}
 function shopBuy(key, cost){ if(shopOwns(key) || shopBal()<cost) return false; shop.own.push(key); shop.spent += cost; store.set("cpn.shop", shop); sWin(); return true; }
 function shopUse(kind, id){
   if(kind==="av"){ if(!me) return; me.av = id; RAW.set("cpn.users", users); }
   else { shop[kind] = id; store.set("cpn.shop", shop); }
-  applyShop();
+  applyShop(); if(kind==="snd"){ lastS = 0; sPaint(); }
 }
 const AV_LOCKED = [["W_fusee",200],["W_soucoupe",400],["W_lion",600],["W_panda",800],["W_renard",1000],["W_hibou",1500],["W_nl_pere",2000],["W_astronaute",3000],["W_noel_etoile",4000],["W_emo_cool",5000],["W_trophee",7000],["O_arcenciel",10000]];
 function badges(S){
@@ -2969,7 +3126,7 @@ let duelShow = store.get("cpn.duelshow", true), board = {rows:null, at:0, err:fa
 function duelKey(){ let k = store.get("cpn.duelkey", ""); if(!k){ const a = new Uint8Array(18); (window.crypto||window.msCrypto).getRandomValues(a); k = [...a].map(v=>v.toString(36).padStart(2,"0")).join(""); store.set("cpn.duelkey", k); } return k; }
 async function reportDuel(){
   if(!me) return;
-  try{ await rpc("coloriage_duel_report", {p_id:me.id, p_key:duelKey(), p_name: duelShow ? me.name : "Joueur mystère", p_av:me.av, p_wins:duelRec.w, p_losses:duelRec.l}); board.at = 0; }catch(e){}
+  try{ await rpc("coloriage_duel_report", {p_id:me.id, p_key:duelKey(), p_name: duelShow ? me.name : "Joueur mystère", p_av:myAv(), p_wins:duelRec.w, p_losses:duelRec.l}); board.at = 0; }catch(e){}
 }
 async function loadBoard(force){
   if(board.busy || (!force && board.rows && Date.now()-board.at < 30000)) return;
@@ -2979,7 +3136,7 @@ async function loadBoard(force){
   board.busy = false; if(page==="duel" && !cur && lob.view==="menu") renderGallery();
 }
 const rate = (w,l) => w+l ? Math.round(w/(w+l)*100) : 0;
-const duelSelf = () => ({id:SID, name: me ? me.name : "Joueur", av: me ? me.av : "O_rose"});
+const duelSelf = () => ({id:SID, name: me ? me.name : "Joueur", av: me ? me.av : "O_rose", fr: shop.fr});
 /* Canal temps réel : protocole Phoenix, messages diffusés à l'autre joueur de la salle */
 function Net(room, onMsg, onOpen, onErr){
   let ws, ref = 1, hb = 0, open = false, dead = false; const topic = "realtime:"+room;
@@ -3043,10 +3200,10 @@ function lobClear(){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); 
 function lobReset(msg){ lobClear(); lob.view = "menu"; lob.code = ""; lob.msg = msg || ""; if(page==="duel" && !cur) renderGallery(); }
 const NET_ERR = "Connexion impossible pour l'instant. Tu peux jouer contre le robot.";
 /* L'hôte attend l'autre joueur dans la salle, puis lance la partie */
-function hostRoom(room, drawId, onFail){
+function hostRoom(room, drawId, onFail, bo){
   let started = false;
   const net = Net(room, m => {
-    if(m.t==="hello" && m.p && m.p.id!==SID){ net.send({t:"start", draw:drawId, host:duelSelf()}); if(!started){ started = true; lobClear0(net); beginDuel(drawId, m.p, net); } }
+    if(m.t==="hello" && m.p && m.p.id!==SID){ net.send({t:"start", draw:drawId, host:duelSelf(), bo:bo||1}); if(!started){ started = true; lobClear0(net); beginDuel(drawId, m.p, net, 0, "", {bo:bo||1, w:0, l:0, host:true, round:1}); } }
     else if(started) duelMsg(m);
   }, null, () => { if(!started) (onFail || lobReset)(NET_ERR); });
   return net;
@@ -3054,7 +3211,7 @@ function hostRoom(room, drawId, onFail){
 function guestRoom(room, onFail){
   let started = false;
   const net = Net(room, m => {
-    if(m.t==="start" && !started && m.host){ started = true; lobClear0(net); beginDuel(m.draw, m.host, net); }
+    if(m.t==="start" && !started && m.host){ started = true; lobClear0(net); beginDuel(m.draw, m.host, net, 0, "", {bo:m.bo===3 ? 3 : 1, w:0, l:0, host:false, round:1}); }
     else if(started) duelMsg(m);
   }, () => { const hi = () => net.send({t:"hello", p:duelSelf()}); hi(); lob.timers.push(setInterval(()=>{ if(!started) hi(); }, 1000)); }, () => { if(!started) (onFail || lobReset)(NET_ERR); });
   return net;
@@ -3062,7 +3219,7 @@ function guestRoom(room, onFail){
 function lobClear0(keep){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; if(lob.net && lob.net!==keep) lob.net.close(); lob.net = null; lob.view = "menu"; lob.code = ""; lob.msg = ""; }
 function duelCreate(){
   lobClear(); lob.code = String(Math.floor(1000+Math.random()*9000)); lob.view = "host"; lob.msg = "";
-  lob.net = hostRoom("coloriage-duel-"+lob.code, pickDuelDrawing()); renderGallery();
+  lob.net = hostRoom("coloriage-duel-"+lob.code, duelOpt.pick || pickDuelDrawing(), null, duelOpt.bo); renderGallery();
 }
 function duelJoin(code){
   lobClear(); lob.view = "joining"; lob.code = code; lob.msg = "";
@@ -3084,19 +3241,21 @@ function duelSeek(){
 }
 function startBot(level, note){
   lobClear0(null);
-  beginDuel(pickDuelDrawing(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], note);
+  const friendly = !note;
+  beginDuel((friendly && duelOpt.pick) || pickDuelDrawing(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], note, {bo: friendly ? duelOpt.bo : 1, w:0, l:0, host:true, round:1});
 }
-function beginDuel(drawId, opp, net, botRate, note){
+let duelOpt = {bo:1, pick:""};
+function beginDuel(drawId, opp, net, botRate, note, set){
   pad = null;
   const d = BUILTIN.find(x=>x.id===drawId) || duelPool()[0];
-  openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], mine:[], theirs:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||""});
+  openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], mine:[], theirs:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||"", set: set || {bo:1, w:0, l:0, host:true, round:1}, again:{me:false, op:false}});
 }
 function duelUI(){
   const on = !!duel; document.body.classList.toggle("duelplay", on); $("opp").hidden = !on; $("count").hidden = true;
   if(!on) return;
-  $("pname").textContent = "Duel · "+cur.name; $("winBack").textContent = "Duels"; $("winNext").hidden = true;
-  $("oppName").textContent = duel.opp.name; drawOpp();
-  $("hint").textContent = duel.note || `Tu joues contre ${duel.opp.name}.`;
+  $("pname").textContent = "Duel · "+cur.name+(duel.set.bo>1 ? " · manche "+duel.set.round : ""); $("winBack").textContent = "Duels"; $("winNext").hidden = true;
+  $("oppName").textContent = duel.opp.name; avDraw($("oppAv"), avPack(duel.opp)); drawOpp();
+  $("hint").textContent = duel.note || (duel.set.bo>1 ? `Manche ${duel.set.round} contre ${duel.opp.name} · ${duel.set.w} – ${duel.set.l}` : `Tu joues contre ${duel.opp.name}.`);
   const c = $("count"); c.hidden = false; let n = 3; c.textContent = n;
   duel.cd = setInterval(()=>{ n--; if(n>0) c.textContent = n; else if(n===0){ c.textContent = "Partez !"; if(duel){ duel.started = true; duel.t0 = performance.now(); duelLoops(); } } else { clearInterval(duel && duel.cd); c.hidden = true; } }, 800);
 }
@@ -3114,6 +3273,9 @@ function duelMsg(m){
   if(!duel) return;
   if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; duel.theirs.push([i, duelDs()]); } }); drawOpp(); }
   else if(m.t==="done" && !duel.over) duelEnd(false, `${duel.opp.name} a fini en premier. Bien essayé !`);
+  else if(m.t==="again" && duel.over){ duel.again.op = true; if(!duel.again.me) duelBtns(duel.serieOver ? `Revanche : ${duel.opp.name} est prêt !` : `Manche suivante : ${duel.opp.name} est prêt !`, false); duelTryNext(); }
+  else if(m.t==="next" && duel.over && !duel.set.host && typeof m.draw==="string") duelNext(m.draw);
+  else if((m.t==="bye" || m.t==="_closed") && duel.over){ if(!duel.gone){ duel.gone = true; $("winNext").hidden = true; $("finNext").hidden = true; $("winTxt").textContent += ` ${duel.opp.name} est parti.`; } }
   else if((m.t==="bye" || m.t==="_closed") && !duel.over){ if(duel.started) duelEnd(true, `${duel.opp.name} a quitté la partie. Tu gagnes !`); else { stopDuel(); cur = null; show("home"); lobReset(`${duel ? duel.opp.name : "L'autre joueur"} a quitté la partie.`); } }
 }
 function duelEnd(won, text){
@@ -3121,15 +3283,35 @@ function duelEnd(won, text){
   if(won && duel.net){ if(duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); duel.net.send({t:"done"}); }
   if(won) duelRec.w++; else duelRec.l++; store.set("cpn.duel", duelRec); chalBump("duelp"); if(won) chalBump("duelw");
   const dNow = Date.now(); saveDuelRep(dNow, won);
-  duelLog.push([dNow, duel.opp.name, duel.opp.av, won ? 1 : 0, cur.id]); if(duelLog.length>100) duelLog = duelLog.slice(-100); store.set("cpn.duellog", duelLog);
+  duelLog.push([dNow, duel.opp.name, avPack(duel.opp), won ? 1 : 0, cur.id]); if(duelLog.length>100) duelLog = duelLog.slice(-100); store.set("cpn.duellog", duelLog);
   reportDuel();
   const ns = won ? DUEL_WIN : DUEL_LOSS; logStar(won ? "w" : "l", duel.opp.name, ns);
-  $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; $("say").hidden = true; $("win").classList.add("on");
+  const st = duel.set; if(won) st.w++; else st.l++; const need = st.bo>1 ? 2 : 1; duel.serieOver = st.w>=need || st.l>=need;
+  const serie = st.bo>1 ? ` Manches : ${st.w} – ${st.l}.` + (duel.serieOver ? (st.w>st.l ? " Tu gagnes la série !" : ` ${duel.opp.name} gagne la série.`) : "") : "";
+  $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}${serie}`; $("say").hidden = true; $("win").classList.add("on");
+  duelBtns(duel.serieOver ? "Revanche" : "Manche suivante", false);
   if(!won){ const a = audio(); if(a) [392,330,262].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .12, "triangle")); }
+}
+/* Revanche et manche suivante : les deux joueurs doivent appuyer, puis l'hôte choisit le dessin */
+function duelBtns(label, off){ for(const id of ["winNext","finNext"]){ const b = $(id); b.textContent = label; b.disabled = !!off; b.hidden = !duel || !!duel.gone; } }
+function duelAgain(){
+  if(!duel || !duel.over || duel.gone || duel.again.me) return;
+  duel.again.me = true; duelBtns(`En attente de ${duel.opp.name}…`, true);
+  if(duel.net) duel.net.send({t:"again"}); else duel.again.op = true;
+  duelTryNext();
+}
+function duelTryNext(){
+  if(!duel || !duel.again.me || !duel.again.op || !duel.set.host) return;
+  const draw = pickDuelDrawing(); if(duel.net) duel.net.send({t:"next", draw}); duelNext(draw);
+}
+function duelNext(draw){
+  const d0 = duel, st = d0.set, ns = d0.serieOver ? {bo:st.bo, w:0, l:0, host:st.host, round:1} : {bo:st.bo, w:st.w, l:st.l, host:st.host, round:st.round+1};
+  const net = d0.net; d0.net = null; hideFin(); closeReplay();
+  beginDuel(draw, d0.opp, net, d0.botRate, "", ns);
 }
 function stopDuel(){
   if(!duel) return; clearInterval(duel.cd); clearInterval(duel.tx); clearInterval(duel.bot);
-  if(duel.net){ if(!duel.over) duel.net.send({t:"bye"}); const n = duel.net; setTimeout(()=>n.close(), 300); }
+  if(duel.net){ duel.net.send({t:"bye"}); const n = duel.net; setTimeout(()=>n.close(), 300); }
   duel = null; duelUI();
 }
 
@@ -3185,7 +3367,7 @@ function chronoWin(){
   $("winTxt").textContent = `Niveau ${chrono.lv+1} réussi ! ${starTxt(stars)} Il te restait ${mmss(chrono.left)}.`;
   if(chrono.lv+1 < LEVELS.length){ $("winNext").textContent = "Niveau suivant"; $("winNext").hidden = false; }
 }
-$("winNext").onclick = () => { if(!chrono) return; const i = chrono.won ? chrono.lv+1 : chrono.lv; openChrono(i); };
+$("winNext").onclick = () => { if(duel){ duelAgain(); return; } if(!chrono) return; const i = chrono.won ? chrono.lv+1 : chrono.lv; openChrono(i); };
 
 /* ---------- Mode libre ---------- */
 const PRESET = ["#e03131","#ff6b6b","#ff922b","#ffd43b","#fff3bf","#94d82d","#2f9e44","#0c8599","#3bc9db","#4dabf7","#1c7ed6","#3b5bdb","#7048e8","#b197fc","#d6336c","#f783ac","#ffc9c9","#8b5a2b","#d9a066","#ffe8cc","#ffffff","#adb5bd","#495057","#1d1b3a"];
@@ -3341,7 +3523,7 @@ function celebrate(nStars, title){
   const st = $("finStars"); st.textContent = "";
   for(let k=0;k<nStars;k++){ const i = el("i",null,"★"); i.style.animationDelay = (.55+k*.22)+"s"; st.appendChild(i); if(!calmFx) setTimeout(()=>{ const a = audio(); if(a && !$("fin").hidden) tone(880*Math.pow(2,k/6), a.currentTime, .16, .1, "triangle"); }, 550+k*220); }
   st.setAttribute("aria-label", nStars ? `${nStars} ${nStars>1 ? "étoiles gagnées" : "étoile gagnée"}` : "");
-  const nx = $("finNext"); nx.hidden = !(chrono && chrono.lv+1 < LEVELS.length); nx.textContent = "Niveau suivant";
+  const nx = $("finNext"); if(duel){ nx.hidden = !!duel.gone; nx.textContent = $("winNext").textContent; nx.disabled = $("winNext").disabled; } else { nx.disabled = false; nx.hidden = !(chrono && chrono.lv+1 < LEVELS.length); nx.textContent = "Niveau suivant"; }
   $("finOther").textContent = chrono ? "Niveaux" : duel ? "Duels" : "Autre dessin";
   const ag = $("finAgain"); ag.hidden = !!duel; ag.textContent = chrono ? "Rejouer ce niveau" : "Recommencer"; delete ag.dataset.sure;
   $("finSay").hidden = !(cur.cat==="mots" || cur.word) || !canSpeak;
@@ -3349,21 +3531,21 @@ function celebrate(nStars, title){
   /* confettis aux couleurs du dessin */
   const cv = $("finFx"), r = f.getBoundingClientRect(), k = Math.min(window.devicePixelRatio||1, 2); cv.width = r.width*k; cv.height = r.height*k;
   const c = cv.getContext("2d"), cols = cur.palette.filter(h=>lum(h)<.93), P = [];
-  for(let n=0;n<110;n++) P.push({x:Math.random()*r.width, y:-20-Math.random()*r.height*.9, vy:2+Math.random()*3.5, vx:(Math.random()-.5)*1.6, s:6+Math.random()*8, a:Math.random()*6.3, va:(Math.random()-.5)*.25, c:cols[n%cols.length]||"#c81fd0"});
+  for(let n=0;n<110;n++) P.push({x:Math.random()*r.width, y:-20-Math.random()*r.height*.9, vy:2+Math.random()*3.5, vx:(Math.random()-.5)*1.6, s:(shop.cf && shop.cf!=="arc" ? 9 : 6)+Math.random()*8, a:Math.random()*6.3, va:(Math.random()-.5)*.25, c:(CF_COLS[shop.cf] ? CF_COLS[shop.cf][n%CF_COLS[shop.cf].length] : cols[n%cols.length])||"#c81fd0"});
   const t0 = performance.now();
   cancelAnimationFrame(finRaf);
   const step = now => {
     c.setTransform(k,0,0,k,0,0); c.clearRect(0,0,r.width,r.height);
     let alive = false;
     for(const p of P){ p.x += p.vx+Math.sin(now/300+p.a)*.6; p.y += p.vy; p.a += p.va; if(p.y < r.height+20) alive = true;
-      c.save(); c.translate(p.x,p.y); c.rotate(p.a); c.fillStyle = p.c; c.fillRect(-p.s/2,-p.s/2,p.s,p.s*.7); c.restore(); }
+      c.save(); c.translate(p.x,p.y); c.rotate(p.a); cfShape(c, shop.cf, p.s, p.c); c.restore(); }
     if(alive && now-t0 < 7000 && !$("fin").hidden) finRaf = requestAnimationFrame(step); else c.clearRect(0,0,r.width,r.height);
   };
   finRaf = requestAnimationFrame(step);
 }
 $("finSee").onclick = hideFin;
 $("finOther").onclick = () => { hideFin(); goHome(); };
-$("finNext").onclick = () => { if(chrono){ const i = chrono.lv+1; hideFin(); openChrono(i); } };
+$("finNext").onclick = () => { if(duel){ duelAgain(); return; } if(chrono){ const i = chrono.lv+1; hideFin(); openChrono(i); } };
 $("finSay").onclick = () => { if(cur) sayWord(cur.name); };
 $("finAgain").onclick = () => {
   const b = $("finAgain");
@@ -3386,7 +3568,7 @@ const encEv = (d, ev) => { const w = recW(d); return ev.map(([i,t])=>i.toString(
 const decEv = (d, s) => { const w = recW(d), out = []; if(typeof s!=="string") return out; for(let k=0;k+w+3<=s.length;k+=w+3){ const i = parseInt(s.substr(k,w),36), t = parseInt(s.substr(k+w,3),36); if(i>=0 && i<d.cells.length && t>=0) out.push([i,t]); } return out; };
 function saveDuelRep(t, won){
   if(!duel || !cur) return;
-  duelReps.push({t, id:cur.id, n:duel.opp.name, av:duel.opp.av, w:won ? 1 : 0, a:encEv(cur, duel.mine), b:encEv(cur, duel.theirs)});
+  duelReps.push({t, id:cur.id, n:duel.opp.name, av:avPack(duel.opp), w:won ? 1 : 0, a:encEv(cur, duel.mine), b:encEv(cur, duel.theirs)});
   if(duelReps.length>12) duelReps = duelReps.slice(-12); store.set("cpn.duelrep", duelReps);
 }
 /* Ordre rejoué : les cases déjà faites sans trace (anciens dessins) passent d'abord, couleur par couleur */
@@ -3403,7 +3585,7 @@ function openReplay(title, tracks, T){
   const st = $("repSt"); st.textContent = "";
   for(const tr of tracks){
     const p = el("div","rep-p"), cv = el("canvas","pic"); tr.cv = cv; tr.box = p; tr.tot = stats(tr.d, new Uint8Array(tr.d.cells.length)).tot;
-    if(tr.name){ const n = el("div","rep-n"); const ad = BUILTIN.find(x=>x.id===tr.av); if(ad){ const a = el("canvas"); drawThumb(a, ad, null, true); n.appendChild(a); } n.appendChild(el("span",null,tr.name)); p.appendChild(n); }
+    if(tr.name){ const n = el("div","rep-n"); { const a = el("canvas"); if(avDraw(a, tr.av)) n.appendChild(a); } n.appendChild(el("span",null,tr.name)); p.appendChild(n); }
     tr.pc = el("div","rep-pc","0 %"); p.append(cv, tr.pc); st.appendChild(p);
   }
   $("rep").hidden = false; replaySeek(0); replayPlay(true);
@@ -3441,7 +3623,7 @@ function openSoloReplay(d, dn, order){
 }
 function duelTracks(d, mine, theirs, oppName, oppAv, won){
   const last = Math.max(1, ...mine.map(e=>e[1]), ...theirs.map(e=>e[1])), T = Math.max(4000, Math.min(16000, last*100)), f = T/last;
-  return [[{d, ev:mine.map(([i,t])=>[i,t*f]), name: me ? me.name : "Moi", av: me ? me.av : "", won: !!won},
+  return [[{d, ev:mine.map(([i,t])=>[i,t*f]), name: me ? me.name : "Moi", av: myAv(), won: !!won},
            {d, ev:theirs.map(([i,t])=>[i,t*f]), name: oppName, av: oppAv, won: !won}], T];
 }
 function openDuelReplay(r){
@@ -3451,7 +3633,7 @@ function openDuelReplay(r){
 }
 function replayCur(){
   if(!cur || free) return;
-  if(duel){ const [tracks, T] = duelTracks(cur, duel.mine, duel.theirs, duel.opp.name, duel.opp.av, done.every((v,i)=>idx[i]<0 || v)); openReplay("Replay du duel · "+cur.name, tracks, T); }
+  if(duel){ const [tracks, T] = duelTracks(cur, duel.mine, duel.theirs, duel.opp.name, avPack(duel.opp), done.every((v,i)=>idx[i]<0 || v)); openReplay("Replay du duel · "+cur.name, tracks, T); }
   else openSoloReplay(cur, done, rec);
 }
 $("finRep").onclick = replayCur; $("winRep").onclick = replayCur;
@@ -3462,7 +3644,7 @@ let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
 function openDrawing(d, ch, math, du){
-  hideFin();
+  hideFin(); $("winNext").disabled = false; $("finNext").disabled = false;
   stopDuel(); duel = du || null;
   stopChrono(); chrono = ch || null; mathMode = math || null; document.body.classList.toggle("mathplay", !!mathMode);
   wandLeft = 3; wandOn = false; blinkT = 0; lastAct = 0; playMs = 0; timeKnown = true; finTimeTxt = "";
@@ -3577,7 +3759,8 @@ function paintCell(i){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
       $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
     }
-    if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
+    if(cur.weekly){ if(xs.wk!==cur.wk){ xs.wk = cur.wk; xsAdd("h", cur.name, WEEK_R); $("winTxt").textContent = `Défi de la semaine réussi ! +${WEEK_R} étoiles`; } else $("winTxt").textContent = "Grand dessin terminé !"; }
+    else if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
     finTimeTxt = chrono ? fmtDur(chrono.T-chrono.left) : duel ? fmtDur((performance.now()-(duel.t0||performance.now()))/1000) : timeKnown ? fmtDur(playMs/1000) : "";
     { const who = cur, ns = chrono ? ((chronoRes[chrono.lv]||{}).s||0) : duel ? DUEL_WIN : mathMode ? 0 : starsOf(cur), ttl = duel ? "Victoire !" : chrono ? "Niveau réussi !" : "Bravo !";
       setTimeout(()=>{ if(cur===who) celebrate(ns, ttl); }, 650); }
@@ -3832,7 +4015,7 @@ function showLand(mode){
   $("ldBack").hidden = !me; $("ldHave").hidden = users.length>0 || !!sync;
   const g = $("ldAv"); g.textContent = "";
   const pts = mode==="edit" ? lastScore : 0;
-  AVATARS.map(id=>[id,0]).concat(mode==="edit" ? SHOP_AV.filter(a=>shopOwns("av:"+a[0])).map(a=>[a[0],0]) : [], AV_LOCKED).forEach(([id,cost])=>{
+  AVATARS.map(id=>[id,0]).concat(mode==="edit" ? SHOP_AV.filter(a=>shopOwns("av:"+a[0])).map(a=>[a[0],0]).concat(xs.colAv.map(id=>[id,0])) : [], AV_LOCKED).forEach(([id,cost])=>{
     const d = BUILTIN.find(x=>x.id===id); if(!d) return; const locked = pts<cost;
     const b = el("button","av" + (id===ldAv ? " on" : "") + (locked ? " lock" : "")); b.type = "button"; b.disabled = locked;
     b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} points` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
