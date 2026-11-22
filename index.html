@@ -1753,6 +1753,134 @@ XM("lettre","Lettre au père Noël","traditions","#2f9e44",P=>{ dots(P,[[2,2],[1
 XM("cheminee","Cheminée","traditions","#fff3bf",P=>{ P.fg(); P.r(3,8,19,20.4,(x,y)=>{ const r=Math.floor(y); return (r%2===0 || Math.floor(x+(r%4===1?1:0))%3===0) ? "#a13d06" : "#e8590c"; });
   P.r(7,12,15,20.4,"#2b2b3a"); flame(P,11,20.2,.4); P.r(2,6,20,8.4,"#8b5a2b"); P.r(4,8.4,6,11.6,"#e03131"); P.r(4,10.4,7.4,11.6,"#e03131"); P.r(16,8.4,18,11.6,"#2f9e44"); P.r(14.6,10.4,18,11.6,"#2f9e44"); P.o("#3d2410"); });
 
+/* ===== Contes et royaumes : personnages et objets inventés pour ce jeu ===== */
+const S1 = "#ffd8b5", S2 = "#e8b98a", S3 = "#b9794a", S4 = "#8a5a3a", GOLD = "#ffd43b";
+const CT = (id, name, sub, bg, fn) => D("ct_"+id, name, "contes", bg, fn, sub);
+function pers(id, name, sub, o){
+  const skin = o.skin || S1;
+  face("ct_"+id, name, sub, {cat:"contes", bg:o.bg, c:skin, rx:o.rx||5.6, ry:o.ry||5.8, cy:12.5, nc:mix(skin,"#c2255c",.35), ny:14, mc:o.mc||"#c2255c", eyy:11, big:o.big, eyeC:o.eyeC, eyes:o.eyes, nose:o.nose, mouth:o.mouth, out:o.out||"#5c636a", deco:o.deco,
+    back:o.back, mid:o.mid, front:(P,h,m)=>{ if(o.cheeks!==false){ P.s(6,13,mix(skin,"#ff6b6b",.45)); P.s(15,13,mix(skin,"#ff6b6b",.45)); } if(o.front) o.front(P,h,m); }});
+}
+const hairLong = col => P => P.e(11,13.6,7.4,7.8,col);
+const hairShort = col => P => P.c(11,10.8,6.9,col);
+const fringe = (col, y) => (P,h) => P.f((x,yy)=>h(x,yy)&&yy<(y||9.2), col);
+const crown = (P, y, col, gem) => { P.r(7,y,15,y+1.7,col); for(const px of [8.2,11,13.8]) P.p([[px-1.3,y+.1],[px,y-3],[px+1.3,y+.1]],col); P.s(10,Math.floor(y),gem||"#e03131"); P.s(11,Math.floor(y),gem||"#e03131"); };
+const beard = col => ({back:P=>P.e(11,17,7.2,5.2,col), mid:(P,h)=>P.f((x,y)=>h(x,y)&&y>15,col), must:P=>{ P.e(8.8,15,2.5,1.2,col); P.e(13.2,15,2.5,1.2,col); }});
+/* --- Royaume --- */
+pers("princesse1","Princesse au diadème","royaume",{bg:"#ffe3e3",back:hairLong("#7f4f24"),mid:fringe("#7f4f24"),front:P=>{ P.p([[8,7.8],[11,4.4],[14,7.8]],GOLD); P.s(10,6,"#f783ac"); P.s(11,6,"#f783ac"); }});
+pers("princesse2","Princesse aux tresses","royaume",{bg:"#e5dbff",skin:S3,back:(P,m)=>{ hairShort("#2b2b3a")(P); m(s=>P.e(11+s*6.6,16,1.7,4.4,"#2b2b3a")); },mid:fringe("#2b2b3a",9),
+  front:(P,h,m)=>{ crown(P,6,"#ced4da","#4dabf7"); m(s=>P.s(s>0?17:4,19,"#f783ac")); }});
+pers("princesse3","Princesse aux chignons","royaume",{bg:"#d3f9d8",skin:S2,back:(P,m)=>{ hairShort("#c2410c")(P); m(s=>P.c(11+s*6,5.4,2.7,"#c2410c")); },mid:fringe("#c2410c",9),
+  front:P=>{ P.c(15,7.4,1.3,"#f783ac"); P.s(14,7,GOLD); }});
+pers("prince","Prince","royaume",{bg:"#d0ebff",skin:S2,back:hairShort("#5c3a17"),mid:fringe("#5c3a17",8.8),front:P=>{ crown(P,5.6,GOLD,"#1c7ed6"); P.r(6.4,18.4,15.6,20.6,"#1c7ed6"); P.s(10,19,GOLD); P.s(11,19,GOLD); }});
+pers("reine","Reine","royaume",{bg:"#fff3bf",skin:S4,back:P=>{ P.c(11,8.4,7.6,"#3d2b1f"); P.c(11,11.5,6.6,"#3d2b1f"); },mid:fringe("#3d2b1f",8.6),
+  front:(P,h,m)=>{ crown(P,5,GOLD,"#e03131"); P.p([[9.8,2.2],[11,-.6],[12.2,2.2]],GOLD); m(s=>P.s(s>0?17:4,14,GOLD)); }});
+{ const b = beard("#ced4da");
+  pers("roi","Roi","royaume",{bg:"#ffe8cc",back:P=>{ b.back(P); P.f((x,y)=>((x-11)/6.2)**2+((y-7)/4)**2<1&&y<8,"#c92a2a"); },mid:b.mid,mouth:false,front:P=>{ b.must(P); crown(P,6.6,GOLD,"#1c7ed6"); }}); }
+face("ct_chevalier","Chevalier","royaume",{cat:"contes",bg:"#d0ebff",c:"#adb5bd",rx:6,ry:6.8,cy:12.5,nose:false,mouth:false,eyes:false,out:"#343a40",
+  back:P=>P.e(11,4,2,3.4,"#e03131"),
+  front:P=>{ P.r(5.6,9.6,16.4,11.6,"#2b2b3a"); P.s(8,10,"#ffffff"); P.s(13,10,"#ffffff"); P.r(10.4,5.8,11.6,9.6,"#868e96"); P.r(10.4,11.6,11.6,18.8,"#868e96"); dots(P,[[7,14],[8,16],[14,14],[13,16]],"#495057"); P.r(5,6.6,17,7.8,"#ced4da"); }});
+pers("bouffon","Bouffon","royaume",{bg:"#fff3bf",skin:S1,mc:"#c2255c",front:P=>{ P.p([[11,8.6],[4,8.6],[1.6,2.4]],"#e03131"); P.p([[11,8.6],[18,8.6],[20.4,2.4]],"#1c7ed6"); P.e(11,8.6,7,1.4,"#ffd43b");
+  P.c(1.8,2.2,1.2,GOLD); P.c(20.2,2.2,1.2,GOLD); P.s(9,15,"#c2255c"); P.s(12,15,"#c2255c");
+  P.p([[5,19],[7,21.4],[9,19],[11,21.4],[13,19],[15,21.4],[17,19],[15,17.8],[7,17.8]],(x,y)=>x<11?"#1c7ed6":"#e03131"); }});
+const castle = (P, wall, tower, roof, win) => {
+  P.r(6,10,16,20,wall); for(const x of [6,8.4,10.8,13.2]) P.r(x,8.6,x+1.4,10,wall);
+  for(const tx of [2,15]){ P.r(tx,6.5,tx+5,20,tower); P.p([[tx-.6,6.6],[tx+2.5,1],[tx+5.6,6.6]],roof); P.r(tx+1.8,9,tx+3.2,11.4,win); P.r(tx+1.8,13.6,tx+3.2,16,win); }
+  P.f((x,y)=>((x-11)/2.4)**2+((y-20)/5)**2<1&&y<20,win); P.r(10.4,2,11.6,8.6,wall); P.p([[11.6,2],[15,3.2],[11.6,4.6]],roof);
+};
+CT("chateau","Château","royaume",SKY,P=>{ P.r(0,20,22,22,"#51b85a"); cloud(P,10.5,3); P.fg(); castle(P,"#ced4da","#adb5bd","#e03131","#343a40"); P.o("#343a40"); });
+CT("couronne","Couronne royale","royaume","#e5dbff",P=>{ P.fg(); P.e(11,18.4,8.6,2.6,"#7048e8"); P.r(4.5,12,17.5,16.4,GOLD); for(const px of [5.6,11,16.4]) P.p([[px-2.6,12.2],[px,4.6],[px+2.6,12.2]],GOLD); for(const px of [8.3,13.7]) P.p([[px-1.8,12.2],[px,7.4],[px+1.8,12.2]],"#fcc419");
+  P.c(5.6,4.6,1.1,"#e03131"); P.c(11,4.6,1.2,"#4dabf7"); P.c(16.4,4.6,1.1,"#e03131"); dots(P,[[7,14],[10,14],[11,14],[14,14]],"#e03131"); P.r(4.5,15.4,17.5,16.4,"#f0b429"); P.o("#7a4a00"); });
+CT("carrosse","Carrosse","royaume","#fff0f6",P=>{ P.r(0,20,22,22,"#b08968"); P.fg(); P.e(11,10.4,6.8,5.4,"#4dabf7"); P.e(11,10,3.6,3,"#fff3bf"); P.r(10.4,7,11.6,13,"#1c7ed6"); P.e(11,5.2,3.4,1.2,GOLD); P.c(11,3.6,1.2,GOLD); P.r(4.6,14.6,17.4,15.8,GOLD);
+  for(const wx of [6.4,15.6]){ P.c(wx,17.4,2.7,GOLD); P.c(wx,17.4,1.5,"#fff3bf"); P.c(wx,17.4,.6,GOLD); } P.o("#343a40"); });
+CT("bouclier","Bouclier","royaume","#d3f9d8",P=>{ P.fg(); P.p([[3.6,3],[18.4,3],[18.4,11],[11,20.6],[3.6,11]],"#adb5bd"); P.p([[5.2,4.6],[16.8,4.6],[16.8,10.6],[11,18.4],[5.2,10.6]],(x,y)=>(x<11)===(y<10.5)?"#1c7ed6":"#e03131"); P.p(starPts(11,10.2,3.2,1.4),GOLD); P.o("#343a40"); });
+CT("epee","Épée","royaume","#ffe8cc",P=>{ P.fg(); P.p([[11,1],[12.4,3.4],[12.4,14],[9.6,14],[9.6,3.4]],(x,y)=>x<11?"#dee2e6":"#adb5bd"); P.r(6,14,16,15.7,GOLD); P.c(6,14.8,1.1,GOLD); P.c(16,14.8,1.1,GOLD); P.r(10,15.7,12,19.6,"#7f4f24"); P.c(11,20.3,1.4,"#e03131"); P.o("#343a40"); });
+CT("trone","Trône","royaume","#fff3bf",P=>{ P.fg(); P.r(6,2,16,14,GOLD); P.r(7.2,3.4,14.8,13,"#c92a2a"); P.c(6,2,1.3,GOLD); P.c(16,2,1.3,GOLD); P.p(starPts(11,6.6,2,.9),GOLD);
+  P.r(4,10.6,6.2,16,GOLD); P.r(15.8,10.6,18,16,GOLD); P.r(5,13.4,17,16.4,"#e03131"); P.r(5,16.4,17,17.6,GOLD); P.r(5.4,17.6,7,20.6,"#f0b429"); P.r(15,17.6,16.6,20.6,"#f0b429"); P.o("#7a4a00"); });
+/* --- Magie --- */
+pers("fee","Fée","magie",{bg:"#d3f9d8",back:(P,m)=>{ m(s=>{ P.e(11+s*8,10,3.2,5.6,"#d0ebff"); P.e(11+s*7.4,16.4,2.4,3.2,"#e5dbff"); }); hairShort("#f783ac")(P); },mid:fringe("#f783ac",9),
+  front:P=>{ dots(P,[[7,7],[9,6],[13,6],[15,7]],"#ffffff"); dots(P,[[8,6],[11,5],[14,6]],GOLD); }});
+pers("magicienne","Magicienne","magie",{bg:"#fff3bf",skin:S3,back:hairLong("#7048e8"),mid:fringe("#7048e8",9.4),front:P=>{ P.p([[4.4,9],[17.6,9],[12.4,.8]],"#5f3dc4"); P.e(11,9,8.4,1.5,"#5f3dc4"); P.r(6.4,7,15.6,8.2,GOLD); dots(P,[[10,5],[13,3],[11,2]],GOLD); }});
+{ const b = beard("#f1f3f5");
+  pers("sorcier","Sorcier","magie",{bg:NB,deco:snowDots,back:b.back,mid:b.mid,mouth:false,front:P=>{ b.must(P); P.p([[4.4,9],[17.6,9],[10,.6]],"#1c7ed6"); P.e(11,9,8.6,1.5,"#1c7ed6"); dots(P,[[9,6],[12,4],[10,3],[13,7]],GOLD); P.r(7,9.6,10,10.4,"#f1f3f5"); P.r(12,9.6,15,10.4,"#f1f3f5"); }}); }
+CT("baguette","Baguette magique","magie","#e5dbff",P=>{ dots(P,[[3,4],[8,2],[18,10],[19,17],[5,12]],GOLD); P.fg(); P.path([[4,19.4],[12.6,9.6]],.8,.8,"#3d2b1f"); P.path([[11.4,11],[12.6,9.6]],.85,.85,"#ffffff"); P.p(starPts(15,6.6,5,2.1),GOLD); P.p(starPts(15,6.6,2.4,1),"#fff3bf"); P.o("#7a4a00"); });
+CT("potion","Potion","magie","#d3f9d8",P=>{ P.fg(); const g=(x,y)=>H(x-11,y-14.2)<6.4; P.r(9.4,5,12.6,10,"#e7f5ff"); P.f(g,"#e7f5ff"); P.f((x,y)=>g(x,y)&&y>12.4,"#9775fa"); dots(P,[[9,15],[12,17],[13,14]],"#d0bfff"); P.s(8,11,"#ffffff");
+  P.r(8.6,4,13.4,5.4,"#ced4da"); P.r(9.6,1.8,12.4,4,"#b5651d"); dots(P,[[11,0],[13,1]],"#d0bfff"); P.o("#343a40"); });
+CT("grimoire","Grimoire","magie","#fff3bf",P=>{ P.fg(); P.r(5,18,18,19.6,"#fff1d6"); P.r(4,4,18,18,"#5f3dc4"); P.r(4,4,6,19.6,"#4c2fa8"); for(const [x,y] of [[6,4],[16.4,4],[6,16.4],[16.4,16.4]]) P.r(x,y,x+1.6,y+1.6,GOLD);
+  P.p(starPts(12,10.6,3.6,1.5),GOLD); P.r(16.4,9.6,19.4,12,GOLD); P.o("#2b1a66"); });
+CT("boule","Boule de cristal","magie",NB,P=>{ snowDots(P); P.fg(); P.p([[6,17.4],[16,17.4],[17.6,21.2],[4.4,21.2]],"#f0b429"); P.r(6.6,16.6,15.4,18,GOLD); const g=(x,y)=>H(x-11,y-9.8)<7.4;
+  P.f(g,(x,y)=>{ const v=Math.sin(x*.9+Math.sin(y*.8)*1.6); return v>.4 ? "#f783ac" : v<-.4 ? "#7048e8" : "#b197fc"; }); P.e(8,6.4,1.6,1,"#ffffff"); P.p(starPts(12.4,11,2,.8),"#ffffff"); P.o("#2b1a66"); });
+CT("chaudron","Chaudron","magie","#3d2466",P=>{ night(P); P.fg(); for(const [x,y,r] of [[8,4.4,1.2],[12.4,2.4,1],[14.6,5.6,1.4],[10.4,6.6,.9]]) P.c(x,y,r,"#8ce99a"); P.r(4.4,18,6.4,21,"#343a40"); P.r(15.6,18,17.6,21,"#343a40");
+  P.e(11,14.4,7.8,6,"#495057"); P.e(11,9.6,8.2,2.2,"#343a40"); P.e(11,9.4,6.6,1.4,"#51cf66"); P.e(7,14,1,2.4,"#868e96"); P.o("#14141c"); });
+CT("chapeau","Chapeau de magicien","magie","#fff0f6",P=>{ P.fg(); P.e(11,17,9.6,2.8,"#1c7ed6"); P.p([[5.6,16],[9,3.6],[14.4,1.2],[12.4,6],[16.4,16]],"#1c7ed6"); P.r(6.4,13.4,15.6,15.4,GOLD); dots(P,[[9,9],[12,11],[11,6],[13,8]],GOLD);
+  P.f((x,y)=>H(x-10,y-11.6)<1.5&&H(x-10.8,y-11.2)>1.2,GOLD); P.o("#0b3d70"); });
+CT("lampe","Lampe magique","magie",NB,P=>{ snowDots(P); P.path([[19.6,9],[18.4,6],[19.6,3.4],[18,1]],.5,.9,"#b197fc"); P.fg(); P.f((x,y)=>Math.abs(H(x-3.8,y-13)-2.2)<.7,"#f0b429"); P.p([[15,12.4],[20.6,9.4],[20.2,11.4],[15.6,15.2]],GOLD);
+  P.e(10,13.6,6.2,3.3,GOLD); P.e(10,10.6,2.8,1.2,"#f0b429"); P.c(10,9.2,1,GOLD); P.r(7.6,16.6,12.4,18,"#f0b429"); P.e(10,18.6,4,1,GOLD); P.e(8,12.6,1.6,.8,"#fff3bf"); P.o("#7a4a00"); });
+CT("cle","Clé enchantée","magie","#e5dbff",P=>{ dots(P,[[4,5],[17,3],[18,12],[4,16]],GOLD); P.fg(); P.f((x,y)=>{ const d=H(x-11,y-5.6); return d<4.2&&d>1.5; },GOLD); P.c(11,5.6,1.5,"#e03131");
+  P.r(10.2,9.4,11.8,20,GOLD); P.r(11.8,15,14.6,16.5,GOLD); P.r(11.8,17.8,13.8,19.3,GOLD); P.o("#7a4a00"); });
+CT("miroir","Miroir magique","magie","#fff0f6",P=>{ P.fg(); P.r(10,17,12,21.6,"#f0b429"); P.e(11,9.6,7,8.2,GOLD); P.e(11,9.6,5.3,6.5,"#a5d8ff"); P.l(8,7.4,10,5,.4,"#ffffff"); P.l(9.4,9.6,11.4,7.2,.4,"#ffffff"); P.c(11,1.6,1.2,"#e03131"); P.o("#7a4a00"); });
+/* --- Créatures --- */
+face("ct_licorne","Licorne","creatures",{cat:"contes",bg:"#e5dbff",c:"#ffffff",rx:5.6,ry:7,cy:12.5,ears:"pointy",inC:"#ffc9de",out:"#868e96",nose:false,mouth:false,big:true,eyeC:"#7048e8",eyy:10,mz:{c:"#ffdeeb",rx:3.8,ry:2.7,y:16.6},nostrils:[16,"#f783ac"],
+  back:P=>{ [["#e03131",4.4,8.4],["#ff922b",3.8,11],["#ffd43b",3.8,13.6],["#51cf66",4.4,16.2],["#4dabf7",5.4,18.6]].forEach(([c,x,y])=>P.c(x,y,2.1,c)); },
+  front:P=>P.p([[9.8,6.4],[12.2,6.4],[11,.4]],(x,y)=>Math.floor(y)%2?GOLD:"#fff3bf")});
+face("ct_pegase","Pégase","creatures",{cat:"contes",bg:NB,deco:snowDots,c:"#e7f5ff",rx:5.6,ry:7,cy:12.5,ears:"pointy",inC:"#a5d8ff",out:"#5c7c99",nose:false,mouth:false,eyy:10,mz:{c:"#ffffff",rx:3.8,ry:2.7,y:16.6},nostrils:[16,"#74c0fc"],
+  back:(P,m)=>{ m(s=>{ P.e(11+s*8,9,3,5.4,"#ffffff"); P.e(11+s*8.6,13.6,2.2,3.4,"#d0ebff"); }); P.e(11,5.6,2.4,3.4,"#4dabf7"); }, mid:P=>P.p([[9,5.6],[13,5.6],[11,9.4]],"#4dabf7")});
+face("ct_dragon","Dragon violet","creatures",{cat:"contes",bg:"#fff3bf",c:"#7048e8",rx:6.8,ry:6.6,cy:11.4,nose:false,mouth:false,eyes:false,out:"#2b1a66",
+  back:(P,m)=>m(s=>P.p([[11+s*5.5,7],[11+s*7,1.4],[11+s*2.5,5]],GOLD)),
+  front:P=>{ P.p([[9.8,5],[11,2],[12.2,5]],"#f783ac"); P.e(11,15.6,4.6,3.2,"#b197fc"); P.s(9,15,INK); P.s(12,15,INK); P.c(8,9.6,1.6,GOLD); P.c(14,9.6,1.6,GOLD); P.r(7,8.6,8,10.6,INK); P.r(14,8.6,15,10.6,INK); P.s(9,18,"#ffffff"); P.s(12,18,"#ffffff"); }});
+face("ct_bebedragon","Bébé dragon","creatures",{cat:"contes",bg:"#ffe3e3",c:"#51cf66",rx:6.6,ry:6.4,cy:11.4,nose:false,big:true,eyeC:"#2b8a3e",eyy:9,mc:"#2b8a3e",ny:12.6,
+  back:(P,m)=>m(s=>P.p([[11+s*4.6,6.6],[11+s*5.6,2.6],[11+s*2.4,5.2]],GOLD)),
+  front:P=>{ P.s(9,13,"#2b8a3e"); P.s(12,13,"#2b8a3e"); P.s(5,12,"#ffa8a8"); P.s(16,12,"#ffa8a8"); P.p([[3.5,19],[5.5,16.2],[7.5,18.6],[9.2,16.2],[11,18.6],[12.8,16.2],[14.5,18.6],[16.5,16.2],[18.5,19],[16.5,21.6],[5.5,21.6]],"#f8f9fa"); }});
+pers("sirene","Sirène","creatures",{bg:"#5bbcec",skin:S2,deco:P=>{ P.c(3,4,1,"#c9efff"); dots(P,[[19,3],[18,7],[2,10]],"#c9efff"); },back:hairLong("#0ca678"),mid:fringe("#0ca678",9.2),
+  front:P=>{ P.p(starPts(15.4,7,2.2,1),"#f783ac"); P.p([[5,19],[7,21.4],[9,19],[11,21.4],[13,19],[15,21.4],[17,19],[15,17.8],[7,17.8]],(x,y)=>Math.floor(x)%2?"#12b886":"#63e6be"); }});
+pers("lutinbois","Lutin des bois","creatures",{bg:"#d3f9d8",skin:S2,back:(P,m)=>m(s=>P.p([[11+s*5,10.4],[11+s*10,8],[11+s*5.6,13.8]],S2)),
+  front:P=>{ P.p([[4.6,9.2],[17.4,9.2],[13.6,6],[11,1]],"#2f9e44"); P.l(11,1.6,11,8.6,.35,"#8ce99a"); P.e(11,9.2,7,1.3,"#7f4f24"); P.c(15.4,8.6,1.1,"#e03131"); }});
+{ const b = beard("#ffffff");
+  pers("gnome","Gnome","creatures",{bg:"#d8f5a2",back:b.back,mid:b.mid,eyes:false,mouth:false,nose:false,cheeks:false,front:P=>{ b.must(P); P.p([[4,11.4],[18,11.4],[11,.6]],"#e03131"); P.e(11,11.2,7.4,1.4,"#c92a2a"); P.c(11,13.2,1.8,"#f0b9a0"); }}); }
+pers("geant","Géant","creatures",{bg:SKY,skin:S2,rx:7.2,ry:6.8,back:P=>{ P.c(11,10,7.8,"#5c3a17"); dots(P,[[4,4],[7,2],[11,1],[15,2],[18,4]],"#5c3a17"); },mid:fringe("#5c3a17",8.4),mouth:false,
+  front:P=>{ P.r(6,9.4,9.6,10.2,"#3d2b1f"); P.r(12.4,9.4,16,10.2,"#3d2b1f"); P.e(11,14.2,1.8,1.4,"#d09a6a"); P.r(8,16.4,14,17.4,"#7a3b10"); P.s(10,16,"#ffffff"); }});
+face("ct_troll","Troll","creatures",{cat:"contes",bg:"#fff3bf",c:"#8fb573",rx:6.6,ry:6.2,cy:12.6,nose:false,mouth:false,eyy:11,out:"#3d5a2a",
+  back:(P,m)=>{ m(s=>P.e(11+s*7.6,12,2.6,3.4,"#8fb573")); P.p([[7.6,7.4],[8.4,1.4],[10.4,4.6],[11,.4],[11.6,4.6],[13.6,1.4],[14.4,7.4]],"#9c36b5"); },
+  front:P=>{ P.e(11,14,2,1.5,"#6f9455"); P.r(8,16.4,14,17.4,"#3d5a2a"); P.s(8,15,"#ffffff"); P.s(13,15,"#ffffff"); P.r(7,9.6,9.6,10.4,"#3d5a2a"); P.r(12.4,9.6,15,10.4,"#3d5a2a"); }});
+face("ct_phenix","Phénix","creatures",{cat:"contes",bg:NB,deco:snowDots,c:"#ff6b00",rx:6,ry:6.8,nose:false,mouth:false,eyy:10,out:"#7a0c0c",
+  back:P=>{ P.p([[7,6.4],[6,.6],[9.6,4.4]],"#e03131"); P.p([[9.4,5.4],[11,-.4],[12.6,5.4]],GOLD); P.p([[15,6.4],[16,.6],[12.4,4.4]],"#e03131"); },
+  mid:P=>P.e(11,10.8,4.6,3,GOLD), front:P=>{ P.p([[9.4,12],[12.6,12],[11,16]],"#f0b429"); P.f((x,y)=>((x-11)/6)**2+((y-12)/6.8)**2<1&&y>16.4,(x,y)=>Math.floor(x)%2?"#e03131":"#ff922b"); }});
+face("ct_hibou","Hibou sage","creatures",{cat:"contes",bg:NB,deco:snowDots,c:"#845ef7",rx:6.6,ry:7,ears:"pointy",nose:false,mouth:false,eyes:false,out:"#2b1a66",
+  mid:(P,h)=>{ P.f((x,y)=>h(x,y)&&y>14,(x,y)=>(Math.floor(x)+Math.floor(y))%2?"#b197fc":"#9775fa"); P.c(8,10,2.7,"#f3f0ff"); P.c(14,10,2.7,"#f3f0ff"); },
+  front:(P,h,m)=>{ P.c(8,10,1.2,INK); P.c(14,10,1.2,INK); m(s=>P.f((x,y)=>Math.abs(H(x-11-s*3,y-10)-3)<.45,GOLD)); P.r(10.4,9.6,11.6,10.4,GOLD); P.p([[10,11.8],[12,11.8],[11,14.2]],"#ff922b"); }});
+face("ct_chat","Chat magique","creatures",{cat:"contes",bg:"#fff3bf",c:"#5f3dc4",ears:"pointy",inC:"#f783ac",out:"#2b1a66",nc:"#f783ac",big:true,eyeC:"#f08c00",mc:"#d0bfff",eyy:10,
+  front:P=>{ P.p([[7,7],[15,7],[12.4,.8]],"#1c7ed6"); P.e(11,7,5,1.2,"#1c7ed6"); dots(P,[[11,4],[12,2]],GOLD); P.p(starPts(11,9.2,1.3,.6),GOLD); }});
+/* --- Hiver enchanté --- */
+pers("reineneiges","Reine des neiges","hiver",{bg:NB,deco:snowDots,skin:S3,back:hairLong("#e9ecef"),mid:fringe("#e9ecef",9),
+  front:P=>{ for(const [px,hh] of [[7.4,3],[9.2,4.4],[11,6],[12.8,4.4],[14.6,3]]) P.p([[px-1,8],[px,8-hh],[px+1,8]],"#a5d8ff"); P.r(6.4,7.4,15.6,8.6,"#74c0fc"); P.s(10,7,"#ffffff"); P.s(11,7,"#ffffff");
+    P.r(5,18.4,17,20.8,"#7048e8"); P.r(5,18,17,19,"#ffffff"); }});
+CT("palais","Palais de glace","hiver",NB,P=>{ snowDots(P); P.r(0,20,22,22,"#ffffff"); P.fg(); castle(P,"#d0ebff","#a5d8ff","#ffffff","#1c7ed6"); dots(P,[[8,13],[13,12],[10,16],[4,8],[17,12]],"#ffffff"); P.o("#1c3d8a"); });
+face("ct_bonhomme","Bonhomme de neige enchanté","hiver",{cat:"contes",bg:"#bfe3ff",c:"#ffffff",out:"#5c7c99",nose:false,mouth:false,rx:6.8,ry:6.4,cy:12,eyy:10,
+  front:P=>{ P.p([[10.5,12],[15.6,13],[10.5,14]],"#ff922b"); dots(P,[[7,15],[8,16],[10,17],[11,17],[13,16],[14,15]],INK); crown(P,5.6,GOLD,"#4dabf7"); P.r(5,17.6,17,19.6,(x,y)=>Math.floor(x)%2?"#7048e8":"#b197fc"); P.r(13,19.6,15,21.6,"#7048e8"); }});
+function magicFlake(id, name, bg, c1, c2, v){
+  CT(id, name, "hiver", bg, P => {
+    for(let k=0;k<6;k++){ const a=k*PI/3-PI/2, ux=Math.cos(a), uy=Math.sin(a); P.l(11,11,11+ux*9.5,11+uy*9.5,.5,c1);
+      for(const [t,len] of v.br) for(const s of [-1,1]){ const b=a+s*PI/3, bx=11+ux*t, by=11+uy*t; P.l(bx,by,bx+len*Math.cos(b),by+len*Math.sin(b),.45,c2); }
+      if(v.tip) P.c(11+ux*9.5,11+uy*9.5,v.tip,c2); }
+    if(v.ring) P.f((x,y)=>Math.abs(H(x-11,y-11)-v.ring)<.5,c2); P.c(11,11,v.c,"#ffffff");
+  });
+}
+magicFlake("flocon1","Flocon magique","#3b2a7a","#f783ac","#d0bfff",{br:[[4.4,2.6],[7,2.4]],tip:1,c:1.8});
+magicFlake("flocon2","Flocon doré","#14213d",GOLD,"#fff3bf",{br:[[5.6,3.4]],tip:1.2,c:1.4,ring:3.6});
+face("ct_ours","Ours des glaces couronné","hiver",{cat:"contes",bg:"#74c0fc",c:"#f8f9fa",ears:"round",inC:"#a5d8ff",mz:{c:"#dee2e6"},out:"#5c7c99",front:P=>{ crown(P,6,GOLD,"#7048e8"); P.r(5.5,17.8,16.5,19.8,"#1c7ed6"); P.r(5.5,17.4,16.5,18.4,"#ffffff"); }});
+CT("cristal","Cristal de glace","hiver",NB,P=>{ snowDots(P); P.fg(); P.p([[11,1],[16.4,7],[14.4,18],[11,21.4],[7.6,18],[5.6,7]],"#74c0fc"); P.p([[11,1],[11,21.4],[7.6,18],[5.6,7]],"#a5d8ff"); P.p([[11,1],[16.4,7],[11,9.4],[5.6,7]],"#e7f5ff");
+  P.p([[2.4,14],[4.6,10.4],[6,16.4],[3.6,19.4]],"#a5d8ff"); P.p([[19.6,14],[17.4,10.4],[16,16.4],[18.4,19.4]],"#74c0fc"); P.o("#1c3d8a"); });
+pers("feehiver","Fée de l'hiver","hiver",{bg:"#bfe3ff",skin:S2,deco:snowDots,back:(P,m)=>{ m(s=>{ P.e(11+s*8,10,3.2,5.6,"#ffffff"); P.e(11+s*7.4,16.4,2.4,3.2,"#e7f5ff"); }); hairShort("#74c0fc")(P); },mid:fringe("#74c0fc",9),
+  front:P=>{ dots(P,[[8,6],[11,5],[14,6]],"#ffffff"); dots(P,[[11,4],[10,5],[12,5],[11,6]],"#e7f5ff"); }});
+face("ct_loup","Loup blanc","hiver",{cat:"contes",bg:NB,deco:P=>{ snowDots(P); P.c(18,4,2.4,"#ffe066"); },c:"#f1f3f5",ears:"pointy",inC:"#a5d8ff",mz:{c:"#ffffff",rx:3,ry:2.6},eyeC:"#1c7ed6",out:"#5c7c99",mid:(P,h)=>cheeks(P,h,"#ffffff")});
+CT("lanterneglace","Lanterne de glace","hiver",NB,P=>{ snowDots(P); P.r(0,20.4,22,22,"#ffffff"); P.fg(); P.f((x,y)=>Math.abs(H(x-11,y-3.4)-1.8)<.6,"#ced4da"); P.p([[6.4,7.4],[15.6,7.4],[13.4,4.6],[8.6,4.6]],"#adb5bd");
+  P.r(7,7.4,15,18,"#a5d8ff"); P.r(8.2,8.6,13.8,17,"#d0ebff"); P.r(10.2,12,11.8,17,"#ffffff"); P.c(11,11,1.6,GOLD); P.c(11,11.4,.8,"#ff922b"); P.r(6.4,18,15.6,19.8,"#adb5bd"); P.o("#1c3d8a"); });
+face("ct_pingouin","Pingouin royal","hiver",{cat:"contes",bg:"#bfe3ff",deco:snowDots,c:"#2b2b3a",out:"#0d0d12",nose:false,mouth:false,ex:8,eyy:11,
+  mid:P=>{ P.c(8.6,11,2.9,"#ffffff"); P.c(13.4,11,2.9,"#ffffff"); P.e(11,14.6,4.8,3.2,"#ffffff"); },
+  front:P=>{ P.p([[9.8,12.4],[12.2,12.4],[11,14.6]],"#ff922b"); crown(P,6.4,GOLD,"#e03131"); P.r(5.5,17.8,16.5,19.6,"#1c7ed6"); }});
+face("ct_renne","Renne des neiges","hiver",{cat:"contes",bg:NB,deco:snowDots,c:"#e7f5ff",rx:5.8,ears:"side",inC:"#ffffff",mz:{c:"#ffffff"},nose:false,out:"#5c7c99",
+  back:(P,m)=>m(s=>{ P.path([[11+s*3,6.4],[11+s*5,2.4],[11+s*7.4,1.6]],.5,.45,"#74c0fc"); P.l(11+s*4.6,3.6,11+s*3,1.2,.45,"#74c0fc"); }), front:P=>P.c(11,13.6,1.6,"#1c7ed6")});
+
 /* ----- Mots (français, niveau primaire) : seules les lettres sont à colorier ----- */
 const ACCENTS = {"́":"00010 00100", "̀":"01000 00100", "̂":"00100 01010", "̈":"01010 00000"};
 const WORDS = {
@@ -1865,9 +1993,9 @@ function planetArt(cv, p, locked, seed){
   }
 }
 
-const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["imagier","Mots en images","#a61e4d"],["formes","Formes","#2f9e44",[["plates","Formes plates"],["solides","Solides"]]],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
+const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["imagier","Mots en images","#a61e4d"],["formes","Formes","#2f9e44",[["plates","Formes plates"],["solides","Solides"]]],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["contes","Contes et royaumes","#5f3dc4",[["royaume","Royaume"],["magie","Magie"],["creatures","Créatures"],["hiver","Hiver enchanté"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
 let filt = "tous", subSel = "", openCat = null;
-const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
+const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","contes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
 if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
