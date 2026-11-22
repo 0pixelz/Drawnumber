@@ -49,6 +49,8 @@ canvas{image-rendering:pixelated}
 .sp-bar{width:min(60vw,240px);height:10px;border-radius:10px;background:#3a3769;overflow:hidden}
 .sp-bar i{display:block;height:100%;width:0;background:#ff6fae;border-radius:10px}
 .sp-s{font-weight:700;font-size:14px;color:#cfcbe8}
+.sp-by{position:absolute;left:0;right:0;bottom:calc(22px + var(--sb));font-family:var(--display);font-weight:600;font-size:18px;color:#fff}
+.sp-by span{color:#ff6fae}
 
 /* Page d'accueil : créer son joueur */
 #land{position:fixed;inset:0;z-index:8;background:var(--ink);color:#fff;overflow-y:auto;display:flex;justify-content:center;padding:calc(26px + var(--st)) calc(18px + var(--sr)) calc(28px + var(--sb)) calc(18px + var(--sl))}
@@ -535,6 +537,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="sp-t">Coloriage par numéros</div>
   <div class="sp-bar"><i id="spFill"></i></div>
   <div class="sp-s">Préparation des dessins…</div>
+  <div class="sp-by">Fait par Jo pour Georges <span aria-hidden="true">♥</span></div>
 </div>
 
 <div id="land" hidden>
