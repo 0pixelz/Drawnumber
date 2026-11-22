@@ -1189,7 +1189,7 @@ face("perroquet","Perroquet","savane",{bg:"#b2f2bb",c:"#e03131",rx:6,ry:6.8,nose
 /* --- Forêt --- */
 const cheeks = (P,h,col) => { P.f((x,y)=>h(x,y)&&H(x-6.4,y-14.6)<3.3,col); P.f((x,y)=>h(x,y)&&H(x-15.6,y-14.6)<3.3,col); };
 face("renard","Renard","foret",{bg:BGW,c:"#ff922b",ears:"pointy",inC:"#2b2b3a",mz:{c:"#ffffff",rx:3,ry:2.6},mid:(P,h)=>cheeks(P,h,"#ffffff")});
-face("ours","Ours brun","foret",{bg:BGW,c:"#8b5a2b",ears:"round",inC:"#d9a066",mz:{c:"#e8c9a0"}});
+face("oursbrun","Ours brun","foret",{bg:BGW,c:"#8b5a2b",ears:"round",inC:"#d9a066",mz:{c:"#e8c9a0"}});
 face("loup","Loup","foret",{bg:"#d0ebff",c:"#868e96",ears:"pointy",inC:"#dee2e6",mz:{c:"#ffffff",rx:3,ry:2.6},eyeC:"#f08c00",mid:(P,h)=>cheeks(P,h,"#f1f3f5")});
 face("hibou","Hibou","foret",{bg:"#d0ebff",c:"#8b5a2b",rx:6.6,ry:7,ears:"pointy",nose:false,mouth:false,eyes:false,
   mid:(P,h)=>{ P.f((x,y)=>h(x,y)&&y>14,(x,y)=>(Math.floor(x)+Math.floor(y))%2?"#d9a066":"#c68642"); P.c(8,10,2.7,"#ffe8cc"); P.c(14,10,2.7,"#ffe8cc"); },
@@ -1408,6 +1408,154 @@ VT("casquette","Casquette","#d0ebff",P=>{ P.fg(); P.e(16,13.4,5,1.7,"#c92a2a"); 
 VT("lunettes","Lunettes de soleil","#ffe8b0",P=>{ P.fg(); P.l(2.8,9.6,1,8,.4,"#2b2b3a"); P.l(19.2,9.6,21,8,.4,"#2b2b3a"); P.e(6.5,11,4,3.4,"#2b2b3a"); P.e(15.5,11,4,3.4,"#2b2b3a"); P.r(10,9.6,12,10.8,"#2b2b3a");
   P.l(4.6,10.4,6,9,.4,"#74c0fc"); P.l(13.6,10.4,15,9,.4,"#74c0fc"); P.o("#0d0d12"); });
 
+/* ===== Noël ===== */
+const NB = "#14213d";
+const XM = (id, name, sub, bg, fn) => D("noel_"+id, name, "noel", bg, fn, sub);
+const snowDots = P => dots(P,[[2,2],[6,5],[18,3],[20,8],[3,10],[15,1],[19,14],[1,16]],"#ffffff");
+const starPts = (cx,cy,R,r) => Array.from({length:10},(_,i)=>{ const q=i%2?r:R, a=-PI/2+i*PI/5; return [cx+q*Math.cos(a), cy+q*Math.sin(a)]; });
+const santaHat = (P,col) => { P.p([[4.6,8.4],[17.4,8.4],[14.8,1.8]],col||"#e03131"); P.e(11,8.2,7.8,1.6,"#ffffff"); P.c(15.6,2,1.6,"#ffffff"); };
+const SKIN = "#ffd8b5";
+/* --- Personnages --- */
+face("nl_pere","Père Noël","personnages",{cat:"noel",bg:"#d0ebff",c:SKIN,rx:5.8,ry:5.6,cy:11.5,nc:"#ff8787",ny:12.6,mouth:false,eyy:10,out:"#5c636a",
+  back:P=>P.e(11,16,7.4,5.6,"#ffffff"), mid:(P,h)=>P.f((x,y)=>h(x,y)&&y>14.6,"#ffffff"),
+  front:P=>{ P.e(8.6,14.2,2.6,1.3,"#f1f3f5"); P.e(13.4,14.2,2.6,1.3,"#f1f3f5"); santaHat(P); P.s(6,12,"#ffa8a8"); P.s(15,12,"#ffa8a8"); }});
+face("nl_mere","Mère Noël","personnages",{cat:"noel",bg:"#ffe3e3",c:SKIN,rx:5.8,ry:5.8,cy:12,nc:"#ff8787",mc:"#c2255c",out:"#5c636a",eyy:10,
+  back:P=>P.c(11,11,7.8,"#f1f3f5"),
+  front:(P,h,m)=>{ P.f((x,y)=>((x-11)/6.8)**2+((y-8.6)/5.6)**2<1&&y<7.8,"#e03131"); P.e(11,7.8,7,1.3,"#ffffff"); m(s=>P.f((x,y)=>Math.abs(H(x-11-s*3,y-10.5)-1.7)<.45,"#f0b429")); P.s(6,13,"#ffa8a8"); P.s(15,13,"#ffa8a8"); }});
+function elf(id, name, hatc, bandc, bg){
+  face("nl_"+id, name, "personnages", {cat:"noel",bg,c:SKIN,rx:6,ry:6,cy:12.5,nc:"#ff8787",ny:13.8,mc:"#c2255c",eyy:11,out:"#5c636a",
+    back:(P,m)=>m(s=>P.p([[11+s*5.2,10],[11+s*10,8],[11+s*5.8,13.4]],SKIN)),
+    front:P=>{ P.p([[5,19],[7,21.4],[9,19],[11,21.4],[13,19],[15,21.4],[17,19],[15,17.6],[7,17.6]],hatc); P.p([[4.8,9],[17.2,9],[11,1.6]],hatc); P.e(11,8.8,7.2,1.4,bandc); P.c(11,1.8,1.3,"#ffd43b"); P.s(6,13,"#ffa8a8"); P.s(15,13,"#ffa8a8"); }});
+}
+elf("lutin1","Lutin vert","#2f9e44","#e03131","#fff3bf");
+elf("lutin2","Lutin rouge","#e03131","#ffffff","#d3f9d8");
+elf("lutin3","Lutin bleu","#1c7ed6","#ffd43b","#ffe3e3");
+face("nl_renne","Renne lumineux","personnages",{cat:"noel",bg:NB,c:"#c68642",rx:5.8,ears:"side",inC:"#f0d2a8",mz:{c:"#f0d2a8"},nose:false,back:antlers,deco:snowDots,
+  front:P=>{ P.c(11,13.6,1.7,"#e03131"); dots(P,[[6,2],[15,2]],"#ffd43b"); dots(P,[[4,1],[17,1]],"#e03131"); dots(P,[[7,4],[14,4]],"#4dabf7"); }});
+face("nl_bebe","Bébé renne","personnages",{cat:"noel",bg:"#ffe3e3",c:"#d9a066",rx:6.2,ry:6,cy:12.5,ears:"side",inC:"#ffc9de",big:true,mz:{c:"#fff3d6",rx:3,ry:2.2,y:15.4},ny:14.4,eyy:10,
+  back:(P,m)=>m(s=>{ P.l(11+s*3,7,11+s*4,3.4,.5,"#7f4f24"); P.l(11+s*3.8,4.6,11+s*5.6,3.6,.45,"#7f4f24"); }), mid:P=>dots(P,[[10,7],[11,7],[10,8],[11,8]],"#fff3d6")});
+function snowman(id, name, bg, hat){
+  face("nl_"+id, name, "personnages", {cat:"noel",bg,c:"#ffffff",out:"#5c7c99",nose:false,mouth:false,rx:6.8,ry:6.4,cy:12,eyy:10,
+    front:P=>{ P.p([[10.5,12],[15.6,13],[10.5,14]],"#ff922b"); dots(P,[[7,15],[8,16],[10,17],[11,17],[13,16],[14,15]],INK); hat(P);
+      P.r(5,17.6,17,19.6,(x,y)=>Math.floor(x)%2?"#e03131":"#ffffff"); P.r(13,19.6,15,21.6,"#e03131"); }});
+}
+snowman("neige1","Bonhomme à chapeau","#bfe3ff",P=>{ P.r(5.5,5.6,16.5,7.2,"#2b2b3a"); P.r(7.4,1,14.6,5.6,"#2b2b3a"); P.r(7.4,4.2,14.6,5.6,"#e03131"); });
+snowman("neige2","Bonhomme à tuque","#d3f9d8",P=>santaHat(P,"#1c7ed6"));
+face("nl_pingouin","Pingouin de Noël","personnages",{cat:"noel",bg:"#bfe3ff",c:"#2b2b3a",out:"#0d0d12",nose:false,mouth:false,ex:8,eyy:11,
+  mid:P=>{ P.c(8.6,11,2.9,"#ffffff"); P.c(13.4,11,2.9,"#ffffff"); P.e(11,14.6,4.8,3.2,"#ffffff"); },
+  front:P=>{ P.p([[9.8,12.4],[12.2,12.4],[11,14.6]],"#ff922b"); santaHat(P); }});
+face("nl_ours","Ours polaire au chaud","personnages",{cat:"noel",bg:"#74c0fc",c:"#f8f9fa",ears:"round",inC:"#ffc9de",mz:{c:"#dee2e6"},out:"#5c7c99",
+  back:P=>P.f((x,y)=>Math.abs(H(x-11,y-11.5)-8.2)<.75&&y<9,"#e03131"),
+  front:P=>{ P.c(3.6,11.6,2.4,"#e03131"); P.c(18.4,11.6,2.4,"#e03131"); P.r(5.5,17.8,16.5,19.8,(x,y)=>Math.floor(x)%2?"#2f9e44":"#ffffff"); }});
+face("nl_ange","Ange","personnages",{cat:"noel",bg:NB,c:SKIN,rx:5.6,ry:5.8,cy:12.5,nc:"#ff8787",ny:14,mc:"#c2255c",eyy:11,out:"#5c636a",deco:snowDots,
+  back:(P,m)=>{ m(s=>P.e(11+s*8,15,3,4.8,"#ffffff")); P.c(11,11.4,7.4,"#ffd43b"); },
+  mid:(P,h)=>P.f((x,y)=>h(x,y)&&y<9,"#ffd43b"),
+  front:P=>{ P.f((x,y)=>Math.abs(((x-11)/4.4)**2+((y-2.4)/1.5)**2-1)<.5,"#f0b429"); P.s(6,13,"#ffa8a8"); P.s(15,13,"#ffa8a8"); }});
+face("nl_casse","Casse-noisette","personnages",{cat:"noel",bg:"#d3f9d8",c:SKIN,rx:5.4,ry:5.8,cy:13,nose:false,mouth:false,big:true,eyy:10,out:"#343a40",
+  back:(P,m)=>m(s=>P.e(11+s*5.6,13.6,1.9,3.6,"#f1f3f5")),
+  front:P=>{ P.r(5.6,1.2,16.4,8.8,"#2b2b3a"); P.r(5.6,6.8,16.4,8.8,"#ffd43b"); P.c(11,4.2,1.4,"#e03131"); P.r(7,14,10,15,"#2b2b3a"); P.r(12,14,15,15,"#2b2b3a"); P.r(8,16,14,17.6,"#ffffff"); P.s(9,16,"#868e96"); P.s(12,16,"#868e96"); P.s(6,13,"#ffa8a8"); P.s(15,13,"#ffa8a8"); }});
+face("nl_epices","Fille en pain d'épices","personnages",{cat:"noel",bg:"#fff0f6",c:"#b5651d",out:"#5c2e0a",nose:false,eyeC:"#ffffff",mc:"#ffffff",ny:13.6,
+  front:(P,h,m)=>{ P.f((x,y)=>h(x,y)&&Math.abs(y-7.4-Math.sin(x*1.6)*.7)<.55,"#ffffff"); m(s=>P.p([[11,4.6],[11+s*3.6,2.6],[11+s*3.6,6.6]],"#f783ac")); P.c(11,4.6,1.1,"#e64980"); P.s(6,13,"#f783ac"); P.s(15,13,"#f783ac"); }});
+face("nl_chaton","Chaton de Noël","personnages",{cat:"noel",bg:"#ffe3e3",c:"#adb5bd",big:true,eyeC:"#2b8a3e",mz:{c:"#ffffff",rx:2.8,ry:2.2,y:15.2},nc:"#f783ac",ny:14.2,eyy:10,front:P=>santaHat(P)});
+face("nl_chiot","Chiot de Noël","personnages",{cat:"noel",bg:"#d3f9d8",c:"#d9a066",ears:"floppy",earC:"#8b5a2b",mz:{c:"#fff3d6",rx:3.8,ry:2.8},nose:false,back:antlers,
+  mid:P=>P.f((x,y)=>Math.abs(H(x-11,y-12)-6.6)<.6&&y<8,"#2f9e44"), front:P=>P.c(11,13.6,1.7,"#e03131")});
+/* --- Décorations --- */
+function ornament(id, name, bg, col, extra, out){
+  XM(id, name, "decorations", bg, P => { P.fg(); P.f((x,y)=>Math.abs(H(x-11,y-2.2)-1.2)<.5,"#adb5bd"); P.r(9.6,3.2,12.4,5,"#f0b429"); P.c(11,12.4,7.4,col); if(extra) extra(P); P.o(out||"#343a40"); });
+}
+ornament("boule1","Boule rayée","#d3f9d8",(x,y)=>Math.floor(y/2)%2?"#e03131":"#ffffff");
+ornament("boule2","Boule à pois","#fff3bf",(x,y)=>(Math.floor(x)%3===1&&Math.floor(y)%3===1)?"#ffffff":"#1c7ed6");
+ornament("boule3","Boule en zigzag","#ffe3e3",(x,y)=>{ const r=Math.floor(y), c=Math.floor(x); return ((r===11&&c%2===0)||(r===12&&c%2===1)||(r===13&&c%2===0)) ? "#ffd43b" : (r===9||r===15) ? "#ffffff" : "#2f9e44"; });
+ornament("boule4","Boule étoilée","#14213d","#f0b429",P=>P.p(starPts(11,12.6,4,1.7),"#ffffff"),"#7a4a00");
+ornament("boule5","Boule à diagonales","#e5dbff",(x,y)=>Math.floor((x+y)/2)%2?"#7048e8":"#f783ac");
+ornament("boule6","Boule flocon","#d0ebff","#4dabf7",P=>{ for(let k=0;k<3;k++){ const a=k*PI/3; P.l(11-Math.cos(a)*4.6,12.4-Math.sin(a)*4.6,11+Math.cos(a)*4.6,12.4+Math.sin(a)*4.6,.4,"#ffffff"); } });
+ornament("boule7","Boule tricolore","#fff3bf",(x,y)=>y<10.5?"#e03131":y<14.5?"#ffffff":"#2f9e44");
+ornament("boule8","Boule en damier","#d3f9d8",(x,y)=>(Math.floor(x/2)+Math.floor(y/2))%2?"#e64980":"#ffffff");
+XM("etoile","Étoile de Noël","decorations",NB,P=>{ snowDots(P); P.fg(); P.p(starPts(11,11.6,9.4,4),"#ffd43b"); P.p(starPts(11,11.6,5.4,2.4),"#ffe066"); P.s(9,11,INK); P.s(12,11,INK); P.s(10,13,"#a66a00"); P.s(11,13,"#a66a00"); P.o("#a66a00"); });
+XM("couronne","Couronne","decorations","#fff0f6",P=>{ P.fg();
+  P.f((x,y)=>{ const d=H(x-11,y-11.4); return d<8.6&&d>4.4; },(x,y)=>Math.floor((Math.atan2(y-11.4,x-11)+PI)*4/PI)%2?"#2b8a3e":"#37b24d");
+  for(let k=0;k<6;k++){ const a=k*PI/3+.5; P.c(11+Math.cos(a)*6.5,11.4+Math.sin(a)*6.5,.9,"#e03131"); }
+  P.p([[11,18.4],[7,16.2],[7,20.6]],"#e03131"); P.p([[11,18.4],[15,16.2],[15,20.6]],"#e03131"); P.c(11,18.4,1.2,"#c92a2a"); P.o("#134b20"); });
+XM("cloche","Cloche","decorations","#d3f9d8",P=>{ P.fg(); P.c(11,18.4,1.7,"#f08c00"); P.f((x,y)=>((x-11)/6.4)**2+((y-14)/9.4)**2<1&&y<14.4,"#ffd43b"); P.r(3.6,14.2,18.4,16.6,"#ffd43b"); P.r(3.6,15.6,18.4,16.6,"#f0b429"); P.e(7.6,9,1,2.4,"#fff3bf");
+  P.e(8.2,4.6,2.4,1.2,"#2f9e44"); P.e(13.8,4.6,2.4,1.2,"#2f9e44"); P.c(11,4.6,1.3,"#e03131"); P.o("#7a4a00"); });
+XM("guirlande","Guirlande de lumières","decorations",NB,P=>{ for(const oy of [0,9]){ P.path([[0,5+oy],[5.5,8+oy],[11,5.5+oy],[16.5,8+oy],[22,5+oy]],.35,.35,"#868e96"); }
+  P.fg(); [["#e03131",3,7.6],["#ffd43b",8,8.4],["#51cf66",14,8.4],["#4dabf7",19,7.6],["#f783ac",3,16.6],["#4dabf7",8,17.4],["#e03131",14,17.4],["#ffd43b",19,16.6]].forEach(([c,x,y])=>{ P.r(x-.6,y-.2,x+.6,y+1,"#adb5bd"); P.e(x,y+2.6,1.6,2.1,c); }); P.o("#0b132b"); });
+XM("bougie","Bougie de Noël","decorations","#d3f9d8",P=>{ P.fg(); flame(P,11,9.8,.42); P.r(8,10.6,14,19,(x,y)=>Math.floor(y)%3===0?"#ffffff":"#e03131");
+  P.e(6,19.4,3,1.3,"#2f9e44"); P.e(16,19.4,3,1.3,"#2b8a3e"); P.c(11,19.6,1.2,"#c92a2a"); P.c(9.4,20.2,1,"#e03131"); P.o("#343a40"); });
+XM("houx","Houx","decorations","#fff3bf",P=>{ P.fg(); for(const [a,c] of [[-2.3,"#2b8a3e"],[-.85,"#37b24d"],[1.57,"#2f9e44"]]){ const cx=11+Math.cos(a)*5.4, cy=11.6+Math.sin(a)*5.4;
+    P.f((x,y)=>{ const dx=x-cx, dy=y-cy, u=dx*Math.cos(a)+dy*Math.sin(a), v=-dx*Math.sin(a)+dy*Math.cos(a); return (u/5.2)**2+(v/(2.5+.5*Math.cos(u*2.2)))**2<1; },c);
+    P.l(11+Math.cos(a)*1.6,11.6+Math.sin(a)*1.6,11+Math.cos(a)*9,11.6+Math.sin(a)*9,.35,"#8ce99a"); }
+  P.c(9.8,11,1.9,"#e03131"); P.c(12.4,11,1.9,"#c92a2a"); P.c(11,13,1.9,"#e03131"); P.s(9,10,"#ff8787"); P.o("#134b20"); });
+/* --- Sapins --- */
+function xtree(id, name, o){
+  XM(id, name, "sapins", o.bg, P => {
+    if(o.deco) o.deco(P); if(o.ground) P.r(0,19.6,22,22,o.ground);
+    P.fg(); if(o.pot) P.p([[7.6,17.5],[14.4,17.5],[13.4,21.4],[8.6,21.4]],"#c2410c"); else P.r(10,17,12,20,"#8b5a2b");
+    const g = o.g || ["#2b8a3e","#37b24d","#51cf66"];
+    P.p([[4,17.6],[11,9],[18,17.6]],g[0]); P.p([[5.5,12.6],[11,5],[16.5,12.6]],g[1]); P.p([[7,8.2],[11,3],[15,8.2]],g[2]);
+    o.dec(P); if(o.star!==null) P.p(starPts(11,2.6,2.3,1),o.star||"#ffd43b"); P.o(o.out||"#0b3d1c");
+  });
+}
+const TB = [[9,7],[12,10],[8,11],[13,14],[7,15],[10,16],[15,16],[11,13]];
+xtree("sapin1","Sapin classique",{bg:"#d0ebff",ground:"#ffffff",dec:P=>dots(P,TB,"#e03131")});
+xtree("sapin2","Sapin enneigé",{bg:NB,deco:snowDots,ground:"#ffffff",dec:P=>dots(P,[[8,7],[10,7],[12,7],[13,7],[6,12],[7,12],[9,12],[11,12],[13,12],[15,12],[5,17],[6,17],[8,17],[10,17],[12,17],[14,17],[16,17],[11,5],[10,10],[12,15]],"#ffffff")});
+xtree("sapin3","Sapin illuminé",{bg:NB,deco:snowDots,dec:P=>{ dots(P,[[9,7],[13,14],[7,15],[11,11]],"#e03131"); dots(P,[[12,6],[8,11],[10,16],[14,11]],"#ffd43b"); dots(P,[[11,9],[15,16],[9,14]],"#4dabf7"); dots(P,[[12,13],[6,16],[10,5]],"#f783ac"); }});
+xtree("sapin4","Sapin doré",{bg:"#fff3bf",g:["#1b5e2a","#237a36","#2b8a3e"],dec:P=>dots(P,[[9,6],[10,7],[11,7],[12,7],[7,10],[8,11],[9,11],[10,11],[11,11],[12,10],[13,10],[6,15],[7,15],[8,16],[9,16],[10,16],[11,16],[12,15],[13,15],[14,14]],"#ffd43b")});
+xtree("sapin5","Sapin sucré",{bg:"#e5dbff",g:["#e64980","#f783ac","#faa2c1"],out:"#7a1040",star:"#ffffff",dec:P=>{ dots(P,TB.slice(0,4),"#ffffff"); dots(P,TB.slice(4),"#96f2d7"); }});
+xtree("sapin6","Sapin glacé",{bg:NB,deco:snowDots,ground:"#ffffff",g:["#1098ad","#22b8cf","#66d9e8"],out:"#0b4a55",star:"#ffffff",dec:P=>dots(P,TB,"#ffffff")});
+xtree("sapin7","Sapin en pot",{bg:"#ffe3e3",pot:true,dec:P=>{ dots(P,[[9,7],[13,10],[8,14],[12,15]],"#e03131"); dots(P,[[12,7],[9,11],[14,15],[6,16]],"#ffd43b"); }});
+xtree("sapin8","Sapin dans la nuit",{bg:NB,deco:P=>{ snowDots(P); P.c(4.5,4.5,2.6,"#ffe066"); },ground:"#ffffff",g:["#1b5e2a","#237a36","#2b8a3e"],star:null,dec:P=>dots(P,[[10,7],[12,8],[7,12],[14,12],[6,17],[11,16],[15,17]],"#ffffff")});
+/* --- Cadeaux et bas --- */
+function gift(id, name, bg, box, rib, pat){
+  XM(id, name, "cadeaux", bg, P => { P.fg(); P.c(8.4,5,2.5,rib); P.c(13.6,5,2.5,rib); P.r(4,10,18,20.4,pat||box); P.r(3,7,19,10.6,mix(box,"#ffffff",.25)); P.r(10,7,12,20.4,rib); P.r(4,14.4,18,15.8,rib); P.c(11,6.4,1.4,mix(rib,INK,.25)); P.o(mix(box,INK,.6)); });
+}
+gift("cadeau1","Cadeau rouge","#d3f9d8","#e03131","#ffd43b");
+gift("cadeau2","Cadeau vert","#ffe3e3","#2f9e44","#e03131");
+gift("cadeau3","Cadeau à pois","#fff3bf","#1c7ed6","#ffffff",(x,y)=>(Math.floor(x)%3===0&&Math.floor(y)%3===0)?"#a5d8ff":"#1c7ed6");
+gift("cadeau4","Cadeau rayé","#d0ebff","#7048e8","#ffd43b",(x,y)=>Math.floor(x/2)%2?"#7048e8":"#9775fa");
+gift("cadeau5","Cadeau rose","#e5dbff","#f783ac","#ffffff",(x,y)=>(Math.floor(x+y))%4===0?"#fcc2d7":"#f783ac");
+gift("cadeau6","Cadeau doré","#14213d","#f0b429","#e03131",(x,y)=>(Math.floor(x)+Math.floor(y))%2?"#f0b429":"#ffd43b");
+function stocking(id, name, bg, col, out){
+  XM(id, name, "cadeaux", bg, P => { P.fg(); P.r(7.6,5,13.6,15,col); P.e(12.4,16.4,6.2,3.6,col); P.c(16.8,16.6,2.2,"#ffffff"); P.c(8.6,15.4,2,"#ffffff"); P.r(6.6,2.6,14.6,6.4,"#ffffff"); P.o(out); });
+}
+stocking("bas1","Bas vert à pois","#ffe3e3",(x,y)=>(Math.floor(x)%3===0&&Math.floor(y)%3===1)?"#ffffff":"#2f9e44","#134b20");
+stocking("bas2","Bas rayé","#d3f9d8",(x,y)=>Math.floor(y/2)%2?"#e03131":"#ffffff","#7a0c0c");
+stocking("bas3","Bas bleu","#fff3bf",(x,y)=>(Math.floor(x)+Math.floor(y))%4===0?"#ffffff":"#1c7ed6","#0b3d70");
+XM("hotte","Hotte de cadeaux","cadeaux","#d0ebff",P=>{ P.fg(); P.r(7,2,10,7,"#e03131"); P.r(8,2,9,7,"#ffd43b"); P.r(11,1,14,7,"#2f9e44"); P.r(12,1,13,7,"#ffffff"); P.r(14,3.4,16.6,7,"#1c7ed6");
+  P.r(8.4,5.6,13.6,9,"#b5651d"); P.e(11,14.2,7.6,6.6,"#b5651d"); P.r(8,7.6,14,8.8,"#ffd43b"); P.r(12,13,15,16,"#d9a066"); dots(P,[[12,13],[14,15]],"#8b5a2b"); P.o("#5c2e0a"); });
+/* --- Gourmandises --- */
+XM("maison","Maison en pain d'épices","gourmandises","#d0ebff",P=>{ P.r(0,19.8,22,22,"#ffffff"); P.fg(); P.r(4.5,10,17.5,20,"#b5651d"); P.p([[2.4,10.6],[11,2.4],[19.6,10.6]],"#8b4513");
+  for(let x=3;x<19;x+=2) P.s(x,9,"#ffffff"); dots(P,[[10,3],[11,3],[9,5],[12,5],[8,7],[13,7]],"#ffffff");
+  P.r(9.5,14,12.5,20,"#e03131"); P.s(12,17,"#ffd43b"); P.r(5.6,12,8.4,15,"#ffd43b"); P.r(13.6,12,16.4,15,"#ffd43b"); dots(P,[[6,17],[15,17]],"#51cf66"); dots(P,[[7,18],[14,18]],"#f783ac"); P.o("#5c2e0a"); });
+XM("biscuit1","Biscuit étoile","gourmandises","#ffe3e3",P=>{ P.fg(); P.p(starPts(11,11.6,9.4,4.2),"#d9a066"); P.p(starPts(11,11.6,6,2.8),"#ffffff"); dots(P,[[10,10],[12,12],[10,13]],"#e03131"); dots(P,[[11,9],[9,12],[12,14]],"#51cf66"); P.o("#7a4a00"); });
+XM("biscuit2","Biscuit sapin","gourmandises","#fff3bf",P=>{ P.fg(); P.r(9.6,17,12.4,20.6,"#d9a066"); P.p([[3.4,17.6],[11,2],[18.6,17.6]],"#d9a066"); P.p([[6.4,15.8],[11,5.4],[15.6,15.8]],"#51cf66");
+  dots(P,[[10,9],[12,12],[9,13],[11,15],[13,15]],"#ffffff"); dots(P,[[11,11],[8,15]],"#e03131"); P.o("#7a4a00"); });
+XM("chocolat","Chocolat chaud","gourmandises","#d3f9d8",P=>{ P.path([[7,6],[6.2,4],[7.4,2]],.4,.4,"#f1f3f5"); P.path([[11,6],[10.2,4],[11.4,2]],.4,.4,"#f1f3f5"); P.fg();
+  P.f((x,y)=>Math.abs(H(x-15.4,y-13.4)-2.7)<.75&&x>15,"#e03131"); P.r(4.6,8,15.4,19.4,"#e03131"); P.r(4.6,11,15.4,12.4,"#ffffff"); P.e(10,8,5.4,1.5,"#7f4f24"); P.r(7,6.8,9,8.4,"#ffffff"); P.r(10.4,7,12.4,8.6,"#fff1d6"); P.r(3,19.4,17,20.8,"#ced4da"); P.o("#5c0a0a"); });
+XM("buche","Bûche de Noël","gourmandises","#ffe3e3",P=>{ P.fg(); P.r(2,18.4,20,19.8,"#ced4da"); P.e(11.6,13.4,8,4.8,"#7f4f24"); dots(P,[[9,12],[13,14],[16,12],[11,16],[15,16]],"#5c3a17");
+  P.e(4.8,13.4,2.6,4.6,"#d9a066"); P.f((x,y)=>Math.abs(((x-4.8)/1.5)**2+((y-13.4)/2.8)**2-1)<.5,"#7f4f24");
+  P.f((x,y)=>((x-11.6)/8)**2+((y-13.4)/4.8)**2<1&&y<10.4+Math.sin(x*1.4)*.8,"#ffffff"); P.e(10,8,2,1,"#2f9e44"); P.e(13.4,8,2,1,"#2b8a3e"); P.c(11.7,8,1.1,"#e03131"); P.o("#3d2410"); });
+XM("menthe","Bonbon à la menthe","gourmandises","#d0ebff",P=>{ P.fg(); P.p([[6.6,11],[1.6,6.6],[1.6,15.4]],"#e7f5ff"); P.p([[15.4,11],[20.4,6.6],[20.4,15.4]],"#e7f5ff");
+  P.c(11,11,5.4,(x,y)=>Math.floor((Math.atan2(y-11,x-11)+PI)*4/PI+H(x-11,y-11)*.35)%2?"#e03131":"#ffffff"); P.o("#7a0c0c"); });
+XM("lait","Lait et biscuits","gourmandises","#e5dbff",P=>{ P.fg(); P.r(1.6,19,20.4,20.4,"#ced4da"); P.p([[4.6,4.6],[11.4,4.6],[10.4,19],[5.6,19]],"#e7f5ff"); P.p([[4.9,8],[11.1,8],[10.4,19],[5.6,19]],"#ffffff");
+  P.c(15.4,15,3.9,"#d9a066"); dots(P,[[14,14],[16,13],[15,16],[17,16]],"#5c3a17"); P.o("#5c636a"); });
+XM("canneverte","Canne verte","gourmandises","#ffe3e3",P=>{ P.fg(); P.path([[7.5,20.5],[7.5,8.5],[8.6,5.6],[11,4.2],[13.6,5.4],[14.8,8],[14.8,10.5]],1.5,1.5,(x,y)=>Math.floor((x+y)/1.6)%2?"#2f9e44":"#ffffff");
+  P.p([[7.5,13],[3.6,11],[3.6,15]],"#e03131"); P.p([[7.5,13],[11.4,11],[11.4,15]],"#e03131"); P.c(7.5,13,1.1,"#c92a2a"); P.o("#134b20"); });
+/* --- Traditions --- */
+XM("traineau","Traîneau","traditions",NB,P=>{ snowDots(P); P.r(0,20.4,22,22,"#ffffff"); P.fg(); P.r(7,16.4,8,19.4,"#adb5bd"); P.r(15,16.4,16,19.4,"#adb5bd"); P.path([[2.6,19.8],[18,19.8],[20.6,17.4]],.5,.5,"#adb5bd");
+  P.c(12.4,10.6,3.7,"#b5651d"); P.r(8,8,10.4,12,"#2f9e44"); P.p([[3,9],[6,9],[7,13.6],[18,13.6],[18.6,9],[20,9],[19,16.6],[5,16.6]],"#e03131"); P.r(5.2,15.4,18.8,16.6,"#ffd43b"); P.o("#0b132b"); });
+XM("chalet","Maison enneigée","traditions",NB,P=>{ snowDots(P); P.r(0,19.6,22,22,"#ffffff"); P.fg(); P.r(13.6,3.6,15.6,8.6,"#8b5a2b"); P.r(13.2,2.8,16,3.8,"#ffffff");
+  P.r(4.5,10.5,17.5,19.6,"#e8590c"); P.p([[2.4,11],[11,3.4],[19.6,11]],"#ffffff"); P.p([[4.6,11],[11,5.6],[17.4,11]],"#8b4513");
+  P.r(9.5,14,12.5,19.6,"#7f4f24"); P.r(5.6,12.6,8.4,15.6,"#ffd43b"); P.r(13.6,12.6,16.4,15.6,"#ffd43b"); P.o("#0b132b"); });
+XM("globe","Boule à neige","traditions","#ffe3e3",P=>{ P.fg(); P.p([[5.6,17.4],[16.4,17.4],[18,21.2],[4,21.2]],"#8b5a2b"); const g=(x,y)=>H(x-11,y-10.2)<8;
+  P.f(g,"#d0ebff"); P.f((x,y)=>g(x,y)&&y>14.6,"#ffffff"); P.r(10.4,13,11.6,15,"#8b5a2b"); P.p([[7.4,13.6],[11,8.4],[14.6,13.6]],"#2b8a3e"); P.p([[8.4,10],[11,5.6],[13.6,10]],"#37b24d");
+  dots(P,[[6,7],[15,6],[5,11],[16,10],[9,4],[13,4]],"#ffffff"); P.r(6,18.6,16,19.6,"#ffd43b"); P.o("#5c636a"); });
+XM("patins","Patin à glace","traditions","#d0ebff",P=>{ P.fg(); P.r(4.6,17.6,18.6,18.6,"#adb5bd"); P.r(7,15.4,8,17.6,"#adb5bd"); P.r(14.6,15.4,15.6,17.6,"#adb5bd");
+  P.r(6,4,12,14,"#ffffff"); P.r(6,11,16.4,15.6,"#ffffff"); P.c(16.2,13.3,2.3,"#ffffff"); P.r(5.4,3,12.6,5.2,"#f783ac"); dots(P,[[10,7],[11,8],[10,9],[11,10],[12,12],[13,12]],"#e03131"); P.o("#5c7c99"); });
+XM("lettre","Lettre au père Noël","traditions","#2f9e44",P=>{ dots(P,[[2,2],[19,3],[3,19],[18,19],[10,1]],"#ffffff"); P.fg(); P.r(2.5,6,19.5,17,"#fff1d6"); P.p([[2.5,6],[19.5,6],[11,12.6]],"#ffe8cc"); P.c(11,12,1.9,"#e03131"); P.s(10,11,"#ff8787"); P.o("#7a4a00"); });
+XM("cheminee","Cheminée","traditions","#fff3bf",P=>{ P.fg(); P.r(3,8,19,20.4,(x,y)=>{ const r=Math.floor(y); return (r%2===0 || Math.floor(x+(r%4===1?1:0))%3===0) ? "#a13d06" : "#e8590c"; });
+  P.r(7,12,15,20.4,"#2b2b3a"); flame(P,11,20.2,.4); P.r(2,6,20,8.4,"#8b5a2b"); P.r(4,8.4,6,11.6,"#e03131"); P.r(4,10.4,7.4,11.6,"#e03131"); P.r(16,8.4,18,11.6,"#2f9e44"); P.r(14.6,10.4,18,11.6,"#2f9e44"); P.o("#3d2410"); });
+
 /* ----- Mots (français, niveau primaire) : seules les lettres sont à colorier ----- */
 const ACCENTS = {"́":"00010 00100", "̀":"01000 00100", "̂":"00100 01010", "̈":"01010 00000"};
 const WORDS = {
@@ -1484,9 +1632,9 @@ function planetArt(cv, p, locked, seed){
   }
 }
 
-const CATS = [["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
+const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
 let filt = "tous", subSel = "", openCat = null;
-const GROUPS = [["Apprendre",["lettres","chiffres","mots","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
+const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
 if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
