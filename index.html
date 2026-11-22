@@ -193,6 +193,30 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .qrbox{display:flex;flex-direction:column;align-items:center;gap:8px}
 .qrbox canvas{width:min(62vw,230px);height:auto;image-rendering:pixelated;border-radius:12px;border:3px solid var(--ink);background:#fff}
 
+/* Icônes devant le texte des boutons d'outils */
+.tb[data-tool="brush"]::before,.tb[data-tool="fill"]::before,.tb[data-tool="fade"]::before,.tb[data-tool="erase"]::before,#fsize::before,#fdir::before,#fundo::before,#ffit::before,#fit::before,#reset::before,#finAgain::before,#blink::before,#wand::before,#find::before,#winRep::before,#finRep::before,#finSee::before,#winBack::before,#finHome::before,#winNext::before,#finNext::before,#say::before,#finSay::before{content:"";display:inline-block;width:1.2em;height:1.2em;margin-right:.32em;vertical-align:-.24em;background:currentColor;-webkit-mask:var(--i) center/contain no-repeat;mask:var(--i) center/contain no-repeat}
+.tb[data-tool="brush"]{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 4l-9 9'/%3E%3Cpath d='M11 13c-3 0-5 2-5 5 0 1-1 2-3 2 5 2 10 0 10-5z'/%3E%3C/svg%3E")}
+.tb[data-tool="fill"]{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 11l7-7 8 8-7 7a2 2 0 0 1-3 0l-5-5a2 2 0 0 1 0-3z'/%3E%3Cpath d='M5 11h14'/%3E%3Cpath d='M20.500 16c1 1.500 1.500 2.500 1.500 3.500a1.500 1.500 0 0 1-3 0c0-1 .5-2 1.500-3.500z'/%3E%3C/svg%3E")}
+.tb[data-tool="fade"]{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='3'/%3E%3Cpath d='M8 5v14M12 8v8M16 10v4'/%3E%3C/svg%3E")}
+.tb[data-tool="erase"]{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 15l9-9 7 7-6 6H8z'/%3E%3Cpath d='M9 10l7 7M8 19h12'/%3E%3C/svg%3E")}
+#fsize{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='6' cy='15' r='2'/%3E%3Ccircle cx='15' cy='11' r='5.500'/%3E%3C/svg%3E")}
+#fdir{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15M14 6l6 6-6 6'/%3E%3C/svg%3E")}
+#fundo{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 6L4 11l5 5'/%3E%3Cpath d='M4 11h10a5 5 0 0 1 0 10h-3'/%3E%3C/svg%3E")}
+#ffit,#fit{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5'/%3E%3Ccircle cx='12' cy='12' r='2'/%3E%3C/svg%3E")}
+#reset,#finAgain{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 12a8 8 0 1 1-2.500-5.800'/%3E%3Cpath d='M20 3v5h-5'/%3E%3C/svg%3E")}
+#blink{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 17h6M10 21h4'/%3E%3Cpath d='M12 3a6 6 0 0 0-4 10.500c.8.800 1 1.500 1 3.500h6c0-2 .2-2.700 1-3.500A6 6 0 0 0 12 3z'/%3E%3C/svg%3E")}
+#wand{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 20L14 10'/%3E%3Cpath d='M17 3l1 3 3 1-3 1-1 3-1-3-3-1 3-1z'/%3E%3C/svg%3E")}
+#find{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='10.500' cy='10.500' r='6'/%3E%3Cpath d='M15 15l6 6'/%3E%3C/svg%3E")}
+#winRep,#finRep{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4l13 8-13 8z'/%3E%3C/svg%3E")}
+#finSee{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z'/%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3C/svg%3E")}
+#winBack,#finOther{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='4' width='7' height='7' rx='1.500'/%3E%3Crect x='13' y='4' width='7' height='7' rx='1.500'/%3E%3Crect x='4' y='13' width='7' height='7' rx='1.500'/%3E%3Crect x='13' y='13' width='7' height='7' rx='1.500'/%3E%3C/svg%3E")}
+#winNext,#finNext{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12h14M13 6l6 6-6 6'/%3E%3C/svg%3E")}
+#say,#finSay{--i:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9v6h4l5 4V5L8 9z'/%3E%3Cpath d='M16.500 9a4 4 0 0 1 0 6M19 6.500a8 8 0 0 1 0 11'/%3E%3C/svg%3E")}
+.ftools .tb{padding:7px 8px}
+@media (max-width:560px){ #reset,#fit{font-size:0!important;padding:8px 10px!important;flex:0 0 auto} #reset::before,#fit::before{font-size:15px;margin-right:0!important} .ftools .fr{gap:5px} .ftools .tb{padding:7px 6px;font-size:12px} .ftools .tb::before{margin-right:.2em} .tools .btn.small{padding:8px 7px;font-size:13px} .tools .btn.small::before{margin-right:.2em} }
+.wico{width:26px;height:26px;border-radius:7px;flex:0 0 auto;vertical-align:-7px;margin-right:6px;display:inline-block;image-rendering:pixelated}
+#pname .wico{width:24px;height:24px;vertical-align:-5px}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -603,7 +627,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
     <div class="ttl"><b id="pname"></b><span id="pprog"></span></div>
     <span class="clock" id="clock" hidden></span>
     <button class="btn ghost small sq" id="snd" type="button"></button>
-    <button class="btn ghost small" id="reset" type="button">Recommencer</button>
+    <button class="btn ghost small" id="reset" type="button" aria-label="Recommencer">Recommencer</button>
   </div>
   <div id="tbar" hidden><i></i></div>
   <div class="body">
@@ -637,7 +661,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
         <button class="btn ghost small" id="blink" type="button">Indice</button>
         <button class="btn ghost small" id="wand" type="button"></button>
         <button class="btn ghost small" id="find" type="button">Trouver</button>
-        <button class="btn ghost small" id="fit" type="button">Recentrer</button>
+        <button class="btn ghost small" id="fit" type="button" aria-label="Recentrer">Recentrer</button>
       </div>
       <div class="ftools" id="ftools">
         <div class="fr">
@@ -646,9 +670,9 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
           <button class="tb" type="button" data-tool="brush">Pinceau</button>
           <button class="tb" type="button" data-tool="fill">Pot</button>
           <button class="tb" type="button" data-tool="fade">Dégradé</button>
-          <button class="tb" type="button" data-tool="erase">Gomme</button>
         </div>
         <div class="fr">
+          <button class="tb" type="button" data-tool="erase">Gomme</button>
           <button class="tb" type="button" id="fsize"></button>
           <button class="tb" type="button" id="fdir"></button>
           <button class="tb" type="button" id="fundo">Annuler</button>
@@ -2027,9 +2051,122 @@ const WORDS = {
   Y:"YOYO YEUX YOGA YOGOURT YAOURT YAK YÉTI YOURTE YACHT".split(" "),
   Z:"ZOO ZÉRO ZÈBRE ZIGZAG ZESTE ZONE ZUT ZOOM ZÉBU ZOMBIE ZIP ZAPPER".split(" ")
 };
-/* Petite image à côté de chaque mot */
-const WICO = Object.fromEntries("AMI 🧑‍🤝‍🧑 ÂNE 🐴 ARBRE 🌳 AVION ✈️ ANANAS 🍍 ABEILLE 🐝 AILE 🕊️ AIR 💨 ANIMAL 🐾 ANNÉE 📅 ARC 🏹 AUTO 🚗 AUTOBUS 🚌 AVRIL 🌷 AOÛT ☀️ ARGENT 💰 ANGE 👼 AIGLE 🦅 AMOUR ❤️ AGNEAU 🐑 BÉBÉ 👶 BALLE 🎾 BRAS 💪 BATEAU ⛵ BALLON 🎈 BANANE 🍌 BAIN 🛁 BEAU ✨ BLEU 🔵 BOIS 🪵 BOL 🥣 BON 👍 BOTTE 🥾 BOUCHE 👄 BRUN 🟤 BUS 🚌 BISOU 😘 BLANC ⚪ BONBON 🍬 BOÎTE 📦 CHAT 🐱 CHIEN 🐶 CLÉ 🔑 CADEAU 🎁 CAROTTE 🥕 CHEVAL 🐴 CHAISE 🪑 CIEL 🌤️ CINQ 5️⃣ CLASSE 🏫 COCHON 🐷 COQ 🐓 COU 🦒 CRAYON ✏️ CUBE 🧊 CAMION 🚚 CANARD 🦆 CAHIER 📓 CERISE 🍒 CITRON 🍋 DENT 🦷 DAME 👩 DOIGT ☝️ DEUX 2️⃣ DIX 🔟 DOS 🔙 DOUX 🧸 DRAGON 🐉 DINDE 🦃 DODO 😴 DÉ 🎲 DANSE 💃 DESSIN 🖼️ DOUZE 🕛 DRAPEAU 🚩 DAUPHIN 🐬 DOMINO 🀄 DUR 🪨 DOCTEUR 🩺 DÎNER 🍽️ EAU 💧 ÉCOLE 🏫 ÉTÉ 🏖️ ÉTOILE ⭐ ENFANT 🧒 ELLE 👧 ÉPÉE 🗡️ ENCRE 🖋️ ÉPAULE 🤷 ÉQUIPE 👥 ÉCHELLE 🪜 ÉCRAN 🖥️ ÉGLISE ⛪ ÉPONGE 🧽 ÉTAGE 🏢 ÉCLAIR ⚡ ENTRÉE 🚪 ÉLÈVE 🧑‍🎓 EST 🧭 ET ➕ FÉE 🧚 FLEUR 🌸 FEU 🔥 FILLE 👧 FRÈRE 👦 FRAISE 🍓 FROMAGE 🧀 FOURMI 🐜 FEUILLE 🍃 FERME 🚜 FÊTE 🎉 FIL 🧵 FIN 🏁 FLEUVE 🏞️ FOIN 🌾 FORÊT 🌲 FOU 🤪 FOUR ♨️ FROID 🥶 FRUIT 🍎 GANT 🧤 GARE 🚉 GOMME 🧼 GÂTEAU 🎂 GARÇON 👦 GIRAFE 🦒 GLACE 🍦 GRAND 📏 GRIS 🌫️ GROS 🐘 GUITARE 🎸 GENOU 🦵 GENTIL 😊 GORGE 🧣 GOÛT 👅 GRAINE 🌱 GRIPPE 🤧 GRUE 🏗️ GOLF ⛳ GAZON 🌿 HIBOU 🦉 HIVER ❄️ HERBE 🌿 HEURE 🕐 HOMME 👨 HUIT 8️⃣ HAUT ⬆️ HIER ⏪ HÉROS 🦸 HÔTEL 🏨 HOCKEY 🏒 HABIT 👔 HACHE 🪓 HARICOT 🫘 HOMARD 🦞 HUILE 🫒 HUMAIN 🧍 HÔPITAL 🏥 HAMSTER 🐹 HAMAC 🏝️ ÎLE 🏝️ IGLOO 🧊 IMAGE 🖼️ IDÉE 💡 IL 👦 ILS 👬 ICI 📍 INSECTE 🐞 IGUANE 🦎 INVITÉ 💌 ITALIE 🍝 IMITER 🦜 INDEX ☝️ INCONNU ❓ INUIT 🛷 IMPAIR 1️⃣ INSTANT ⏱️ ICEBERG 🏔️ IRIS 👁️ INFINI ♾️ JEU 🎮 JOUR 🌞 JUPE 👗 JAMBE 🦵 JARDIN 🏡 JAUNE 🟡 JE 🙋 JOLI 🌺 JOUE 😊 JOUET 🧸 JUS 🧃 JUIN 🌻 JEUDI 📆 JUMEAU 👯 JUMENT 🐎 JAMBON 🍖 JOIE 😄 JUILLET 🎆 JANVIER ⛄ JUNGLE 🌴 KIWI 🥝 KOALA 🐨 KAYAK 🛶 KILO ⚖️ KARATÉ 🥋 KETCHUP 🍅 KIOSQUE 🏪 KIMONO 👘 KLAXON 📯 KAKI 🟢 KART 🏎️ KIT 🧰 KARTING 🏁 KANGOUROU 🦘 LUNE 🌙 LAIT 🥛 LIVRE 📖 LAPIN 🐰 LION 🦁 LIT 🛏️ LOUP 🐺 LAC 🏞️ LAMPE 💡 LANGUE 👅 LÉGUME 🥦 LETTRE ✉️ LIGNE 📏 LUNDI 📆 LOURD 🏋️ LONG 🐍 LUTIN 🧝 LAVER 🧼 LIRE 📚 LILAS 💐 MAMAN 👩 MAIN ✋ MIEL 🍯 MAISON 🏠 MARDI 📆 MER 🌊 MOT 🔤 MOUTON 🐑 MUR 🧱 MONTRE ⌚ MOUCHE 🪰 MANGER 🍴 MATIN 🌅 MAI 🌼 MARS 🪐 MIDI 🕛 MOI 🙋 MONDE 🌍 MUSIQUE 🎵 MOTO 🏍️ NEZ 👃 NUIT 🌃 NEIGE 🌨️ NOIR ⚫ NOM 🏷️ NON ❌ NOUS 👨‍👩‍👧 NEUF 9️⃣ NID 🪺 NOIX 🌰 NUAGE ☁️ NAGER 🏊 NAPPE 🧺 NATURE 🏞️ NAVIRE 🚢 NOËL 🎄 NOTE 🎶 NORD 🧭 NOMBRE 🔢 NEVEU 👦 OURS 🐻 OLIVE 🫒 ONCLE 👨 OISEAU 🐦 ORANGE 🍊 OREILLE 👂 OR 🥇 OS 🦴 OUI ✅ ONZE 🕚 OIE 🦢 OGRE 👹 ONGLE 💅 ORAGE ⛈️ OUTIL 🔧 OUEST 🧭 OMBRE 👤 OCÉAN 🌊 ODEUR 👃 OCTOBRE 🎃 PAPA 👨 PAIN 🍞 POMME 🍎 PIED 🦶 POULE 🐔 PORTE 🚪 PETIT 🐭 PLUIE 🌧️ POISSON 🐟 PAPIER 📄 PARC 🛝 PÊCHE 🍑 PIANO 🎹 PIE 🐦 PIZZA 🍕 POIRE 🍐 POT 🪴 POUPÉE 🪆 PRUNE 🫐 PATTE 🐾 QUI ❓ QUAI ⚓ QUOI ❔ QUATRE 4️⃣ QUE 💬 QUAND ⏰ QUEL 🤔 QUELLE 🤔 QUEUE 🐒 QUILLE 🎳 QUINZE 🔢 QUART 🕒 QUATORZE 🔢 QUARANTE 🔢 QUÉBEC ⚜️ QUESTION ❓ QUICHE 🥧 QUITTER 👋 QUARTIER 🏘️ QUÊTE 🗺️ ROI 🤴 ROBE 👗 ROUGE 🔴 RAT 🐀 REINE 👸 RENARD 🦊 RIRE 😂 RIZ 🍚 ROBOT 🤖 ROSE 🌹 ROUE 🛞 ROUTE 🛣️ RUE 🏙️ RADIO 📻 RAISIN 🍇 RÂTEAU 🍂 REPAS 🍽️ RÊVE 💭 RIVIÈRE 🏞️ ROND ⭕ SAC 🎒 SEL 🧂 SINGE 🐵 SOLEIL ☀️ SAPIN 🌲 SALADE 🥗 SAMEDI 📆 SEPT 7️⃣ SIX 6️⃣ SOIR 🌆 SOURIS 🐭 SUCRE 🍭 SALUT 👋 SABLE 🏖️ SAVON 🧼 SERPENT 🐍 SIROP 🍁 SKI ⛷️ SOUPE 🍲 STYLO 🖊️ TASSE ☕ TAPIS 🧶 TÊTE 🙂 TABLE 🪑 TOMATE 🍅 TORTUE 🐢 TRAIN 🚂 TROIS 3️⃣ TIGRE 🐯 TANTE 👩 TERRE 🌍 THÉ 🍵 TOIT 🏠 TOUR 🗼 TÉLÉ 📺 TEMPS ⏳ TOUPIE 🪀 TRÉSOR 💎 TULIPE 🌷 TAXI 🚕 UN 1️⃣ UNE 1️⃣ USINE 🏭 UNI 🤝 UNIQUE 🦄 UTILE 🔧 URGENT 🚨 UNIVERS 🌌 USAGE 📘 USÉ 👟 UNITÉ 🧮 UNIFORME 🥼 UKULÉLÉ 🪕 ULTRA 🚀 UNIR 🧩 USER 🩹 UNION 💍 URGENCE 🚑 USTENSILE 🥄 URANUS 🪐 VÉLO 🚲 VACHE 🐮 VERT 🟢 VENT 🌬️ VILLE 🏙️ VOITURE 🚗 VOIR 👀 VASE 🏺 VESTE 🧥 VIE 🌱 VINGT 🔢 VIOLET 🟣 VIOLON 🎻 VISAGE 🙂 VITE 💨 VOIX 🗣️ VOISIN 🏘️ VOYAGE 🧳 VAGUE 🌊 VALISE 🧳 WAGON 🚃 WAPITI 🦌 WATT 💡 WEB 🕸️ WESTERN 🤠 WOK 🥘 WIFI 📶 WALLABY 🦘 WEEKEND 🏕️ WAGONNET 🛒 WOMBAT 🐻 XYLOPHONE 🎶 XAVIER 🧒 YOYO 🪀 YEUX 👀 YOGA 🧘 YOGOURT 🥛 YAOURT 🥛 YAK 🐂 YÉTI ⛄ YOURTE ⛺ YACHT 🛥️ ZOO 🦁 ZÉRO 0️⃣ ZÈBRE 🦓 ZIGZAG 〰️ ZESTE 🍋 ZONE 🚧 ZUT 😖 ZOOM 🔍 ZÉBU 🐂 ZOMBIE 🧟 ZIP 🤐 ZAPPER 📺".split(" ").reduce((o,x,i,a)=>{ if(i%2) o.push([a[i-1],x]); return o; },[]));
-const nmOf = d => d.ico ? d.ico+"\u00a0"+d.name : d.name;
+/* Petite icône en pixels à côté de chaque mot : un dessin du jeu, ou une icône dessinée exprès */
+const WICO = (()=>{ const a = "AMI @amis AILE @aile AIR @vent ANIMAL W_lion ANNÉE @cal:A ARC @arc AVRIL @cal:4 AOÛT @cal:8 ARGENT @piece AIGLE @aigle AMOUR coeur AGNEAU W_mouton BRAS @bras BAIN @bain BEAU F_etoile BLEU @couleur:#1c7ed6 BOIS @buche BOL @bol BON W_emo_content BOUCHE @bouche BRUN @couleur:#8b5a2b BUS W_autobus BISOU W_emo_amoureux BLANC @couleur:#ffffff BOÎTE @boite CHAISE @chaise CIEL W_met_eclaircie CINQ N_5 CLASSE W_eco_tableau COQ W_poule COU W_girafe CAHIER W_eco_livre DENT @dent DAME @femme DOIGT @main DEUX N_2 DIX @num:10 DOUX W_chaton DINDE W_poule DODO W_emo_endormi DESSIN W_eco_crayon DOUZE @num:12 DRAPEAU W_drap_quebec DAUPHIN W_baleine DOMINO @domino DOCTEUR @croix DÎNER @assiette EAU F_goutte ÉCOLE @ecole ÉTÉ W_soleil ENFANT W_emo_content ELLE @femme ENCRE @encre ÉQUIPE W_soccer ÉCHELLE @echelle ÉCRAN @ecran ÉGLISE @eglise ÉPONGE @eponge ÉTAGE @immeuble ENTRÉE @porte ÉLÈVE W_eco_sac EST @boussole FRÈRE @homme FROMAGE @fromage FOURMI @fourmi FEUILLE @feuille FERME W_tracteur FÊTE W_ballons FIL @bobine FIN @damier FLEUVE @riviere FORÊT W_sapin FOU W_ct_bouffon FOUR @four FROID W_flocon1 FRUIT W_pomme GANT W_mitaine GARE W_train GOMME @gomme GARÇON @homme GLACE W_cornet GRAND W_girafe GRIS @couleur:#868e96 GROS W_elephant GUITARE @guitare GENTIL W_emo_content GOÛT W_sucette GRAINE @pousse GRIPPE W_emo_triste GOLF @golf GAZON @herbe HIVER W_bonhomme HERBE @herbe HEURE W_eco_horloge HOMME @homme HUIT N_8 HAUT W_montgolfiere HÉROS W_ct_chevalier HÔTEL @immeuble HOCKEY W_hockey HABIT W_vet_tshirt HACHE @hache HARICOT W_pois HOMARD W_crabe HUILE @bouteille:#f0b429 HUMAIN @homme HÔPITAL @croix ÎLE @ile IMAGE @image IDÉE @ampoule IL @homme ICI @pin INSECTE W_coccinelle IGUANE W_ct_bebedragon INVITÉ W_noel_lettre IMITER W_perroquet INDEX @main INCONNU @num:? INUIT W_igloo IMPAIR N_3 INSTANT W_eco_horloge ICEBERG W_montagne IRIS W_tulipe JEU W_de JOUR W_soleil JUPE W_vet_robe JAMBE W_vet_pantalon JARDIN W_marguerite JAUNE @couleur:#ffd43b JOLI fleur JOUE W_emo_content JOUET W_robot1 JUS @verre JUIN @cal:6 JEUDI @cal:J JUMENT W_cheval JOIE W_emo_rieur JUILLET @cal:7 JANVIER @cal:1 JUNGLE W_singe KIWI @kiwi KAYAK W_bateau KILO @poids KETCHUP @bouteille:#e03131 KIMONO W_vet_robe KAKI @couleur:#7a8a3a KART W_auto KIT @boite KARTING W_auto LIT @lit LAC @riviere LANGUE @bouche LÉGUME W_brocoli LIGNE W_eco_regle LUNDI @cal:L LOURD @poids LONG W_eco_regle LAVER @savon LIRE W_eco_livre LILAS fleur MAMAN @femme MAIN @main MIEL W_abeille MARDI @cal:M MER @vague MOT @num:AB MUR @mur MONTRE W_eco_horloge MOUCHE W_abeille MANGER @assiette MATIN W_met_eclaircie MAI @cal:5 MARS @cal:3 MIDI W_soleil MONDE W_terre MUSIQUE @note NOIR @couleur:#1d1b3a NON @non NEUF N_9 NID @nid NOIX @noix NAGER W_poisson1 NATURE W_pommier NAVIRE W_bateau NOËL W_sapinnoel NOTE @note NORD @boussole NOMBRE @num:12 NEVEU @homme OLIVE @olive ONCLE @homme OISEAU W_perruche OR W_medaille OS @os OUI @coche ONZE @num:11 OIE W_canard OGRE W_ct_troll OUTIL @marteau OUEST @boussole OCÉAN @vague ODEUR fleur OCTOBRE W_halloween PAPA @homme PAIN @pain PIED W_vet_chaussette PORTE @porte PETIT W_souris PAPIER @papier PARC W_pommier PÊCHE @peche PIANO @piano PIE W_perruche PIZZA @pizza POT @pot POUPÉE W_nl_epices PRUNE @prune PATTE @patte QUI @num:? QUAI W_bateau QUOI @num:? QUATRE N_4 QUE @num:? QUAND W_eco_horloge QUEL @num:? QUELLE @num:? QUEUE W_singe QUINZE @num:15 QUART W_eco_horloge QUATORZE @num:14 QUARANTE @num:40 QUESTION @num:? QUICHE @pizza QUITTER @porte QUARTIER W_noel_chalet QUÊTE @coffre ROUGE @couleur:#e03131 RAT W_souris RIRE W_emo_rieur RIZ @bol ROSE fleur ROUE @roue ROUTE @route RUE @route RADIO @radio REPAS @assiette RÊVE W_met_nuit RIVIÈRE @riviere ROND F_cercle SEL @sel SALADE W_brocoli SAMEDI @cal:S SEPT N_7 SIX N_6 SOIR W_met_nuit SUCRE W_sucette SALUT @main SABLE @ile SAVON @savon SERPENT @serpent SIROP @bouteille:#b5651d SKI W_montagne SOUPE @bol STYLO W_eco_crayon TASSE W_noel_chocolat TÊTE W_emo_content TABLE @table TROIS N_3 TANTE @femme TERRE W_terre THÉ W_noel_chocolat TOIT W_noel_chalet TOUR W_ct_chateau TÉLÉ @ecran TEMPS W_eco_horloge TRÉSOR @coffre TAXI W_auto UN N_1 UNE N_1 USINE @usine UNIQUE W_ct_licorne UTILE @marteau URGENT @num:! UNIVERS planete UNITÉ N_1 UNIFORME W_vet_tshirt UKULÉLÉ @guitare ULTRA W_fusee UNION coeur URGENCE @croix USTENSILE @fourchette URANUS planete VÉLO @velo VERT @couleur:#2f9e44 VENT @vent VILLE @immeuble VOITURE W_auto VOIR @oeil VASE @pot VESTE W_vet_tshirt VIE coeur VINGT @num:20 VIOLET @couleur:#7048e8 VIOLON @guitare VISAGE W_emo_content VITE W_fusee VOIX @bouche VOISIN W_noel_chalet VOYAGE W_avion VAGUE @vague VALISE @valise WAGON W_train WAPITI W_cerf WATT @ampoule WOK @bol WIFI @wifi WEEKEND W_ballons WAGONNET W_train WOMBAT W_koala XYLOPHONE @xylophone XAVIER @homme YOYO @yoyo YEUX @oeil YOGOURT @verre YAOURT @verre YAK W_vache YÉTI W_ours YOURTE W_igloo YACHT W_voilier ZOO W_lion ZÉRO N_0 ZIGZAG W_noel_boule3 ZESTE W_citron ZUT W_emo_fache ZOOM @loupe ZÉBU W_vache ZOMBIE W_fantome ZAPPER @ecran".split(" "), o = {}; for(let i=0;i<a.length;i+=2) o[a[i]] = a[i+1]; return o; })();
+const icTxt = (P, str, x0, y0, col) => [...str].forEach((ch,k)=>{ const g = ch==="?" ? "01110100010000100010001000000000100" : ch==="!" ? "00100001000010000100001000000000100" : (FONT[ch]||"").replace(/ /g,""); for(let i=0;i<35;i++) if(g[i]==="1") P.s(x0+k*6+i%5, y0+Math.floor(i/5), col); });
+const ICONS = {
+  amis:["#ffe8cc",P=>{ P.e(5.5,14,3.4,4,"#1c7ed6"); P.e(10.5,14,3.4,4,"#e03131"); P.c(5.5,6.4,3,"#ffd8b5"); P.c(10.5,6.4,3,"#b9794a"); P.r(2.6,3,8.4,5,"#7f4f24"); P.r(7.6,3,13.4,5,"#2b2b3a"); dots(P,[[4,6],[6,6],[9,6],[11,6]],INK); }],
+  aile:["#74c0fc",P=>{ P.fg(); P.p([[2,6],[14,3],[13,6.4],[14.4,7.4],[12,9.6],[13,10.6],[9,12.4],[4,11]],"#ffffff"); P.l(5,8,11,6,.3,"#ced4da"); P.l(6,10,10.6,8.6,.3,"#ced4da"); P.o("#1c3d8a"); }],
+  arc:["#d3f9d8",P=>{ P.f((x,y)=>Math.abs(H(x-2,y-8)-7.4)<.8 && x>4.6,"#8b5a2b"); P.r(5.2,1.6,5.9,14.4,"#495057"); P.r(3,7.6,14,8.4,"#adb5bd"); P.p([[12.6,6],[16,8],[12.6,10]],"#e03131"); }],
+  piece:["#d3f9d8",P=>{ P.c(8,8,6.6,"#e8a400"); P.c(8,8,5.2,"#ffd43b"); P.p(starPts(8,8.2,3.4,1.5),"#e8a400"); }],
+  aigle:["#cdeeff",P=>{ P.p([[5.4,8],[0,4.6],[1,11.4],[5.4,12.4]],"#5c3a17"); P.p([[10.6,8],[16,4.6],[15,11.4],[10.6,12.4]],"#5c3a17"); P.e(8,10.4,3.2,4.6,"#7f4f24"); P.c(8,5,2.7,"#ffffff"); P.p([[8,5],[11.4,6.2],[8,7.4]],"#f0b429"); P.s(7,4,INK); }],
+  bras:["#ffe8cc",P=>{ P.path([[2.4,13],[8,13],[9.6,6]],2.2,1.9,"#e8b98a"); P.c(7.4,10,2.8,"#e8b98a"); P.c(9.8,4.4,2.1,"#e8b98a"); P.s(7,9,"#d09a6a"); }],
+  bain:["#d0ebff",P=>{ P.c(5,5.4,1.7,"#ffffff"); P.c(8,4.4,2.1,"#ffffff"); P.c(11,5.6,1.5,"#ffffff"); P.p([[1,7],[15,7],[13.6,13],[2.4,13]],"#ffffff"); P.r(2,7,14,8.2,"#74c0fc"); P.r(3,13,4.4,14.8,"#868e96"); P.r(11.6,13,13,14.8,"#868e96"); }],
+  buche:["#d8f5a2",P=>{ P.r(2,5.4,13,11.2,"#8b5a2b"); P.e(2,8.3,1.3,2.9,"#6f4518"); P.e(13,8.3,1.9,2.9,"#e8c08a"); P.e(13,8.3,.9,1.4,"#b9794a"); P.r(4,7,9,7.6,"#6f4518"); P.r(5,9.4,10,10,"#6f4518"); }],
+  bol:["#fff3bf",P=>{ P.f((x,y)=>H(x-8,y-7)<6.6 && y>7,"#4dabf7"); P.e(8,7,6.6,1.7,"#ffffff"); P.r(5.4,13,10.6,14.2,"#1c7ed6"); }],
+  bouche:["#ffe3e3",P=>{ P.e(8,8,6.4,3.8,"#e03131"); P.e(8,8.2,4.6,1.7,"#7a0c0c"); P.r(5.4,7,10.6,8,"#ffffff"); }],
+  boite:["#e5dbff",P=>{ P.r(2.5,6,13.5,14.2,"#c68b59"); P.r(1.5,3.8,14.5,6.4,"#a9713f"); P.r(7,3.8,9,14.2,"#ffe066"); }],
+  chaise:["#d0ebff",P=>{ P.r(4,1.6,6,9,"#8b5a2b"); P.r(4,8,12.4,10,"#a9713f"); P.r(4,10,5.6,14.8,"#8b5a2b"); P.r(10.8,10,12.4,14.8,"#8b5a2b"); }],
+  dent:["#74c0fc",P=>{ P.fg(); P.e(8,6.2,5.2,4.2,"#ffffff"); P.p([[3.2,7],[7.6,8],[6,14.6],[4.4,14]],"#ffffff"); P.p([[12.8,7],[8.4,8],[10,14.6],[11.6,14]],"#ffffff"); P.o("#1c3d8a"); }],
+  domino:["#d3f9d8",P=>{ P.fg(); P.r(4,1.4,12,14.6,"#ffffff"); P.r(4,7.6,12,8.4,INK); dots(P,[[5,3],[10,3],[7,5],[5,10],[10,10],[5,12],[10,12]],INK); P.o(INK); }],
+  croix:["#ffe3e3",P=>{ P.c(8,8,6.8,"#ffffff"); P.r(6.4,3.4,9.6,12.6,"#e03131"); P.r(3.4,6.4,12.6,9.6,"#e03131"); }],
+  assiette:["#fff3bf",P=>{ P.c(8,8,5.6,"#ffffff"); P.c(8,8,3.5,"#dee2e6"); P.r(.6,3,1.6,13,"#868e96"); P.r(14.4,3,15.4,13,"#868e96"); }],
+  ecole:["#cdeeff",P=>{ P.r(2,7,14,14.8,"#ffd43b"); P.p([[1,7],[8,1.6],[15,7]],"#e03131"); P.c(8,5.2,1.1,"#ffffff"); P.r(6.8,10.6,9.2,14.8,"#7f4f24"); P.r(3.4,8.6,5.4,10.6,"#74c0fc"); P.r(10.6,8.6,12.6,10.6,"#74c0fc"); }],
+  encre:["#e5dbff",P=>{ P.r(4,6,12,14.2,"#1c3d8a"); P.r(6,3.6,10,6,"#1c3d8a"); P.r(5.4,1.8,10.6,3.8,"#343a40"); P.r(5.4,8.6,10.6,11.6,"#ffffff"); }],
+  echelle:["#d8f5a2",P=>{ P.r(4,1,5.4,15,"#a9713f"); P.r(10.6,1,12,15,"#a9713f"); for(const y of [3,6,9,12]) P.r(5.4,y,10.6,y+1,"#c68b59"); }],
+  ecran:["#e5dbff",P=>{ P.r(1.5,3,14.5,11.6,"#343a40"); P.r(2.6,4,13.4,10.6,"#4dabf7"); P.s(4,5,"#d0ebff"); P.s(5,5,"#d0ebff"); P.r(7,11.6,9,13.4,"#868e96"); P.r(4.6,13.4,11.4,14.6,"#868e96"); }],
+  eglise:["#cdeeff",P=>{ P.r(7.6,.4,8.4,4,"#f0b429"); P.r(6.4,1.4,9.6,2.2,"#f0b429"); P.r(3,8,13,14.8,"#f1f3f5"); P.p([[2,8],[8,3.4],[14,8]],"#868e96"); P.f((x,y)=>((x-8)/1.7)**2+((y-14.8)/3.6)**2<1&&y<14.8,"#7f4f24"); P.c(8,7.4,1,"#74c0fc"); }],
+  eponge:["#d0ebff",P=>{ P.c(12.4,3,1.3,"#ffffff"); P.c(10,4,.9,"#ffffff"); P.r(2.5,5.4,13.5,12.4,"#ffd43b"); dots(P,[[4,6],[8,7],[11,6],[6,9],[10,10],[4,10],[12,9]],"#e8a400"); }],
+  immeuble:["#cdeeff",P=>{ P.r(3.5,2,12.5,14.8,"#adb5bd"); for(const y of [3,6,9]) for(const x of [4.6,7.3,10]) P.r(x,y,x+1.4,y+1.7,"#ffe066"); P.r(7,12,9,14.8,"#495057"); }],
+  porte:["#fff3bf",P=>{ P.r(4,1.5,12,14.8,"#a9713f"); P.r(5.2,3,10.8,7,"#8b5a2b"); P.r(5.2,8.6,10.8,13.4,"#8b5a2b"); P.c(10.4,8,.8,"#ffd43b"); }],
+  boussole:["#d0ebff",P=>{ P.c(8,8,6.8,"#868e96"); P.c(8,8,5.4,"#ffffff"); P.p([[8,3.2],[9.5,8],[6.5,8]],"#e03131"); P.p([[8,12.8],[9.5,8],[6.5,8]],"#1c7ed6"); }],
+  fromage:["#d0ebff",P=>{ P.p([[1.5,12.6],[14.5,12.6],[14.5,6],[9,3.4]],"#ffd43b"); P.r(1.5,11.6,14.5,12.6,"#e8a400"); P.c(8,9,1.3,"#e8a400"); P.c(12,8,1,"#e8a400"); P.c(5,10.6,.8,"#e8a400"); }],
+  fourmi:["#d8f5a2",P=>{ P.l(7,10,5.4,13.4,.35,"#343a40"); P.l(8,10,8,13.6,.35,"#343a40"); P.l(9,10,10.8,13.4,.35,"#343a40"); P.l(3,7.4,1.6,4.8,.3,"#343a40"); P.l(4.6,7.2,5.2,4.4,.3,"#343a40"); P.c(4,9,2.2,"#343a40"); P.c(8,9,1.8,"#343a40"); P.e(12,9,2.7,2.3,"#343a40"); P.s(3,8,"#ffffff"); }],
+  feuille:["#fff3bf",P=>{ P.l(3.4,12.6,1.4,14.6,.45,"#2b8a3e"); P.f((x,y)=>H(x-4.6,y-11.4)<8.2 && H(x-11.4,y-4.6)<8.2,"#51cf66"); P.l(3.6,12.4,12.4,3.6,.35,"#2b8a3e"); }],
+  bobine:["#ffe3e3",P=>{ P.r(5,3.6,11,12.4,"#e64980"); for(const y of [5.2,7.2,9.2,11.2]) P.r(5,y,11,y+.6,"#a61e4d"); P.r(4,2,12,3.6,"#a9713f"); P.r(4,12.4,12,14,"#a9713f"); P.l(11,10,14.8,13.4,.35,"#e64980"); }],
+  damier:["#d3f9d8",P=>{ P.r(2,1.4,3.2,14.8,"#868e96"); P.f((x,y)=>x>=3.2&&x<14&&y>=2&&y<9,(x,y)=>(Math.floor((x-3.2)/1.8)+Math.floor((y-2)/1.75))%2 ? "#ffffff" : INK); }],
+  riviere:["#8ce99a",P=>{ P.c(13,4,1.9,"#2b8a3e"); P.c(2.6,11,1.7,"#2b8a3e"); P.path([[4,-1],[9,5],[6,10],[11,17]],2.6,3,"#4dabf7"); dots(P,[[7,4],[7,10],[9,14]],"#d0ebff"); }],
+  four:["#ffe8cc",P=>{ P.r(2.5,2,13.5,14.4,"#adb5bd"); dots(P,[[4,3],[7,3],[9,3],[12,3]],INK); P.r(4.4,6.4,11.6,12.6,"#343a40"); P.r(5.4,9.4,10.6,11.6,"#ff922b"); }],
+  gomme:["#d0ebff",P=>{ P.r(2.5,5.6,13.5,11,"#f783ac"); P.r(2.5,5.6,7,11,"#4dabf7"); P.r(6.6,5.6,7.6,11,"#ffffff"); }],
+  guitare:["#fff3bf",P=>{ P.l(9,7,14,2,.8,"#7f4f24"); P.c(14,2,1.2,"#3d2b1f"); P.c(6,11,3.9,"#c68b59"); P.c(8.2,8,2.8,"#c68b59"); P.c(6.6,10.4,1.3,"#3d2b1f"); }],
+  pousse:["#cdeeff",P=>{ P.r(0,12,16,16,"#8b5a2b"); P.r(7.5,6,8.5,12,"#2b8a3e"); P.e(5.4,6,2.7,1.7,"#51cf66"); P.e(10.6,5,2.7,1.7,"#51cf66"); P.e(8,13.6,1.6,1.1,"#e8c08a"); }],
+  golf:["#cdeeff",P=>{ P.e(8,14.4,9,3.6,"#51cf66"); P.e(8,13.4,1.5,.7,INK); P.r(7.6,2,8.4,13.2,"#868e96"); P.p([[8.4,2],[13.8,4],[8.4,6]],"#e03131"); P.c(4,12.2,1.3,"#ffffff"); }],
+  herbe:["#cdeeff",P=>{ P.r(0,12,16,16,"#2b8a3e"); [[2,6],[5,4],[8,7],[11,3.6],[14,6]].forEach(([x,y])=>P.p([[x-1.5,12.4],[x,y],[x+1.5,12.4]],"#51cf66")); }],
+  homme:["#d0ebff",P=>{ P.e(8,16,5.8,3.6,"#1c7ed6"); P.c(8,6.6,4.7,"#5c3a17"); P.c(8,8,3.8,"#ffd8b5"); P.r(4.4,3.4,11.6,5.6,"#5c3a17"); dots(P,[[6,8],[9,8]],INK); P.r(6.6,10,9.4,10.7,"#c2255c"); }],
+  femme:["#ffe3e3",P=>{ P.e(8,9.4,5.8,6.6,"#7f4f24"); P.e(8,16.4,5,3,"#e64980"); P.c(8,8,3.6,"#ffd8b5"); P.r(4.6,3.6,11.4,5.6,"#7f4f24"); dots(P,[[6,8],[9,8]],INK); P.r(6.6,10,9.4,10.7,"#c2255c"); }],
+  hache:["#d8f5a2",P=>{ P.l(4,14.4,11,3,.7,"#8b5a2b"); P.p([[8,1.6],[13.8,2.6],[14.2,7.6],[10,7]],"#adb5bd"); P.l(13.8,2.8,14.2,7.4,.4,"#f1f3f5"); }],
+  bouteille:col=>["#fff3bf",P=>{ P.r(5,6,11,14.4,col); P.r(6.6,2.6,9.4,6,col); P.r(6.4,1.2,9.6,2.8,"#343a40"); P.r(5,9,11,12,"#ffffff"); }],
+  ile:["#74c0fc",P=>{ P.c(2.4,2.4,1.7,"#ffd43b"); P.e(8,13.6,6.6,2.7,"#ffe066"); P.path([[8,13],[8.6,9],[9.4,6]],.7,.6,"#8b5a2b"); P.e(6.2,5,3,1.4,"#2b8a3e"); P.e(12.2,5,3,1.4,"#2b8a3e"); P.e(9.4,3.4,1.6,2.4,"#51cf66"); }],
+  image:["#e5dbff",P=>{ P.r(1.5,2.5,14.5,13.5,"#e8a400"); P.r(3,4,13,12,"#74c0fc"); P.p([[3,12],[7,6.4],[10,10],[11.4,8.4],[13,12]],"#51cf66"); P.c(11,5.6,1.1,"#ffd43b"); }],
+  ampoule:["#343a66",P=>{ P.c(8,6.4,4.7,"#ffd43b"); P.r(6.2,10,9.8,12.4,"#ffd43b"); P.r(6.2,12,9.8,14.8,"#adb5bd"); P.s(6,4,"#ffffff"); P.s(6,5,"#ffffff"); }],
+  pin:["#d3f9d8",P=>{ P.p([[4.2,8],[11.8,8],[8,14.8]],"#e03131"); P.c(8,6,4.5,"#e03131"); P.c(8,6,1.7,"#ffffff"); }],
+  verre:["#d0ebff",P=>{ P.p([[4,3],[12,3],[11,14.2],[5,14.2]],"#ffffff"); P.p([[4.4,6],[11.6,6],[10.8,13.4],[5.2,13.4]],"#ff922b"); P.l(9,8,11.8,.8,.45,"#e03131"); }],
+  kiwi:["#fff3bf",P=>{ P.c(8,8,6.4,"#8b5a2b"); P.c(8,8,5.3,"#94d82d"); P.c(8,8,1.9,"#f4fce3"); dots(P,[[7,4],[10,5],[11,8],[10,10],[7,11],[5,10],[4,7],[5,5]],INK); }],
+  poids:["#e5dbff",P=>{ P.f((x,y)=>Math.abs(H(x-8,y-4.6)-1.9)<.75,"#495057"); P.p([[3,14.2],[13,14.2],[11.4,6],[4.6,6]],"#495057"); P.r(6,9,10,11.6,"#ffffff"); }],
+  lit:["#e5dbff",P=>{ P.r(1,5,2.6,9,"#8b5a2b"); P.r(3,7.4,6.6,9,"#ffffff"); P.r(6.6,7.4,15,9.6,"#4dabf7"); P.r(1,9,15,12,"#8b5a2b"); P.r(1,12,2.4,14.6,"#6f4518"); P.r(13.6,12,15,14.6,"#6f4518"); }],
+  main:["#d0ebff",P=>{ P.r(4.6,7,11.4,13.8,"#ffd8b5"); [[4.6,3.6],[6.4,2.4],[8.2,2.4],[10,3.6]].forEach(([x,y])=>P.r(x,y,x+1.4,8,"#ffd8b5")); P.p([[4.8,9],[1.6,6.8],[2.2,10.4],[4.8,12.4]],"#ffd8b5"); }],
+  mur:["#cdeeff",P=>{ P.f((x,y)=>y>=3&&y<14,(x,y)=>{ const r = Math.floor((y-3)/2.75), xx = x+(r%2 ? 2 : 0); return (xx%4<.7 || (y-3)%2.75<.6) ? "#e9ecef" : "#c2410c"; }); }],
+  note:["#e5dbff",P=>{ P.e(4.6,12,2.3,1.8,INK); P.e(11.6,10.6,2.3,1.8,INK); P.r(5.8,3.6,6.8,12,INK); P.r(12.8,2.2,13.8,10.6,INK); P.p([[5.8,3.6],[13.8,2.2],[13.8,4.6],[5.8,6]],INK); }],
+  nid:["#cdeeff",P=>{ P.e(6,8.2,1.5,2.1,"#ffffff"); P.e(8.4,7.6,1.5,2.1,"#a5d8ff"); P.e(10.6,8.4,1.4,2,"#ffffff"); P.f((x,y)=>H(x-8,y-9)<6.4&&y>9,"#8b5a2b"); P.r(1.6,9,14.4,10,"#6f4518"); }],
+  noix:["#d8f5a2",P=>{ P.e(8,8,5.8,5.2,"#c68b59"); P.l(8,3.2,8,12.8,.4,"#8b5a2b"); dots(P,[[5,7],[10,9],[6,10],[11,6]],"#a9713f"); }],
+  olive:["#fff3bf",P=>{ P.e(11.6,3,2.5,1.1,"#2b8a3e"); P.e(8,9,4.5,5.5,"#5c940d"); P.c(8,5.4,1.2,"#e03131"); P.s(6,7,"#a9e34b"); P.s(6,8,"#a9e34b"); }],
+  os:["#74c0fc",P=>{ P.fg(); P.l(4.6,11.4,11.4,4.6,1.2,"#ffffff"); P.c(3.2,10.4,1.8,"#ffffff"); P.c(5.6,12.8,1.8,"#ffffff"); P.c(10.4,3.2,1.8,"#ffffff"); P.c(12.8,5.6,1.8,"#ffffff"); P.o("#1c3d8a"); }],
+  coche:["#d3f9d8",P=>{ P.c(8,8,6.6,"#2f9e44"); P.path([[4.6,8.4],[7,10.8],[11.6,5.6]],.9,.9,"#ffffff"); }],
+  non:["#ffe3e3",P=>{ P.c(8,8,6.6,"#e03131"); P.l(5.2,5.2,10.8,10.8,.9,"#ffffff"); P.l(10.8,5.2,5.2,10.8,.9,"#ffffff"); }],
+  marteau:["#fff3bf",P=>{ P.l(4,14.4,10,6,.75,"#8b5a2b"); P.p([[6.4,4.4],[10,1.2],[13.8,5.4],[10,8.6]],"#868e96"); }],
+  pain:["#d0ebff",P=>{ P.e(8,9,6.8,4.5,"#c68b59"); P.e(8,8,5.7,3,"#e8b98a"); P.l(5,7,6.4,9,.35,"#a9713f"); P.l(8,6.6,9.4,8.6,.35,"#a9713f"); P.l(11,7,12,8.6,.35,"#a9713f"); }],
+  papier:["#74c0fc",P=>{ P.fg(); P.p([[3.5,1.5],[10,1.5],[12.5,4],[12.5,14.5],[3.5,14.5]],"#ffffff"); P.p([[10,1.5],[12.5,4],[10,4]],"#ced4da"); for(const y of [6,8,10,12]) P.r(5,y,11,y+.6,"#adb5bd"); P.o("#1c3d8a"); }],
+  peche:["#d3f9d8",P=>{ P.r(7.6,1.6,8.4,4.4,"#8b5a2b"); P.e(10.8,3.2,2.5,1.1,"#2b8a3e"); P.c(8,9.4,5.5,"#ffa94d"); P.e(5.8,9.8,2.6,4,"#ff8787"); P.l(8.6,4.6,8,9.4,.3,"#e8590c"); }],
+  piano:["#e5dbff",P=>{ P.r(1.5,2.4,14.5,4.2,"#343a40"); P.r(1.5,4.2,14.5,13.2,"#ffffff"); for(const x of [4,6,8,10,12]) P.r(x-.2,9.4,x+.2,13.2,"#adb5bd"); for(const x of [3.4,5.4,9.4,11.4]) P.r(x,4.2,x+1.2,9.4,INK); }],
+  pizza:["#d0ebff",P=>{ P.p([[1.5,3],[14.5,3],[8,15.2]],"#ffd43b"); P.r(1.5,1.8,14.5,4,"#c68b59"); P.c(6,6.6,1.3,"#e03131"); P.c(10,6.4,1.3,"#e03131"); P.c(8,10.4,1.2,"#e03131"); P.s(8,7,"#2f9e44"); }],
+  pot:["#d0ebff",P=>{ P.r(7.6,3.6,8.4,8,"#2b8a3e"); P.e(10.2,6.4,1.9,.9,"#51cf66"); P.c(8,3.4,2.3,"#f783ac"); P.c(8,3.4,.9,"#ffd43b"); P.p([[4,9],[12,9],[11,14.8],[5,14.8]],"#c2410c"); P.r(3.4,8,12.6,9.6,"#e8590c"); }],
+  prune:["#fff3bf",P=>{ P.r(7.6,1.4,8.4,4,"#8b5a2b"); P.e(10.6,2.8,2.3,1,"#2b8a3e"); P.e(8,9,5,5.6,"#7048e8"); P.e(6,7.2,1.1,2,"#b197fc"); }],
+  patte:["#ffe8cc",P=>{ P.e(8,10.8,3.7,3.1,"#7f4f24"); P.c(3.6,7.2,1.6,"#7f4f24"); P.c(6.4,4.4,1.7,"#7f4f24"); P.c(9.6,4.4,1.7,"#7f4f24"); P.c(12.4,7.2,1.6,"#7f4f24"); }],
+  roue:["#d0ebff",P=>{ P.c(8,8,6.8,"#343a40"); P.c(8,8,4.7,"#ced4da"); P.r(7.7,3.4,8.3,12.6,"#868e96"); P.r(3.4,7.7,12.6,8.3,"#868e96"); P.c(8,8,1.4,"#495057"); }],
+  route:["#8ce99a",P=>{ P.p([[4.6,16],[11.4,16],[9.4,0],[6.6,0]],"#495057"); for(const y of [1,5,9,13]) P.r(7.6,y,8.4,y+1.8,"#ffffff"); }],
+  radio:["#fff3bf",P=>{ P.l(11,5,14.2,1.2,.3,"#868e96"); P.r(1.5,5,14.5,13.6,"#e03131"); P.c(5.4,9.3,2.7,"#343a40"); P.r(9.4,7,13,9,"#ffffff"); P.c(10.2,11.4,.8,"#ffd43b"); P.c(12.4,11.4,.8,"#ffd43b"); }],
+  sel:["#74c0fc",P=>{ P.fg(); P.f((x,y)=>H(x-8,y-5)<3.3&&y<5,"#adb5bd"); P.p([[4.8,5],[11.2,5],[12,14.6],[4,14.6]],"#ffffff"); P.r(6.2,8.6,9.8,11.2,"#74c0fc"); dots(P,[[7,3],[8,2],[9,3]],"#495057"); P.o("#1c3d8a"); }],
+  savon:["#d0ebff",P=>{ P.c(4,4,1.7,"#ffffff"); P.c(7.6,3,1.2,"#ffffff"); P.c(11.2,4.6,1.9,"#ffffff"); P.e(8,10.4,5.8,3.4,"#f783ac"); P.r(5,9,8,9.7,"#ffdeeb"); }],
+  serpent:["#d8f5a2",P=>{ P.l(14.4,5.4,15.8,6.8,.3,"#e03131"); P.path([[2,13.4],[5,9],[8,12],[11,8],[13,5]],1.3,1.3,"#2f9e44"); P.c(13,4.4,1.9,"#2f9e44"); P.s(13,3,"#ffffff"); dots(P,[[4,10],[8,11],[10,9]],"#ffd43b"); }],
+  table:["#ffe8cc",P=>{ P.r(1.5,5.4,14.5,7.4,"#a9713f"); P.r(2.6,7.4,4.2,14.6,"#8b5a2b"); P.r(11.8,7.4,13.4,14.6,"#8b5a2b"); }],
+  coffre:["#d0ebff",P=>{ P.f((x,y)=>((x-8)/6)**2+((y-7.6)/4.6)**2<1&&y<7.6,"#8b5a2b"); P.r(2,7.4,14,14.2,"#a9713f"); P.r(2,7,14,8.2,"#ffd43b"); P.r(7,7,9,10.4,"#ffd43b"); P.s(7,9,INK); }],
+  usine:["#cdeeff",P=>{ P.c(12.4,1.4,1.3,"#f1f3f5"); P.c(14.2,.6,1,"#f1f3f5"); P.r(10.6,2.6,13,8,"#c2410c"); P.p([[1.5,8],[5,5],[5,8],[8.6,5],[8.6,8]],"#868e96"); P.r(1.5,8,14.5,14.8,"#adb5bd"); P.r(3,10,5,12,"#ffe066"); P.r(7,10,9,12,"#ffe066"); P.r(11,10.6,13,14.8,"#495057"); }],
+  fourchette:["#d3f9d8",P=>{ for(const x of [3.2,4.6,6]) P.r(x,1.6,x+.8,6,"#868e96"); P.r(3.2,5.4,6.8,7,"#868e96"); P.r(4.5,7,5.5,14.8,"#868e96"); P.e(11,4.6,2.1,3,"#868e96"); P.r(10.5,7,11.5,14.8,"#868e96"); }],
+  velo:["#d3f9d8",P=>{ for(const cx of [4,12]) P.f((x,y)=>Math.abs(H(x-cx,y-11)-3)<.65,"#343a40"); P.l(4,11,7,6.4,.35,"#e03131"); P.l(7,6.4,11,6.4,.35,"#e03131"); P.l(11,6.4,12,11,.35,"#e03131"); P.l(7,6.4,8.6,11,.35,"#e03131"); P.l(8.6,11,4,11,.35,"#e03131"); P.r(5.6,5,8,5.8,INK); P.l(11,6.4,11.6,4,.35,INK); P.r(10.6,3.4,13,4.2,INK); }],
+  vent:["#74c0fc",P=>{ P.path([[1,5],[10,5],[12.4,3.4]],.5,.5,"#ffffff"); P.l(1,8.4,14.4,8.4,.5,"#ffffff"); P.path([[1,12],[9,12],[11.4,13.6]],.5,.5,"#ffffff"); }],
+  oeil:["#ffe8cc",P=>{ P.fg(); P.e(8,8,6.8,4.2,"#ffffff"); P.c(8,8,2.9,"#1c7ed6"); P.c(8,8,1.3,INK); P.s(9,6,"#ffffff"); P.o(INK); }],
+  valise:["#d0ebff",P=>{ P.f((x,y)=>x>=6&&x<10&&y>=3&&y<5.4 && !(x>=6.9&&x<9.1&&y>=3.9),"#495057"); P.r(2,5.4,14,13.8,"#e8590c"); P.r(4.4,5.4,5.4,13.8,"#7a2e0e"); P.r(10.6,5.4,11.6,13.8,"#7a2e0e"); }],
+  wifi:["#e5dbff",P=>{ for(const r of [3,5.6,8.2]) P.f((x,y)=>Math.abs(H(x-8,y-13.4)-r)<.65 && y<13.4-r*.6,"#1c7ed6"); P.c(8,13,1.2,"#1c7ed6"); }],
+  xylophone:["#fff3bf",P=>{ ["#e03131","#ff922b","#ffd43b","#51cf66","#4dabf7","#7048e8"].forEach((c,i)=>P.r(1.4+i*2.2,2.6+i*.7,3.2+i*2.2,12.6-i*.7,c)); P.l(9,15,13.8,10.4,.3,"#8b5a2b"); P.c(14.2,10,1.1,"#e03131"); }],
+  yoyo:["#d0ebff",P=>{ P.r(7.7,0,8.3,6,"#868e96"); P.c(8,10,4.8,"#e03131"); P.c(8,10,2.7,"#ffd43b"); P.c(8,10,1,"#e03131"); }],
+  loupe:["#fff3bf",P=>{ P.l(10,10,14.2,14.2,.9,"#8b5a2b"); P.c(6.6,6.6,5,"#495057"); P.c(6.6,6.6,3.5,"#d0ebff"); P.s(5,5,"#ffffff"); }],
+  vague:["#cdeeff",P=>{ const w = x => 9+Math.sin(x*.9)*1.7; P.f((x,y)=>y>w(x),"#1c7ed6"); P.f((x,y)=>y>w(x) && y<w(x)+1.3,"#ffffff"); P.f((x,y)=>y>13+Math.sin(x*.9+2),"#1864ab"); }],
+  cal:t=>["#ffe3e3",P=>{ P.r(2,3,14,14.4,"#ffffff"); P.r(2,3,14,6,"#e03131"); P.r(4.4,1.4,5.4,4,"#495057"); P.r(10.6,1.4,11.6,4,"#495057"); icTxt(P, t, t.length>1 ? 3 : 6, 7, INK); }],
+  num:t=>["#d0ebff",P=>icTxt(P, t, t.length>1 ? 3 : 6, 5, t==="?" ? "#7048e8" : t==="!" ? "#e03131" : "#1c7ed6")],
+  couleur:col=>[col==="#ffffff" ? "#adb5bd" : "#f1f3f5",P=>{ P.c(8,8.6,5.4,col); P.c(4.4,5,2,col); P.c(12,5.2,1.6,col); P.c(12,12.4,1.4,col); P.c(3.4,12,1,col); }]
+};
+const icoCache = {}; let icoIndex = null;
+function wordIcon(w){
+  if(w in icoCache) return icoCache[w];
+  let d = null; const k = WICO[w];
+  if(k && k[0]==="@"){ const i = k.indexOf(":"), name = i<0 ? k.slice(1) : k.slice(1,i), def = ICONS[name], pr = def ? (typeof def==="function" ? def(k.slice(i+1)) : def) : null;
+    if(pr){ const P = Pt(16, pr[0]); pr[1](P); d = P.out("ico","",""); } }
+  else if(k) d = BUILTIN.find(x=>x.id===k) || null;
+  if(!d){
+    if(!icoIndex){ icoIndex = {}; const nz = t => t.normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase();
+      for(const x of BUILTIN){ if(x.cat==="mots" || x.word || x.cols>24) continue; const n = nz(x.name), f = n.split(/[ ']/)[0]; if(!icoIndex[n]) icoIndex[n] = x; if(!icoIndex["~"+f]) icoIndex["~"+f] = x; }
+      icoIndex.nz = nz; }
+    const n = icoIndex.nz(w); d = icoIndex[n] || (IMG_WORDS[w] && BUILTIN.find(x=>x.id===IMG_WORDS[w])) || icoIndex["~"+n] || null;
+  }
+  return icoCache[w] = d;
+}
+/* Nom d'un dessin, précédé de son icône quand c'est un mot */
+function nameInto(node, d, text){
+  node.textContent = "";
+  const ic = d && d.w ? wordIcon(d.w) : null;
+  if(ic){ const cv = el("canvas","wico"); drawThumb(cv, ic, null, true); cv.setAttribute("aria-hidden","true"); node.appendChild(cv); }
+  node.appendChild(document.createTextNode(text || d.name));
+}
 /* Une couleur par lettre, jamais deux fois la même dans un mot */
 const WCOLS = ["#e03131","#f76707","#f0b400","#2f9e44","#0c8599","#1c7ed6","#5f3dc4","#c2255c","#8b5a2b","#12b886"];
 function wordDrawing(w, letter, hue){
@@ -2047,7 +2184,7 @@ function wordDrawing(w, letter, hue){
     cells += v ? CH[v-1] : ".";
   }
   const name = w;
-  return {id:"M_"+w, name, ico:WICO[w]||"", cat:"mots", letter, cols, rows, palette: L.map((l,k)=>WCOLS[(hue+k)%WCOLS.length]), cells};
+  return {id:"M_"+w, name, w, cat:"mots", letter, cols, rows, palette: L.map((l,k)=>WCOLS[(hue+k)%WCOLS.length]), cells};
 }
 Object.keys(WORDS).forEach((k,i)=> WORDS[k].forEach((w,j)=> BUILTIN.push(wordDrawing(w, k, i*3+j*7))));
 let motL = store.get("cpn.motL", "A");
@@ -2177,7 +2314,7 @@ function makeCard(it, wideCard, clearBtn){
   const th = document.createElement("div"); th.className = "th";
   const cv = document.createElement("canvas"); if(wideCard) cv.dataset.wide = 1; drawThumb(cv, d, it.done, it.st.ok===0); th.appendChild(cv);
   if(it.st.ok>0){ const b = document.createElement("span"); b.className = "badge"; b.textContent = it.pct===100 ? "✓ Terminé" : it.pct+" %"; th.appendChild(b); }
-  const nm = document.createElement("div"); nm.className = "nm"; nm.textContent = nmOf(d);
+  const nm = document.createElement("div"); nm.className = "nm"; nameInto(nm, d);
   const bar = document.createElement("div"); bar.className = "bar";
   const fill = document.createElement("i"); fill.style.width = it.pct+"%"; bar.appendChild(fill);
   const meta = document.createElement("div"); meta.className = "meta";
@@ -2735,7 +2872,7 @@ function renderGallery(){
         const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, dn, st.ok===0); th.appendChild(cv);
         if(st.ok>0) th.appendChild(el("span","badge", pct===100 ? "✓ Terminé" : pct+" %"));
         const meta = el("div","meta"); meta.appendChild(el("span",null,`Résultats de 1 à ${d.palette.length} · ${st.tot} cases`));
-        card.append(th, el("div","nm",nmOf(d)), barEl(pct), meta);
+        { const nm2 = el("div","nm"); nameInto(nm2, d); card.append(th, nm2, barEl(pct), meta); }
         card.onclick = () => openDrawing(d, null, mode);
         card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDrawing(d, null, mode); } };
         g.appendChild(card);
@@ -3514,7 +3651,7 @@ function makeFreeCard(d){
       else { del.dataset.sure = 1; del.textContent = "Confirmer ?"; setTimeout(()=>{ delete del.dataset.sure; del.textContent = d.blank ? "Supprimer" : "Effacer"; }, 3000); } };
     meta.appendChild(del);
   }
-  card.append(th, el("div","nm",nmOf(d)), meta);
+  card.append(th, el("div","nm",d.name), meta);
   card.onclick = () => openFree(d);
   card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openFree(d); } };
   return card;
@@ -3533,7 +3670,7 @@ function hideFin(){ $("fin").hidden = true; cancelAnimationFrame(finRaf); finRaf
 function celebrate(nStars, title){
   if(!cur) return;
   const f = $("fin"); f.hidden = false;
-  $("finT").textContent = (title || "Bravo !") + (cur && cur.ico ? " "+cur.ico : ""); $("finTxt").textContent = $("winTxt").textContent;
+  $("finT").textContent = title || "Bravo !"; $("finTxt").textContent = $("winTxt").textContent;
   $("finTime").hidden = !finTimeTxt; $("finTime").textContent = finTimeTxt ? "Temps : "+finTimeTxt : "";
   drawThumb($("finCv"), cur, done);
   const st = $("finStars"); st.textContent = "";
@@ -3676,7 +3813,7 @@ function openDrawing(d, ch, math, du){
   }
   if(!chrono && !duel){ const tr = store.get(tKey(d, !!mathMode), null), begun = done.some(v=>v); if(tr===null && begun) timeKnown = false; else playMs = (tr||0)*1000; }   /* dessin commencé avant le chronométrage : temps inconnu */
   sel = Math.max(0, left.findIndex(n=>n>0));
-  $("pname").textContent = mathMode ? "Calcul · "+d.name : nmOf(d);
+  nameInto($("pname"), d, mathMode ? "Calcul · "+d.name : d.name);
   show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI(); updateTools(); duelUI(); if(duel) fit();
 }
 function resize(){

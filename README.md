@@ -26,6 +26,7 @@ Pixelo : jeu de coloriage par numéros, en une seule page web (`index.html`) acc
 - Défi de la semaine : un grand dessin 44 × 44 (quatre dessins assemblés) qui change le lundi, ★ 40
 - Duel : cadre d'avatar visible par l'adversaire et au classement, choix du dessin, meilleur de 3, revanche en un bouton
 - Duel par code QR : l'hôte affiche un code QR (généré dans la page, sans service externe) et un lien `?duel=1234` qui fait rejoindre la partie directement
+- Icônes maison : une icône devant le texte des boutons d'outils (masques SVG), et une icône en pixels à côté de 425 des 468 mots (dessin du jeu ou icône 16 × 16 dessinée exprès) ; aucun émoji
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
