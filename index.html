@@ -707,13 +707,14 @@ for(let n=10;n<=20;n++) BUILTIN.push(glyph("N_"+n, "Nombre "+n, "chiffres", Stri
 function pip(poly, x, y){ let c = false; for(let i=0,j=poly.length-1;i<poly.length;j=i++){ const [xi,yi]=poly[i],[xj,yj]=poly[j]; if((yi>y)!==(yj>y) && x<(xj-xi)*(y-yi)/(yj-yi)+xi) c=!c; } return c; }
 const STAR = Array.from({length:10},(_,i)=>{ const r=i%2?4:7.8, a=-Math.PI/2+i*Math.PI/5; return [8+r*Math.cos(a), 8.6+r*Math.sin(a)]; });
 const HEXA = Array.from({length:6},(_,i)=>[8+6.9*Math.cos(i*Math.PI/3), 8+6.9*Math.sin(i*Math.PI/3)]);
-function shape(id, name, col, inside){
+function shape(id, name, col, inside, sub){
   const dark = mix(col,INK,.55), light = mix(col,"#ffffff",.5), bg = mix(col,"#ffffff",.84);
-  BUILTIN.push(genHex("F_"+id, name, "formes", 16, 16, (px,py)=>{
+  const d = genHex("F_"+id, name, "formes", 16, 16, (px,py)=>{
     if(!inside(px,py)) return bg;
     if(edge(inside,px,py)) return dark;
     return inside(8+(px-8)*2.2, 8+(py-8)*2.2) ? light : col;
-  }));
+  });
+  d.sub = sub || "plates"; BUILTIN.push(d);
 }
 shape("cercle","Cercle","#e63946",(x,y)=>H(x-8,y-8)<6.8);
 shape("carre","Carré","#3a86ff",(x,y)=>Math.abs(x-8)<6&&Math.abs(y-8)<6);
@@ -724,6 +725,33 @@ shape("rectangle","Rectangle","#ff8c42",(x,y)=>Math.abs(x-8)<7&&Math.abs(y-8)<4)
 shape("ovale","Ovale","#00b4a6",(x,y)=>((x-8)/7.2)**2+((y-8)/4.8)**2<1);
 shape("hexagone","Hexagone","#ff5d8f",(x,y)=>pip(HEXA,x,y));
 shape("lune","Lune","#577590",(x,y)=>H(x-8,y-8)<6.8&&H(x-11,y-6.4)>5.4);
+const ngon = (n,R,rot) => Array.from({length:n},(_,i)=>[8+R*Math.cos(rot+i*2*Math.PI/n), 8+R*Math.sin(rot+i*2*Math.PI/n)]);
+const PENTA = ngon(5,7.3,-Math.PI/2), OCTO = ngon(8,7.3,Math.PI/8);
+shape("coeur","Cœur","#e64980",(x,y)=>{ const a=(x-8)/5.3, b=(8.8-y)/5.3, q=a*a+b*b-1; return q*q*q-a*a*b*b*b<0; });
+shape("pentagone","Pentagone","#f76707",(x,y)=>pip(PENTA,x,y));
+shape("octogone","Octogone","#c92a2a",(x,y)=>pip(OCTO,x,y));
+shape("trapeze","Trapèze","#0c8599",(x,y)=>pip([[4.5,3.5],[11.5,3.5],[15,12.5],[1,12.5]],x,y));
+shape("parallelogramme","Parallélogramme","#5f3dc4",(x,y)=>pip([[5,3.5],[15,3.5],[11,12.5],[1,12.5]],x,y));
+shape("croix","Croix","#2b8a3e",(x,y)=>(Math.abs(x-8)<2.5&&Math.abs(y-8)<6.5)||(Math.abs(y-8)<2.5&&Math.abs(x-8)<6.5));
+shape("fleche","Flèche","#1971c2",(x,y)=>pip([[1.5,6],[8.5,6],[8.5,2.5],[14.8,8],[8.5,13.5],[8.5,10],[1.5,10]],x,y));
+shape("demicercle","Demi-cercle","#d6336c",(x,y)=>H(x-8,y-11.5)<7.2&&y<11.5);
+shape("anneau","Anneau","#f08c00",(x,y)=>{ const d=H(x-8,y-8); return d<6.9&&d>3; });
+shape("goutte","Goutte","#339af0",(x,y)=>H(x-8,y-10.2)<4.7||pip([[3.8,8.8],[8,1.2],[12.2,8.8]],x,y));
+shape("etoile6","Étoile à six branches","#7048e8",(x,y)=>pip([[8,1.2],[14,11.4],[2,11.4]],x,y)||pip([[8,14.8],[2,4.6],[14,4.6]],x,y));
+shape("trianglerect","Triangle rectangle","#12b886",(x,y)=>pip([[2.5,2.5],[2.5,13.5],[13.5,13.5]],x,y));
+shape("eclair","Éclair","#fab005",(x,y)=>pip([[11,.8],[2,9.6],[7,9.6],[4.6,15.4],[14,6],[9,6]],x,y));
+/* Solides : trois tons pour donner du volume */
+function solid(id, name, col, tone){
+  const t = [null, mix(col,"#ffffff",.5), col, mix(col,INK,.35)], dark = mix(col,INK,.62), bg = mix(col,"#ffffff",.84);
+  const ins = (x,y) => x>0&&y>0&&x<16&&y<16&&tone(x,y)>0;
+  const d = genHex("F_"+id, name, "formes", 16, 16, (px,py)=>{ const v = tone(px,py); if(!v) return bg; return edge(ins,px,py) ? dark : t[v]; });
+  d.sub = "solides"; BUILTIN.push(d);
+}
+solid("cube","Cube","#1c7ed6",(x,y)=>pip([[8,1.5],[14,4.5],[8,7.5],[2,4.5]],x,y)?1:pip([[2,4.5],[8,7.5],[8,14.5],[2,11.5]],x,y)?2:pip([[8,7.5],[14,4.5],[14,11.5],[8,14.5]],x,y)?3:0);
+solid("cylindre","Cylindre","#2f9e44",(x,y)=>{ if(((x-8)/5.6)**2+((y-4)/2.3)**2<1) return 1; const body=(Math.abs(x-8)<5.6&&y>=4&&y<12)||((x-8)/5.6)**2+((y-12)/2.3)**2<1; return body ? (x>10.6?3:2) : 0; });
+solid("cone","Cône","#e8590c",(x,y)=>{ const b=pip([[8,1.5],[13.6,12.5],[2.4,12.5]],x,y)||((x-8)/5.6)**2+((y-12.5)/2.1)**2<1; return b ? (x>9?3:x<6?1:2) : 0; });
+solid("sphere","Sphère","#c2255c",(x,y)=>{ if(H(x-8,y-8)>=6.8) return 0; return H(x-5.8,y-5.8)<2.1 ? 1 : H(x-6,y-6)>7.3 ? 3 : 2; });
+solid("pyramide","Pyramide","#f0b400",(x,y)=>pip([[8,2],[2,12.5],[8,14.5]],x,y)?2:pip([[8,2],[14,12.5],[8,14.5]],x,y)?3:0);
 
 /* ----- Pieuvres ----- */
 const RB = ["#e63946","#ff8c42","#ffc300","#38b000","#3a86ff","#9b5de5","#ff5d8f","#00b4a6"];
@@ -1751,7 +1779,7 @@ function planetArt(cv, p, locked, seed){
   }
 }
 
-const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["imagier","Mots en images","#a61e4d"],["formes","Formes","#2f9e44"],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
+const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorations","Décorations"],["sapins","Sapins"],["cadeaux","Cadeaux et bas"],["gourmandises","Gourmandises"],["traditions","Traditions"]]],["pieuvres","Pieuvres","#d6336c"],["lettres","Lettres","#3b5bdb"],["chiffres","Chiffres","#e8590c",[["0a9","0 à 9"],["10a20","10 à 20"]]],["mots","Mots","#a66a00"],["imagier","Mots en images","#a61e4d"],["formes","Formes","#2f9e44",[["plates","Formes plates"],["solides","Solides"]]],["nature","Nature","#0c8599"],["animaux","Animaux","#8f5b1a",[["ferme","Ferme"],["savane","Savane et jungle"],["foret","Forêt"],["compagnie","Animaux de compagnie"]]],["nourriture","Nourriture","#c92a2a",[["fruits","Fruits"],["legumes","Légumes"]]],["transports","Transports","#1971c2",[["route","Sur la route"],["airmer","Dans l'air et sur l'eau"]]],["fetes","Fêtes et jeux","#9c36b5",[["fete","Fêtes"],["sport","Sports et jeux"]]],["decouvertes","Découvertes","#087f5b",[["drapeaux","Drapeaux"],["emotions","Émotions"],["meteo","Météo"],["ecole","École"],["vetements","Vêtements"]]],["photos","Mes photos","#7048e8"]];
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");

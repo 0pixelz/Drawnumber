@@ -2,7 +2,7 @@
 
 Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée de ses icônes, sans dépendance ni étape de build.
 
-- 877 dessins intégrés : quatorze catégories (Noël, Mots en images, Pieuvres, Lettres, Chiffres, Mots, Formes, Nature, Animaux, Nourriture, Transports, Fêtes et jeux, Découvertes, Mes photos) et six planètes de 10 dessins
+- 895 dessins intégrés : quatorze catégories (Noël, Mots en images, Pieuvres, Lettres, Chiffres, Mots, Formes, Nature, Animaux, Nourriture, Transports, Fêtes et jeux, Découvertes, Mes photos) et six planètes de 10 dessins
 - Sous-catégories : Animaux (Ferme, Savane et jungle, Forêt, Animaux de compagnie), Nourriture (Fruits, Légumes), Transports (Sur la route, Dans l'air et sur l'eau), Fêtes et jeux (Fêtes, Sports et jeux), Découvertes (Drapeaux, Émotions, Météo, École, Vêtements), Noël (Personnages, Décorations, Sapins, Cadeaux et bas, Gourmandises, Traditions), Chiffres (0 à 9, 10 à 20)
 - Tiroir réorganisé : tuiles de modes, catégories regroupées, sous-catégories dépliables et cliquables
 - Catégorie Mots : 468 mots français faciles classés par lettre initiale (20 par lettre, moins pour K, W, X, Y, Z), avec accents et cédille
