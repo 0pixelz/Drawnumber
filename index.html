@@ -310,8 +310,8 @@ body.chrono #reset{display:none}
 .wbanner.chr .big{font-family:var(--display);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
 .lvl{position:relative}
 .lvl .num{position:absolute;left:6px;top:6px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;background:var(--ink);color:#fff;font-variant-numeric:tabular-nums}
-.lvl .stars{font-size:17px;letter-spacing:1px;color:#e8a400;line-height:1}
-.lvl .stars.none{color:var(--line)}
+.stars{font-size:16px;letter-spacing:1px;color:#e8a400;line-height:1}
+.stars.none{color:#b9b5db}
 .lvl.lock{opacity:.55;cursor:default}
 .lvl.lock:active{transform:none;box-shadow:0 4px 0 var(--ink)}
 
@@ -1818,6 +1818,14 @@ function drawThumb(cv, d, done, full){
   }
 }
 const catOf = d => d.cat || "photos";
+/* Étoiles d'un dessin : de 1 à 5 selon sa difficulté (nombre de cases et de couleurs) */
+function starsOf(d){
+  if(d._st) return d._st;
+  let cells = 0; for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== ".") cells++;
+  const diff = cells*(.6+d.palette.length*.1);
+  return d._st = diff<350 ? 1 : diff<650 ? 2 : diff<950 ? 3 : diff<1400 ? 4 : 5;
+}
+const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 const catColor = key => { const p = PLANETS.find(q=>q.key===key); return p ? p.c : (CATS.find(c=>c[0]===key) || CATS[0])[2]; };
 function makeCard(it, wideCard){
   const d = it.d, card = document.createElement("div");
@@ -1832,6 +1840,8 @@ function makeCard(it, wideCard){
   const bar = document.createElement("div"); bar.className = "bar";
   const fill = document.createElement("i"); fill.style.width = it.pct+"%"; bar.appendChild(fill);
   const meta = document.createElement("div"); meta.className = "meta";
+  const sr = el("div","stars" + (it.pct===100 ? "" : " none"), stars5(starsOf(d)));
+  sr.setAttribute("aria-label", it.pct===100 ? `${starsOf(d)} étoiles gagnées` : `${starsOf(d)} étoiles à gagner`);
   const info = document.createElement("span"); info.textContent = `${d.palette.length} couleurs · ${it.st.tot} cases`;
   meta.appendChild(info);
   if(d.custom){
@@ -1843,7 +1853,7 @@ function makeCard(it, wideCard){
     };
     meta.appendChild(del);
   }
-  card.append(th, nm, bar, meta);
+  card.append(th, nm, sr, bar, meta);
   card.onclick = () => openDrawing(d);
   card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDrawing(d); } };
   return card;
@@ -1872,6 +1882,7 @@ function renderGallery(){
   const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
   world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
   const cStars = LEVELS.reduce((a,l)=>a+((chronoRes[l.i]||{}).s||0), 0);
+  const totalStars = items.reduce((a,i)=>a+(i.pct===100 ? starsOf(i.d) : 0), 0) + cStars;
   dailyPick(items);
   const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS + bonus;
   lastScore = score;
@@ -1879,10 +1890,10 @@ function renderGallery(){
   STATE = {fin, planets: world.filter(w=>w.full).length, cStars, words: wordItems.filter(i=>i.pct===100).length,
     letters: Object.keys(WORDS).filter(k=>{ const l = items.filter(i=>i.d.letter===k); return l.length && l.every(i=>i.pct===100); }).length,
     math: [].concat(...MATH_SETS.map(m=>m[3])).filter(id=>{ const d = BUILTIN.find(x=>x.id===id); if(!d) return false; const st = stats(d, loadDone(d, true)); return st.ok===st.tot; }).length,
-    free: flist.length, best: Math.max(streak.best||0, streakNow()), noel: byCat("noel").filter(i=>i.pct===100).length};
+    stars: totalStars, free: flist.length, best: Math.max(streak.best||0, streakNow()), noel: byCat("noel").filter(i=>i.pct===100).length};
   const BG = badges(STATE), nBadges = BG.filter(b=>b[2]>=b[3]).length;
-  $("ovPill").textContent = `★ ${fmt(score)}`;
-  $("ovPill").setAttribute("aria-label", `${score} points`);
+  $("ovPill").textContent = `★ ${fmt(totalStars)}`;
+  $("ovPill").setAttribute("aria-label", `${totalStars} étoiles`);
   drawThumb($("meCv"), avatarOf(me), null, true);
 
   /* Tiroir : accueil, modes de jeu, puis catégories regroupées avec sous-catégories dépliables */
@@ -1897,7 +1908,7 @@ function renderGallery(){
   hb.append(ic, ht); hb.onclick = () => setPage("menu"); nav.appendChild(hb);
   nav.appendChild(el("div","dr-l","Modes de jeu"));
   const mg = el("div","modes");
-  [["monde","Monde",`★ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
+  [["monde","Monde",`◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
    ["chrono","Chrono",`★ ${cStars} / ${LEVELS.length*3} étoiles`,"#e8590c",'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/>',page==="chrono"],
    ["libre","Libre","Tes couleurs","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',page==="libre"],
    ["calcul","Calcul","Additions, soustractions","#0c8599",'<path d="M5 8h6M8 5v6M13.5 8h5.5M5 16.5h6M13.5 15l5 3M18.5 15l-5 3"/>',page==="calcul"],
@@ -1949,7 +1960,7 @@ function renderGallery(){
     $("abTitle").textContent = "Coloriage par numéros";
     if(me){
       const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true);
-      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(score)} points`));
+      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(totalStars)} étoiles · ◆ ${fmt(score)} points`));
       hl.append(hc, hx); pg.appendChild(hl);
     }
     const dd = items.find(i=>i.d.id===daily.id);
@@ -1987,7 +1998,7 @@ function renderGallery(){
     const top = el("div","block"); top.append(f, q); pg.appendChild(top);
     const bn = el("button","wbanner"); bn.type = "button";
     const pl = el("span","pl"); world.forEach((w,i)=>{ const c = el("canvas"); planetArt(c, w.p, !w.open, i+1); pl.appendChild(c); });
-    const bt = el("span","wt"); bt.append(el("b",null,"Mode Monde"), el("small",null,`${world.filter(w=>w.full).length} / ${world.length} planètes complétées · ★ ${fmt(score)} points`));
+    const bt = el("span","wt"); bt.append(el("b",null,"Mode Monde"), el("small",null,`${world.filter(w=>w.full).length} / ${world.length} planètes complétées · ◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`));
     bn.append(bt, pl, el("span","btn pink","Explorer")); bn.onclick = () => setPage("monde");
     pg.appendChild(bn);
     const fb = el("button","wbanner lib"); fb.type = "button";
@@ -2025,7 +2036,7 @@ function renderGallery(){
   if(page === "monde"){
     $("abTitle").textContent = "Mode Monde";
     const hd = el("div","whead");
-    const sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes points"), el("b",null,`★ ${fmt(score)}`));
+    const sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes points"), el("b",null,`◆ ${fmt(score)}`));
     hd.append(sc, el("p",null,`Chaque dessin terminé rapporte ${PTS_DRAW} points. Une planète complétée ajoute ${fmt(PTS_PLANET)} points. Termine ${UNLOCK_AT} dessins d'une planète pour ouvrir la suivante.`));
     pg.appendChild(hd);
     const wl = el("div","planets");
@@ -2066,7 +2077,7 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes trophées"), el("b",null,`${nBadges} / ${BG.length}`));
-    hd.append(sc, el("p",null,`Tu as ★ ${fmt(score)} points. Les points ouvrent de nouveaux avatars, à choisir dans ton profil (ton avatar en haut à droite).`));
+    hd.append(sc, el("p",null,`Tu as ★ ${fmt(totalStars)} étoiles et ◆ ${fmt(score)} points. Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Les points ouvrent de nouveaux avatars, à choisir dans ton profil (ton avatar en haut à droite).`));
     b0.append(bk, hd); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"Badges"));
     const g = el("div","grid");
@@ -2083,7 +2094,7 @@ function renderGallery(){
       const d = BUILTIN.find(x=>x.id===id); if(!d) return; const got = score>=cost;
       const card = el("div","card bdg" + (got ? " got" : "")); card.style.setProperty("--c", "#f0b429");
       const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, new Uint8Array(d.cells.length), got); th.appendChild(cv); if(got) th.appendChild(el("span","badge","✓ Ouvert"));
-      const meta = el("div","meta"); meta.appendChild(el("span",null,`★ ${fmt(Math.min(score,cost))} / ${fmt(cost)}`));
+      const meta = el("div","meta"); meta.appendChild(el("span",null,`◆ ${fmt(Math.min(score,cost))} / ${fmt(cost)}`));
       card.append(th, el("div","nm",d.name), barEl(Math.min(100, score/cost*100)), meta); g2.appendChild(card);
     });
     b2.appendChild(g2); pg.appendChild(b2);
@@ -2366,7 +2377,8 @@ function badges(S){
     ["Calculateur","Finis 3 dessins de calcul.",S.math,3,"#0c8599"],["Mathématicien","Finis 10 dessins de calcul.",S.math,10,"#0c8599"],
     ["Artiste","Fais une création en mode libre.",S.free,1,"#c81fd0"],["Grand artiste","Fais 5 créations en mode libre.",S.free,5,"#c81fd0"],
     ["Trois jours","Fais le dessin du jour 3 jours de suite.",S.best,3,"#2f9e44"],["Une semaine","Fais le dessin du jour 7 jours de suite.",S.best,7,"#2f9e44"],
-    ["Esprit de Noël","Termine 10 dessins de Noël.",S.noel,10,"#b3261e"]
+    ["Esprit de Noël","Termine 10 dessins de Noël.",S.noel,10,"#b3261e"],
+    ["Cinquante étoiles","Gagne 50 étoiles.",S.stars,50,"#e8a400"],["Deux cents étoiles","Gagne 200 étoiles.",S.stars,200,"#e8a400"],["Mille étoiles","Gagne 1 000 étoiles.",S.stars,1000,"#e8a400"]
   ];
 }
 function medalArt(cv, col, got){
@@ -2674,6 +2686,7 @@ function paintCell(i){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
       $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
     }
+    if(!chrono && !mathMode){ const ns = starsOf(cur); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
@@ -2929,7 +2942,7 @@ function showLand(mode){
     const d = BUILTIN.find(x=>x.id===id); if(!d) return; const locked = pts<cost;
     const b = el("button","av" + (id===ldAv ? " on" : "") + (locked ? " lock" : "")); b.type = "button"; b.disabled = locked;
     b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} points` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
-    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c); if(locked) b.appendChild(el("span","cost","★ "+fmt(cost)));
+    const c = el("canvas"); drawThumb(c, d, null, true); b.appendChild(c); if(locked) b.appendChild(el("span","cost","◆ "+fmt(cost)));
     b.onclick = () => { ldAv = id; g.querySelectorAll(".av").forEach(x=>{ x.classList.toggle("on", x===b); x.setAttribute("aria-pressed", x===b); }); };
     g.appendChild(b);
   });
