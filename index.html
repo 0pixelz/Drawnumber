@@ -340,6 +340,11 @@ body.chrono #reset{display:none}
 
 .slist{display:flex;flex-direction:column;background:var(--card);border:2px solid var(--ink);border-radius:18px;overflow:hidden}
 .srow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:11px 14px;font-weight:700;font-size:15px}
+.srow > span{flex:1;min-width:0}
+button.srow{border:0;background:var(--card);font:inherit;font-weight:700;font-size:15px;color:var(--ink);text-align:left;width:100%;cursor:pointer}
+.srow.tap:active{background:#eceaf5}
+.srow.on{background:#fff7d6}
+.sthumb{flex:0 0 auto;width:44px;height:44px;border-radius:9px;background:#eceaf5}
 .srow + .srow{border-top:2px solid var(--line)}
 .srow small{display:block;color:var(--muted);font-size:12px;font-weight:700}
 .srow b{flex:0 0 auto;font-family:var(--display);font-size:17px;color:#b07d00;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1858,6 +1863,7 @@ function starsOf(d){
 }
 const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 /* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
+let starOpen = "";
 let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
 function logStar(kind, ref, n){
   if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
@@ -2124,15 +2130,40 @@ function renderGallery(){
     b0.append(bk, hd); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"D'où viennent tes étoiles"));
     const tb = el("div","slist");
-    [[`Dessins terminés (${doneItems.length})`, sDraw], [`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], [`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel]].forEach(([l,n])=>{ const r = el("div","srow"); r.append(el("span",null,l), el("b",null,`★ ${fmt(n)}`)); tb.appendChild(r); });
-    b1.appendChild(tb); pg.appendChild(b1);
+    const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
+    [["d",`Dessins terminés (${doneItems.length})`, sDraw], ["c",`Mode chrono (${Object.keys(chronoRes).length} ${Object.keys(chronoRes).length>1 ? "niveaux réussis" : "niveau réussi"})`, cStars], ["u",`Duels (${duelRec.w} ${duelRec.w>1 ? "gagnés" : "gagné"}, ${duelRec.l} ${duelRec.l>1 ? "perdus" : "perdu"})`, sDuel]].forEach(([k,l,n])=>{
+      const r = el("button","srow tap" + (starOpen===k ? " on" : "")); r.type = "button"; r.setAttribute("aria-expanded", starOpen===k);
+      const tx = el("span"); tx.append(document.createTextNode(l), el("small",null, starOpen===k ? "Toucher pour refermer" : "Toucher pour voir le détail"));
+      r.append(tx, el("b",null,`★ ${fmt(n)}`)); r.onclick = () => { starOpen = starOpen===k ? "" : k; renderGallery(); }; tb.appendChild(r);
+    });
+    b1.appendChild(tb);
+    if(starOpen==="d"){
+      if(!doneItems.length) b1.appendChild(el("p","empty","Aucun dessin terminé pour l'instant."));
+      else {
+        const g = el("div","grid"); doneItems.slice().sort((a,b)=>starsOf(b.d)-starsOf(a.d)).slice(0,60).forEach(i=>g.appendChild(makeCard(i))); b1.appendChild(g);
+        if(doneItems.length>60) b1.appendChild(el("p","empty",`… et ${doneItems.length-60} autres dessins terminés.`));
+      }
+    } else if(starOpen==="c"){
+      const lv = LEVELS.filter(l=>chronoRes[l.i]);
+      if(!lv.length) b1.appendChild(el("p","empty","Aucun niveau réussi pour l'instant."));
+      else { const cl = el("div","slist"); lv.forEach(l=>{ const res = chronoRes[l.i], r = el("div","srow"), tx = el("span"), cv = el("canvas","sthumb"); drawThumb(cv, l.d, null, true);
+        tx.append(document.createTextNode(`Niveau ${l.i+1} · ${l.d.name}`), el("small",null,`Temps restant : ${mmss(res.l)} sur ${mmss(l.T)}`)); r.append(cv, tx, el("b",null,starTxt(res.s))); cl.appendChild(r); }); b1.appendChild(cl); }
+      const go = el("button","btn line","Ouvrir le mode chrono"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("chrono"); b1.appendChild(go);
+    } else if(starOpen==="u"){
+      const du = starLog.filter(e=>e[1]==="w" || e[1]==="l").reverse();
+      if(!du.length) b1.appendChild(el("p","empty", duelRec.w+duelRec.l ? "Le détail de tes anciens duels n'a pas été noté." : "Aucun duel joué pour l'instant."));
+      else { const cl = el("div","slist"); du.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(k==="w" ? `Gagné contre ${ref}` : `Perdu contre ${ref}`), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
+      const go = el("button","btn line","Ouvrir les duels"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("duel"); b1.appendChild(go);
+    }
+    pg.appendChild(b1);
     const b2 = el("div","block"); b2.appendChild(el("h2",null,"Historique"));
     const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
-    const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
     starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
       const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
       const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : `Duel contre ${ref}`;
-      const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
+      const r = el(d ? "button" : "div","srow" + (d ? " tap" : "")), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t)));
+      if(d){ r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, d, null, true); r.appendChild(cv); r.onclick = () => openDrawing(d); r.setAttribute("aria-label", label+", ouvrir le dessin"); }
+      r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
     });
     if(!starLog.length) hl.appendChild(el("p","empty","Rien pour l'instant. Termine un dessin pour gagner tes premières étoiles."));
     b2.appendChild(hl); pg.appendChild(b2);
@@ -2140,7 +2171,7 @@ function renderGallery(){
     if(old.length){
       const b3 = el("div","block"); b3.appendChild(el("h2",null,"Dessins terminés avant l'historique"));
       b3.appendChild(el("p","empty","Ces dessins comptent dans ton total, mais leur date n'a pas été notée."));
-      const ol = el("div","slist"); old.slice(0,150).forEach(i=>{ const r = el("div","srow"); r.append(el("span",null,i.d.name), el("b",null,`+${starsOf(i.d)} ★`)); ol.appendChild(r); });
+      const ol = el("div","slist"); old.slice(0,150).forEach(i=>{ const r = el("button","srow tap"); r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, i.d, null, true); r.append(cv, el("span",null,i.d.name), el("b",null,`+${starsOf(i.d)} ★`)); r.onclick = () => openDrawing(i.d); ol.appendChild(r); });
       b3.appendChild(ol); pg.appendChild(b3);
     }
     return;
