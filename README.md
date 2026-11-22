@@ -14,6 +14,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Icône d'application (`apple-touch-icon.png`, `icon-192.png`, `icon-512.png`) et `manifest.webmanifest`
 - Page d'accueil : création d'un joueur (prénom + avatar), plusieurs joueurs sur le même appareil avec progression séparée
 - Mode chrono : 24 niveaux en 4 étapes, temps limite selon la taille du dessin, 1 à 3 étoiles, 50 points par étoile
+- Sauvegarde en ligne par code de famille (Supabase, projet scan-prix, table `coloriage_saves` ; voir `supabase/coloriage_saves.sql`)
 - Jeu hors ligne : `sw.js` met le jeu en cache après la première visite (réseau d'abord, cache en secours)
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
@@ -21,7 +22,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Mots en images : 64 dessins avec leur mot à colorier dessous
 - Calcul : les cases montrent une addition ou une soustraction au lieu du numéro (27 dessins)
 - Sons (case, couleur terminée, dessin terminé) avec bouton muet, et brillance sur chaque case remplie
-- Progression enregistrée dans le navigateur (localStorage)
+- Progression enregistrée dans le navigateur (localStorage), et en ligne si la sauvegarde est activée
 
 ## Lancer
 

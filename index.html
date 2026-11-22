@@ -67,6 +67,10 @@ canvas{image-rendering:pixelated}
 .av canvas{width:100%;height:100%;display:block}
 .av.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent)}
 .btn.big{font-size:20px;padding:14px 18px;font-family:var(--display)}
+.syncbox h3,#syncBox h3{font-family:var(--display);font-weight:800;font-size:19px;margin:0}
+#syncBox p{margin:0;font-size:13px;font-weight:700;color:var(--muted)}
+#syncBox .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:800;font-size:19px;letter-spacing:.04em;background:#eceaf5;border-radius:12px;padding:10px;text-align:center;-webkit-user-select:all;user-select:all;overflow-wrap:anywhere}
+#syncBox .err{color:#b3261e}
 .ldnote{margin:0;font-size:12px;font-weight:700;color:var(--muted);text-align:center}
 .players{display:flex;flex-direction:column;gap:8px}
 .plb{display:flex;align-items:center;gap:12px;border:2px solid var(--line);border-radius:16px;padding:8px;background:var(--card);text-align:left}
@@ -382,8 +386,10 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
       <div class="avgrid" id="ldAv"></div>
       <button class="btn pink big" id="ldGo" type="submit">Commencer</button>
       <button class="btn ghost" id="ldBack" type="button" hidden>Annuler</button>
+      <button class="btn ghost" id="ldHave" type="button" hidden>J'ai déjà un code de famille</button>
       <p class="ldnote">Ton prénom et ta progression restent sur cet appareil.</p>
     </form>
+    <div class="ldcard" id="syncBox"></div>
     <ul class="ldfeat" id="ldFeat"></ul>
   </div>
 </div>
@@ -485,10 +491,70 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
 "use strict";
 const $ = id => document.getElementById(id);
 const CH = "0123456789abcdefghijklmnopqrstuvwxyz";
+/* ---------- Sauvegarde en ligne (Supabase, projet scan-prix) ----------
+   Un « code de famille » sert de clé : le serveur n'en garde que l'empreinte.
+   La clé ci-dessous est la clé publique du projet, prévue pour être dans le navigateur. */
+const SB_URL = "https://vfikxkdadiqkducklewv.supabase.co", SB_KEY = "sb_publishable_7ChQQ1PKLuvBgo5qcrvFhg_CKlSwK6t";
+const DEVICE_KEYS = ["cpn.sync","cpn.mute","cpn.drawerOff","cpn.user"];
+const syncable = k => (k.startsWith("cpn.") || k.startsWith("cpn@")) && !DEVICE_KEYS.includes(k);
+let sync = null, syncTimer = 0, syncBusy = false, syncGen = 0, syncErr = "";
+try{ sync = JSON.parse(localStorage.getItem("cpn.sync") || "null"); }catch(e){}
+const saveSync = () => { try{ if(sync) localStorage.setItem("cpn.sync", JSON.stringify(sync)); else localStorage.removeItem("cpn.sync"); }catch(e){} };
+function markDirty(){ if(!sync) return; syncGen++; if(!sync.dirty){ sync.dirty = true; saveSync(); } clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 6000); }
+function snapshot(){ const o = {}; try{ for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(syncable(k)) o[k] = localStorage.getItem(k); } }catch(e){} return o; }
+async function rpc(fn, body){
+  const r = await fetch(SB_URL+"/rest/v1/rpc/"+fn, {method:"POST", headers:{"Content-Type":"application/json", apikey:SB_KEY, Authorization:"Bearer "+SB_KEY}, body:JSON.stringify(body)});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  return r.json();
+}
+async function syncPush(){
+  if(!sync || syncBusy) return; syncBusy = true; clearTimeout(syncTimer); const gen = syncGen;
+  try{ const at = await rpc("coloriage_put", {p_code:sync.code, p_data:{keys:snapshot()}}); sync.at = at; sync.ok = Date.now(); if(gen===syncGen) sync.dirty = false; saveSync(); syncErr = ""; }
+  catch(e){ syncErr = "net"; }
+  syncBusy = false; if(typeof renderSync === "function") renderSync();
+  if(sync && sync.dirty && !syncErr) syncTimer = setTimeout(syncPush, 6000);
+}
+/* Fusion quand les deux appareils ont changé : on garde toutes les cases coloriées des deux côtés */
+function unionMerge(local, remote){
+  const out = Object.assign({}, local);
+  for(const k in remote){
+    const lv = local[k], rv = remote[k];
+    if(lv === undefined){ out[k] = rv; continue; }
+    if(/^cpn(@[^.]+)?\.pm?\./.test(k) && lv.length===rv.length){ let m = ""; for(let i=0;i<lv.length;i++) m += (lv[i]==="1" || rv[i]==="1") ? "1" : lv[i]; out[k] = m; continue; }
+    if(k === "cpn.users"){ try{ const a = JSON.parse(lv), b = JSON.parse(rv); b.forEach(u=>{ if(!a.some(x=>x.id===u.id)) a.push(u); }); out[k] = JSON.stringify(a); }catch(e){} }
+  }
+  return out;
+}
+function writeAll(keys, replace){
+  try{
+    if(replace){ const gone = []; for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(syncable(k) && !(k in keys)) gone.push(k); } gone.forEach(k=>localStorage.removeItem(k)); }
+    for(const k in keys) if(syncable(k)) localStorage.setItem(k, keys[k]);
+  }catch(e){}
+}
+function fixCurrentUser(){
+  try{ const us = JSON.parse(localStorage.getItem("cpn.users") || "[]"), cu = JSON.parse(localStorage.getItem("cpn.user") || '""'); if(!us.some(u=>u.id===cu)) localStorage.setItem("cpn.user", JSON.stringify(us[0] ? us[0].id : "")); }catch(e){}
+}
+async function syncStart(){
+  if(!sync) return;
+  try{
+    const res = await rpc("coloriage_get", {p_code:sync.code}); syncErr = "";
+    if(!res){ await syncPush(); return; }
+    if(res.updated_at === sync.at){ if(sync.dirty) await syncPush(); else { sync.ok = Date.now(); saveSync(); } return; }
+    const remote = (res.data && res.data.keys) || {};
+    if(sync.dirty){ writeAll(unionMerge(snapshot(), remote), false); sync.at = res.updated_at; saveSync(); await syncPush(); }
+    else { writeAll(remote, true); sync.at = res.updated_at; sync.ok = Date.now(); saveSync(); }
+    fixCurrentUser(); location.reload();
+  }catch(e){ syncErr = "net"; if(typeof renderSync === "function") renderSync(); }
+}
+const CODE_AB = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const normCode = c => String(c||"").toUpperCase().replace(/[^A-Z0-9]/g,"");
+const showCode = c => c.replace(/(.{4})(?=.)/g,"$1-");
+function newCode(){ const a = new Uint8Array(16); (window.crypto||window.msCrypto).getRandomValues(a); return [...a].map(v=>CODE_AB[v%32]).join(""); }
+
 const RAW = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
-  del(k){ try{ localStorage.removeItem(k); }catch(e){} }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if(syncable(k)) markDirty(); },
+  del(k){ try{ localStorage.removeItem(k); }catch(e){} if(syncable(k)) markDirty(); }
 };
 /* Joueurs : le premier garde les clés d'origine, les suivants ont leur propre espace */
 let users = RAW.get("cpn.users", []); if(!Array.isArray(users)) users = [];
@@ -2686,7 +2752,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
@@ -2751,6 +2817,53 @@ $("iok").onclick = () => {
   closeDlg(); page = "photos"; store.set("cpn.page", page); openDrawing(d);
 };
 
+/* ---------- Sauvegarde en ligne : écran ---------- */
+let syncAsk = false, syncBad = "";
+function renderSync(){
+  const box = $("syncBox"); if(!box) return; box.textContent = "";
+  box.appendChild(el("h3",null,"Sauvegarde en ligne"));
+  const row = () => { const r = el("div","row"); box.appendChild(r); return r; };
+  const btn = (label, cls, fn, parent) => { const b = el("button","btn "+cls, label); b.type = "button"; b.style.flex = "1"; b.onclick = fn; (parent||box).appendChild(b); return b; };
+  if(sync){
+    box.appendChild(el("p",null,"Ton code de famille. Écris-le sur un autre appareil pour y retrouver tous les joueurs et leurs dessins. Garde-le secret."));
+    box.appendChild(el("div","code",showCode(sync.code)));
+    const mins = sync.ok ? Math.max(0, Math.round((Date.now()-sync.ok)/60000)) : -1;
+    box.appendChild(el("p", syncErr ? "err" : null, syncBusy ? "Envoi en cours…" : syncErr ? "Impossible de joindre la sauvegarde pour l'instant. Tes dessins restent sur cet appareil et seront envoyés plus tard." : sync.dirty ? "Des changements attendent d'être envoyés." : mins<0 ? "Pas encore sauvegardé." : mins<1 ? "Sauvegardé à l'instant." : `Sauvegardé il y a ${mins} min.`));
+    const r = row(); btn("Synchroniser","ghost",()=>{ syncErr = ""; syncStart(); renderSync(); }, r);
+    const off = btn("Désactiver ici","ghost",()=>{ if(off.dataset.sure){ sync = null; saveSync(); clearTimeout(syncTimer); renderSync(); } else { off.dataset.sure = 1; off.textContent = "Confirmer ?"; setTimeout(()=>{ if(off.isConnected){ delete off.dataset.sure; off.textContent = "Désactiver ici"; } }, 3000); } }, r);
+    return;
+  }
+  box.appendChild(el("p",null,"Retrouve tes dessins sur un autre appareil, sans courriel ni mot de passe."));
+  if(syncAsk){
+    const lab = el("label",null,"Code de famille"); lab.htmlFor = "syncIn"; box.appendChild(lab);
+    const inp = el("input"); inp.type = "text"; inp.id = "syncIn"; inp.autocomplete = "off"; inp.autocapitalize = "characters"; inp.placeholder = "XXXX-XXXX-XXXX-XXXX"; inp.maxLength = 24; box.appendChild(inp);
+    if(syncBad) box.appendChild(el("p","err",syncBad));
+    const r = row(); btn("Annuler","ghost",()=>{ syncAsk = false; syncBad = ""; renderSync(); }, r);
+    const go = btn("Relier","pink", async ()=>{
+      const c = normCode(inp.value); if(c.length!==16){ syncBad = "Le code a 16 lettres et chiffres."; renderSync(); return; }
+      go.disabled = true; go.textContent = "Recherche…";
+      try{
+        const res = await rpc("coloriage_get", {p_code:c});
+        if(!res){ syncBad = "Ce code n'existe pas. Vérifie-le sur l'autre appareil."; renderSync(); return; }
+        const remote = (res.data && res.data.keys) || {}, hasLocal = users.length>0;
+        if(hasLocal){            /* cet appareil a déjà des joueurs : on leur donne leur propre espace avant de fusionner */
+          const u0 = users.find(u=>!u.pfx);
+          if(u0){ try{ const mv = []; for(let i=0;i<localStorage.length;i++){ const k = localStorage.key(i); if(k.startsWith("cpn.") && syncable(k) && k!=="cpn.users") mv.push(k); }
+            mv.forEach(k=>{ localStorage.setItem(k.replace(/^cpn\./,"cpn@"+u0.id+"."), localStorage.getItem(k)); localStorage.removeItem(k); }); u0.pfx = u0.id; localStorage.setItem("cpn.users", JSON.stringify(users)); }catch(e){} }
+          writeAll(unionMerge(snapshot(), remote), false);
+        } else writeAll(remote, true);
+        sync = {code:c, at:res.updated_at, dirty:hasLocal, ok:Date.now()}; saveSync(); fixCurrentUser(); sessFlag(true); location.reload();
+      }catch(e){ syncBad = "Impossible de joindre la sauvegarde. Vérifie ta connexion et réessaie."; renderSync(); }
+    }, r);
+    return;
+  }
+  const r = row();
+  btn("Activer","pink", async ()=>{ sync = {code:newCode(), at:"", dirty:true, ok:0}; saveSync(); renderSync(); await syncPush(); }, r).disabled = !me;
+  btn("J'ai un code","ghost",()=>{ syncAsk = true; renderSync(); }, r);
+  if(!me) box.appendChild(el("p",null,"Crée d'abord ton joueur pour activer la sauvegarde, ou entre un code que tu as déjà."));
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState==="hidden" && sync && sync.dirty) syncPush(); });
+
 /* ---------- Joueurs et page d'accueil ---------- */
 const AVATARS = ["O_rose","O_pirate","O_reine","O_lunettes","chat","W_robot1","W_alien","W_dragon","W_pingouin","W_ours","W_abeille","W_tortue"];
 const avatarOf = u => BUILTIN.find(d=>d.id===(u && u.av)) || BUILTIN.find(d=>d.id==="O_rose");
@@ -2759,6 +2872,7 @@ function sessFlag(set){ try{ if(set) sessionStorage.setItem("cpn.chosen","1"); r
 function showLand(mode){
   ldMode = mode; const choose = mode==="choose";
   $("land").hidden = false; $("ldChoose").hidden = !choose; $("ldForm").hidden = choose; $("ldErr").hidden = true;
+  $("syncBox").hidden = mode==="edit" || (mode==="create" && users.length>0); renderSync();
   drawThumb($("ldLogo"), BUILTIN.find(d=>d.id==="O_rose"), null, true);
   $("ldTitle").textContent = choose ? "Qui joue ?" : mode==="edit" ? "Mon profil" : "Coloriage par numéros";
   $("ldTag").textContent = choose ? "Choisis ton joueur pour retrouver tes dessins." : mode==="edit" ? "Change ton prénom ou ton avatar." : users.length ? "Crée un nouveau joueur : il aura ses propres dessins et ses propres points." : "Crée ton joueur, choisis ton avatar, puis commence à colorier.";
@@ -2780,7 +2894,7 @@ function showLand(mode){
   $("ldName").value = mode==="edit" && me ? me.name : "";
   ldAv = mode==="edit" && me ? me.av : AVATARS[users.length % AVATARS.length];
   $("ldGo").textContent = mode==="edit" ? "Enregistrer" : "Commencer";
-  $("ldBack").hidden = !me;
+  $("ldBack").hidden = !me; $("ldHave").hidden = users.length>0 || !!sync;
   const g = $("ldAv"); g.textContent = "";
   const pts = mode==="edit" ? lastScore : 0;
   AVATARS.map(id=>[id,0]).concat(AV_LOCKED).forEach(([id,cost])=>{
@@ -2803,6 +2917,7 @@ $("ldForm").addEventListener("submit", e => {
   me = u; $("land").hidden = true; renderGallery();
 });
 $("ldBack").onclick = () => showLand("choose");
+$("ldHave").onclick = () => { syncAsk = true; renderSync(); $("syncBox").scrollIntoView({block:"center"}); const i = $("syncIn"); if(i) i.focus(); };
 $("ldEdit").onclick = () => showLand("edit");
 $("ldNew").onclick = () => showLand("create");
 $("ldClose").onclick = () => { $("land").hidden = true; };
@@ -2812,6 +2927,7 @@ renderGallery();
 /* Jeu hors ligne : seulement sur le vrai site, pas dans un aperçu intégré */
 try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.top===window) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
 if(!me) showLand("create"); else if(users.length>1 && !sessFlag(false)) showLand("choose");
+syncStart();
 
 /* ---------- Écran de chargement ---------- */
 (function(){
