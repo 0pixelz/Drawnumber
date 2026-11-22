@@ -2478,7 +2478,7 @@ const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 /* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
 let starOpen = "";
 let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
-const xLabel = (k, ref) => k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
+const xLabel = (k, ref) => k==="o" ? `Coloriage à deux avec ${ref}` : k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
 function logStar(kind, ref, n){
   if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
   starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
@@ -2794,7 +2794,7 @@ function renderGallery(){
       else { const cl = el("div","slist"); du.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(k==="w" ? `Gagné contre ${ref}` : `Perdu contre ${ref}`), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les duels"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("duel"); b1.appendChild(go);
     } else if(starOpen==="x"){
-      const xl = starLog.filter(e=>"tjfkh".includes(e[1])).reverse();
+      const xl = starLog.filter(e=>"tjfkho".includes(e[1])).reverse();
       if(!xl.length) b1.appendChild(el("p","empty","Aucune récompense pour l'instant. Réclame ton cadeau du jour, tes défis et tes trophées."));
       else { const cl = el("div","slist"); xl.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(xLabel(k, ref)), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les défis"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("defis"); b1.appendChild(go);
@@ -2804,7 +2804,7 @@ function renderGallery(){
     const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
     starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
       const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
-      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkh".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
+      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkho".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
       const r = el(d ? "button" : "div","srow" + (d ? " tap" : "")), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t)));
       if(d){ r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, d, null, true); r.appendChild(cv); r.onclick = () => openDrawing(d); r.setAttribute("aria-label", label+", ouvrir le dessin"); }
       r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
@@ -2850,10 +2850,13 @@ function renderGallery(){
       c.append(cd, sb); B("Annuler","ghost",()=>lobReset(""),c);
     } else {
       const c0 = card("Options de la partie","Pour jouer avec un ami ou contre le robot. La recherche d'un joueur reste en une manche, dessin au hasard.");
-      const seg = el("div","quick"); c0.appendChild(seg);
+      const segm = el("div","quick"); c0.appendChild(segm);
+      [[false,"Duel : le plus rapide gagne"],[true,"À deux : on colorie ensemble"]].forEach(([v,l])=>{ const b = B(l, duelOpt.coop===v ? "pink small" : "line small", ()=>{ duelOpt.coop = v; renderGallery(); }, segm); b.setAttribute("aria-pressed", duelOpt.coop===v); });
+      if(duelOpt.coop) c0.appendChild(el("p",null,`Vous coloriez le même grand dessin, chacun sur son écran. Les cases de l'un apparaissent chez l'autre, et vous gagnez ★ ${COOP_R} chacun à la fin.`));
+      const seg = el("div","quick"); c0.appendChild(seg); seg.hidden = duelOpt.coop;
       [[1,"1 manche"],[3,"Meilleur de 3"]].forEach(([n,l])=>{ const b = B(l, duelOpt.bo===n ? "pink small" : "line small", ()=>{ duelOpt.bo = n; renderGallery(); }, seg); b.setAttribute("aria-pressed", duelOpt.bo===n); });
-      c0.appendChild(el("p",null,"Dessin de la première manche :"));
-      const dp = el("div","dpick"); c0.appendChild(dp);
+      const dpl = el("p",null,"Dessin de la première manche :"); c0.appendChild(dpl); dpl.hidden = duelOpt.coop;
+      const dp = el("div","dpick"); c0.appendChild(dp); dp.hidden = duelOpt.coop;
       const rb0 = el("button", duelOpt.pick ? "" : "on", "Au hasard"); rb0.type = "button"; rb0.onclick = () => { duelOpt.pick = ""; renderGallery(); }; dp.appendChild(rb0);
       duelPool().forEach(d=>{ const b = el("button", duelOpt.pick===d.id ? "on" : ""); b.type = "button"; b.setAttribute("aria-label", d.name); b.setAttribute("aria-pressed", duelOpt.pick===d.id); const cv = el("canvas"); drawThumb(cv, d, null, true); b.appendChild(cv);
         b.onclick = () => { const x = dp.scrollLeft; duelOpt.pick = d.id; renderGallery(); const n = document.querySelector(".dpick"); if(n) n.scrollLeft = x; }; dp.appendChild(b); });
@@ -3641,10 +3644,10 @@ function lobClear(){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); 
 function lobReset(msg){ lobClear(); lob.view = "menu"; lob.code = ""; lob.msg = msg || ""; if(page==="duel" && !cur) renderGallery(); }
 const NET_ERR = "Connexion impossible pour l'instant. Tu peux jouer contre le robot.";
 /* L'hôte attend l'autre joueur dans la salle, puis lance la partie */
-function hostRoom(room, drawId, onFail, bo){
+function hostRoom(room, drawId, onFail, bo, coop){
   let started = false;
   const net = Net(room, m => {
-    if(m.t==="hello" && m.p && m.p.id!==SID){ net.send({t:"start", draw:drawId, host:duelSelf(), bo:bo||1}); if(!started){ started = true; lobClear0(net); beginDuel(drawId, m.p, net, 0, "", {bo:bo||1, w:0, l:0, host:true, round:1}); } }
+    if(m.t==="hello" && m.p && m.p.id!==SID){ net.send({t:"start", draw:drawId, host:duelSelf(), bo:bo||1, coop:!!coop}); if(!started){ started = true; lobClear0(net); beginDuel(drawId, m.p, net, 0, "", {bo:bo||1, w:0, l:0, host:true, round:1, coop:!!coop}); } }
     else if(started) duelMsg(m);
   }, null, () => { if(!started) (onFail || lobReset)(NET_ERR); });
   return net;
@@ -3652,7 +3655,7 @@ function hostRoom(room, drawId, onFail, bo){
 function guestRoom(room, onFail){
   let started = false;
   const net = Net(room, m => {
-    if(m.t==="start" && !started && m.host){ started = true; lobClear0(net); beginDuel(m.draw, m.host, net, 0, "", {bo:m.bo===3 ? 3 : 1, w:0, l:0, host:false, round:1}); }
+    if(m.t==="start" && !started && m.host){ started = true; lobClear0(net); beginDuel(m.draw, m.host, net, 0, "", {bo:m.coop ? 1 : m.bo===3 ? 3 : 1, w:0, l:0, host:false, round:1, coop:!!m.coop}); }
     else if(started) duelMsg(m);
   }, () => { const hi = () => net.send({t:"hello", p:duelSelf()}); hi(); lob.timers.push(setInterval(()=>{ if(!started) hi(); }, 1000)); }, () => { if(!started) (onFail || lobReset)(NET_ERR); });
   return net;
@@ -3660,7 +3663,7 @@ function guestRoom(room, onFail){
 function lobClear0(keep){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; if(lob.net && lob.net!==keep) lob.net.close(); lob.net = null; lob.view = "menu"; lob.code = ""; lob.msg = ""; }
 function duelCreate(){
   lobClear(); lob.code = String(Math.floor(1000+Math.random()*9000)); lob.view = "host"; lob.msg = "";
-  lob.net = hostRoom("coloriage-duel-"+lob.code, duelOpt.pick || pickDuelDrawing(), null, duelOpt.bo); renderGallery();
+  lob.net = duelOpt.coop ? hostRoom("coloriage-duel-"+lob.code, coopPick(), null, 1, true) : hostRoom("coloriage-duel-"+lob.code, duelOpt.pick || pickDuelDrawing(), null, duelOpt.bo); renderGallery();
 }
 function duelJoin(code){
   lobClear(); lob.view = "joining"; lob.code = code; lob.msg = "";
@@ -3686,9 +3689,21 @@ function duelSeek(){
 function startBot(level, note){
   lobClear0(null);
   const friendly = !note;
+  if(friendly && duelOpt.coop){ beginDuel(coopPick(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], "", {bo:1, w:0, l:0, host:true, round:1, coop:true}); return; }
   beginDuel((friendly && duelOpt.pick) || pickDuelDrawing(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], note, {bo: friendly ? duelOpt.bo : 1, w:0, l:0, host:true, round:1});
 }
-let duelOpt = {bo:1, pick:""};
+let duelOpt = {bo:1, pick:"", coop:false};
+const COOP_R = 2;
+function coopPick(){ const p = BUILTIN.filter(d=>d.cols===22 && d.rows===22 && ["animaux","nourriture","transports","sports","contes","fetes","decouvertes"].includes(d.cat)); return p[Math.floor(Math.random()*p.length)].id; }
+/* Coloriage à deux : un seul dessin, les cases de chacun arrivent chez l'autre */
+function coopEnd(){
+  if(!duel || duel.over) return;
+  duel.over = true; clearInterval(duel.tx); clearInterval(duel.bot);
+  if(duel.net && duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)});
+  chalBump("duelp"); xsAdd("o", duel.opp.name, COOP_R); duel.serieOver = true;
+  $("winTxt").textContent = `Dessin terminé avec ${duel.opp.name} ! Toi : ${duel.mine.length} cases · ${duel.opp.name} : ${duel.oppN}. ${"★".repeat(COOP_R)} +${COOP_R} étoiles`; $("say").hidden = true; $("win").classList.add("on");
+  duelBtns("Un autre dessin à deux", false);
+}
 function beginDuel(drawId, opp, net, botRate, note, set){
   pad = null;
   const d = BUILTIN.find(x=>x.id===drawId) || duelPool()[0];
@@ -3697,9 +3712,9 @@ function beginDuel(drawId, opp, net, botRate, note, set){
 function duelUI(){
   const on = !!duel; document.body.classList.toggle("duelplay", on); $("opp").hidden = !on; $("count").hidden = true;
   if(!on) return;
-  $("pname").textContent = "Duel · "+cur.name+(duel.set.bo>1 ? " · manche "+duel.set.round : ""); $("winBack").textContent = "Duels"; $("winNext").hidden = true;
+  $("pname").textContent = (duel.set.coop ? "À deux · " : "Duel · ")+cur.name+(duel.set.bo>1 ? " · manche "+duel.set.round : ""); $("winBack").textContent = "Duels"; $("winNext").hidden = true;
   $("oppName").textContent = duel.opp.name; avDraw($("oppAv"), avPack(duel.opp)); drawOpp();
-  $("hint").textContent = duel.note || (duel.set.bo>1 ? `Manche ${duel.set.round} contre ${duel.opp.name} · ${duel.set.w} – ${duel.set.l}` : `Tu joues contre ${duel.opp.name}.`);
+  $("hint").textContent = duel.note || (duel.set.coop ? `Tu colories ce dessin avec ${duel.opp.name}. Ses cases apparaissent chez toi !` : duel.set.bo>1 ? `Manche ${duel.set.round} contre ${duel.opp.name} · ${duel.set.w} – ${duel.set.l}` : `Tu joues contre ${duel.opp.name}.`);
   const c = $("count"); c.hidden = false; let n = 3; c.textContent = n;
   duel.cd = setInterval(()=>{ n--; if(n>0) c.textContent = n; else if(n===0){ c.textContent = "Partez !"; if(duel){ duel.started = true; duel.t0 = performance.now(); duelLoops(); } } else { clearInterval(duel && duel.cd); c.hidden = true; } }, 800);
 }
@@ -3708,18 +3723,29 @@ function duelLoops(){
   duel.tx = setInterval(()=>{ if(duel && duel.net && duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); }, 350);
   if(duel.botRate){
     const order = []; for(let c=0;c<cur.palette.length;c++) for(let i=0;i<idx.length;i++) if(idx[i]===c) order.push(i);
-    let k = 0, carry = 0;
+    let k = 0, carry = 0; if(duel.set.coop) order.reverse();
     duel.bot = setInterval(()=>{ if(!duel || duel.over) return; carry += duel.botRate*.4*(.6+Math.random()*.8); const n = Math.floor(carry); carry -= n;
+      if(duel.set.coop){ const cs = []; while(cs.length<n && k<order.length){ const i = order[k++]; if(!done[i]) cs.push(i); } if(cs.length) duelMsg({t:"prog", c:cs}); return; }
       const cells = order.slice(k, k+n); k += cells.length; if(cells.length) duelMsg({t:"prog", c:cells}); if(k>=order.length) duelMsg({t:"done"}); }, 400);
   }
 }
 function duelMsg(m){
   if(!duel) return;
-  if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; duel.theirs.push([i, duelDs()]); } }); drawOpp(); }
+  if(m.t==="prog" && Array.isArray(m.c) && duel.set.coop){
+    if(duel.over) return; let n = 0;
+    m.c.forEach(i=>{ if(i>=0 && i<done.length && idx[i]>=0 && !done[i]){ done[i] = 1; left[idx[i]]--; duel.oppDone[i] = 1; duel.oppN++; duel.theirs.push([i, duelDs()]); if(n++<6) sparkle(i); } });
+    if(!n) return; drawOpp();
+    if(left.every(v=>v===0)){ sWin(); coopEnd(); finTimeTxt = fmtDur((performance.now()-(duel.t0||performance.now()))/1000); const who = cur; setTimeout(()=>{ if(cur===who) celebrate(COOP_R, "Bravo à vous deux !"); }, 650); refreshChips(); }
+    else if(left[sel]===0){ const nx = left.findIndex(v=>v>0); if(nx>=0) selectColor(nx, true); } else refreshChips();
+    updateProg(); draw();
+  }
+  else if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; duel.theirs.push([i, duelDs()]); } }); drawOpp(); }
+  else if(m.t==="done" && duel.set.coop) return;
   else if(m.t==="done" && !duel.over) duelEnd(false, `${duel.opp.name} a fini en premier. Bien essayé !`);
   else if(m.t==="again" && duel.over){ duel.again.op = true; if(!duel.again.me) duelBtns(duel.serieOver ? `Revanche : ${duel.opp.name} est prêt !` : `Manche suivante : ${duel.opp.name} est prêt !`, false); duelTryNext(); }
   else if(m.t==="next" && duel.over && !duel.set.host && typeof m.draw==="string") duelNext(m.draw);
   else if((m.t==="bye" || m.t==="_closed") && duel.over){ if(!duel.gone){ duel.gone = true; $("winNext").hidden = true; $("finNext").hidden = true; $("winTxt").textContent += ` ${duel.opp.name} est parti.`; } }
+  else if((m.t==="bye" || m.t==="_closed") && !duel.over && duel.set.coop && duel.started){ if(!duel.gone){ duel.gone = true; $("hint").textContent = `${duel.opp.name} est parti. Tu peux finir le dessin seul.`; } }
   else if((m.t==="bye" || m.t==="_closed") && !duel.over){ if(duel.started) duelEnd(true, `${duel.opp.name} a quitté la partie. Tu gagnes !`); else { stopDuel(); cur = null; show("home"); lobReset(`${duel ? duel.opp.name : "L'autre joueur"} a quitté la partie.`); } }
 }
 function duelEnd(won, text){
@@ -3746,10 +3772,10 @@ function duelAgain(){
 }
 function duelTryNext(){
   if(!duel || !duel.again.me || !duel.again.op || !duel.set.host) return;
-  const draw = pickDuelDrawing(); if(duel.net) duel.net.send({t:"next", draw}); duelNext(draw);
+  const draw = duel.set.coop ? coopPick() : pickDuelDrawing(); if(duel.net) duel.net.send({t:"next", draw}); duelNext(draw);
 }
 function duelNext(draw){
-  const d0 = duel, st = d0.set, ns = d0.serieOver ? {bo:st.bo, w:0, l:0, host:st.host, round:1} : {bo:st.bo, w:st.w, l:st.l, host:st.host, round:st.round+1};
+  const d0 = duel, st = d0.set, ns = d0.serieOver ? {bo:st.bo, w:0, l:0, host:st.host, round:1, coop:st.coop} : {bo:st.bo, w:st.w, l:st.l, host:st.host, round:st.round+1, coop:st.coop};
   const net = d0.net; d0.net = null; hideFin(); closeReplay();
   beginDuel(draw, d0.opp, net, d0.botRate, "", ns);
 }
@@ -4209,7 +4235,7 @@ function paintCell(i){
   done[i] = 1; left[sel]--; sparkle(i); rec.push(i); chalBump("cells"); if(duel){ duel.queue.push(i); duel.mine.push([i, duelDs()]); } tickPlay();
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done); if(chrono) chronoWin();
-    if(duel) duelEnd(true, `Tu as gagné contre ${duel.opp.name} !`);
+    if(duel){ if(duel.set.coop) coopEnd(); else duelEnd(true, `Tu as gagné contre ${duel.opp.name} !`); }
     if(cur.cat === "mots" || cur.word){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
     if(mathMode) $("winTxt").textContent = "Bravo ! Tous tes calculs sont justes.";
     if(!chrono && !mathMode && !duel){ chalBump("fin"); chalBump("cat:"+catOf(cur)); if(starsOf(cur)>=3) chalBump("big"); if(cur.cat==="mots" || cur.word) chalBump("word"); if(dailyWon()) chalBump("daily"); }
@@ -4222,7 +4248,7 @@ function paintCell(i){
     if(cur.weekly){ if(xs.wk!==cur.wk){ xs.wk = cur.wk; xsAdd("h", cur.name, WEEK_R); $("winTxt").textContent = `Défi de la semaine réussi ! +${WEEK_R} étoiles`; } else $("winTxt").textContent = "Grand dessin terminé !"; }
     else if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); logStar("d", cur.id, ns); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
     finTimeTxt = chrono ? fmtDur(chrono.T-chrono.left) : duel ? fmtDur((performance.now()-(duel.t0||performance.now()))/1000) : timeKnown ? fmtDur(playMs/1000) : "";
-    { const who = cur, ns = chrono ? ((chronoRes[chrono.lv]||{}).s||0) : duel ? DUEL_WIN : mathMode ? 0 : starsOf(cur), ttl = duel ? "Victoire !" : chrono ? "Niveau réussi !" : "Bravo !";
+    { const who = cur, ns = chrono ? ((chronoRes[chrono.lv]||{}).s||0) : duel ? (duel.set.coop ? COOP_R : DUEL_WIN) : mathMode ? 0 : starsOf(cur), ttl = duel ? (duel.set.coop ? "Bravo à vous deux !" : "Victoire !") : chrono ? "Niveau réussi !" : "Bravo !";
       setTimeout(()=>{ if(cur===who) celebrate(ns, ttl); }, 650); }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
