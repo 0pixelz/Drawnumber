@@ -13,6 +13,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Mode libre sans numéros : pinceau, pot de peinture, dégradé entre deux couleurs, gomme, annulation, couleurs personnalisées, pages blanches
 - Icône d'application (`apple-touch-icon.png`, `icon-192.png`, `icon-512.png`) et `manifest.webmanifest`
 - Page d'accueil : création d'un joueur (prénom + avatar), plusieurs joueurs sur le même appareil avec progression séparée
+- Duel 1 contre 1 en direct (Supabase Realtime) : partie par code à 4 chiffres, recherche d'un joueur, ou robot à trois vitesses ; vignette de l'adversaire en direct
 - Mode chrono : 24 niveaux en 4 étapes, temps limite selon la taille du dessin, 1 à 3 étoiles, 50 points par étoile
 - Sauvegarde en ligne par code de famille (Supabase, projet scan-prix, table `coloriage_saves` ; voir `supabase/coloriage_saves.sql`)
 - Jeu hors ligne : `sw.js` met le jeu en cache après la première visite (réseau d'abord, cache en secours)

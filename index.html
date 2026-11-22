@@ -297,6 +297,25 @@ h2{font-family:var(--display);font-weight:800;font-size:23px;line-height:1.1;mar
   #pal{flex:1;flex-wrap:wrap;align-content:flex-start;overflow-x:hidden;overflow-y:auto;padding:14px calc(14px + var(--sr)) calc(14px + var(--sb)) 14px}
 }
 
+/* Duel */
+#opp{position:absolute;right:8px;top:8px;z-index:1;background:var(--card);border:2px solid var(--ink);border-radius:14px;box-shadow:0 3px 0 var(--ink);padding:6px;display:flex;flex-direction:column;gap:4px;align-items:center;width:104px;pointer-events:none}
+#opp[hidden],#count[hidden]{display:none}
+#opp canvas{width:88px;height:88px;border-radius:8px;background:#eceaf5;display:block}
+#opp .ot{width:100%;text-align:center;line-height:1.1}
+#opp b{display:block;font-family:var(--display);font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#opp span{font-size:12px;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums}
+#count{position:absolute;inset:0;z-index:2;display:grid;place-items:center;background:rgba(29,27,58,.45);color:#fff;font-family:var(--display);font-weight:800;font-size:96px;text-shadow:0 4px 0 var(--ink)}
+body.duelplay #reset{display:none}
+.wbanner.duel{background:#1971c2;box-shadow:0 5px 0 #0b3d70}
+.wbanner.duel small{color:#fff}
+.wbanner.duel .btn{background:#fff;color:var(--ink);box-shadow:0 3px 0 #0b3d70}
+.dcard{background:var(--card);border:2px solid var(--ink);border-radius:20px;box-shadow:0 4px 0 var(--ink);padding:14px;display:flex;flex-direction:column;gap:10px}
+.dcard h3{font-family:var(--display);font-weight:800;font-size:20px;margin:0;line-height:1.1}
+.dcard p{margin:0;color:var(--muted);font-weight:700;font-size:14px}
+.dcode{font-family:var(--display);font-weight:800;font-size:54px;letter-spacing:.12em;text-align:center;line-height:1;font-variant-numeric:tabular-nums}
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.dcard input{font-size:26px;text-align:center;letter-spacing:.2em;font-family:var(--display)}
+
 /* Mode chrono */
 .clock{flex:0 0 auto;font-family:var(--display);font-weight:800;font-size:20px;line-height:1;font-variant-numeric:tabular-nums;background:var(--ink);color:#fff;border-radius:12px;padding:8px 10px}
 .clock.low{background:#e03131}
@@ -307,7 +326,7 @@ body.chrono #reset{display:none}
 .wbanner.chr{background:#e8590c;box-shadow:0 5px 0 #a13d06}
 .wbanner.chr small{color:#fff}
 .wbanner.chr .btn{background:#fff;color:var(--ink);box-shadow:0 3px 0 #a13d06}
-.wbanner.chr .big{font-family:var(--display);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
+.wbanner.duel .big,.wbanner.chr .big{font-family:var(--display);font-weight:800;font-size:26px;font-variant-numeric:tabular-nums}
 .lvl{position:relative}
 .lvl .num{position:absolute;left:6px;top:6px;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:800;background:var(--ink);color:#fff;font-variant-numeric:tabular-nums}
 .stars{font-size:16px;letter-spacing:1px;color:#e8a400;line-height:1}
@@ -435,6 +454,8 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="body">
     <div id="stage">
       <canvas id="cv"></canvas>
+      <div id="opp" hidden><canvas id="oppCv" width="8" height="8"></canvas><div class="ot"><b id="oppName"></b><span id="oppPct"></span></div></div>
+      <div id="count" hidden></div>
       <div id="win"><span id="winTxt">Dessin terminé !</span><button class="btn small line" id="say" type="button" hidden>Écouter</button><button class="btn small pink" id="winNext" type="button" hidden></button><button class="btn small" id="winBack" type="button">Autre dessin</button></div>
     </div>
     <div class="side">
@@ -1783,7 +1804,7 @@ const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorat
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -1795,7 +1816,7 @@ function loadDone(d, math){
   if(typeof s === "string" && s.length === n) for(let i=0;i<n;i++) a[i] = s.charCodeAt(i)===49 ? 1 : 0;
   return a;
 }
-function saveDone(d, a, math){ if(chrono) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); }
+function saveDone(d, a, math){ if(chrono || duel) return; if(math===undefined) math = mathMode; let s=""; for(let i=0;i<a.length;i++) s += a[i] ? "1" : "0"; store.set((math ? "cpn.pm." : "cpn.p.")+d.id, s); }
 function stats(d, done){
   let tot=0, ok=0;
   for(let i=0;i<d.cells.length;i++) if(d.cells[i] !== "."){ tot++; if(done[i]) ok++; }
@@ -1871,7 +1892,7 @@ function toggleDrawer(){
 }
 if(store.get("cpn.drawerOff", false)) document.body.classList.add("drawer-off");
 $("drawerBtn").onclick = toggleDrawer; $("drawerClose").onclick = closeDrawer; $("scrim").onclick = closeDrawer;
-function setPage(p, sub){ page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
+function setPage(p, sub){ if(p!=="duel" && (lob.net || lob.view!=="menu")) { lobClear(); lob.view = "menu"; lob.msg = ""; } page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
 
 function renderGallery(){
   const items = all().map(d=>{ const done = loadDone(d), st = stats(d, done); const pct = !st.tot ? 0 : st.ok===st.tot ? 100 : st.ok>0 ? Math.max(1, Math.floor(st.ok/st.tot*100)) : 0; return {d, done, st, pct}; });
@@ -1882,7 +1903,7 @@ function renderGallery(){
   const world = PLANETS.map(p=>{ const list = byCat(p.key), nd = list.filter(i=>i.pct===100).length; return {p, list, nd, full: nd===list.length, pts: nd*PTS_DRAW+(nd===list.length ? PTS_PLANET : 0), max: list.length*PTS_DRAW+PTS_PLANET}; });
   world.forEach((w,i)=>{ w.open = i===0 || world[i-1].nd >= UNLOCK_AT; w.prev = i ? world[i-1].p.name : ""; });
   const cStars = LEVELS.reduce((a,l)=>a+((chronoRes[l.i]||{}).s||0), 0);
-  const totalStars = items.reduce((a,i)=>a+(i.pct===100 ? starsOf(i.d) : 0), 0) + cStars;
+  const totalStars = items.reduce((a,i)=>a+(i.pct===100 ? starsOf(i.d) : 0), 0) + cStars + duelRec.w*DUEL_WIN + duelRec.l*DUEL_LOSS;
   dailyPick(items);
   const score = world.reduce((a,w)=>a+w.pts, 0) + cStars*STAR_PTS + bonus;
   lastScore = score;
@@ -1911,6 +1932,7 @@ function renderGallery(){
   [["monde","Monde",`◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
    ["chrono","Chrono",`★ ${cStars} / ${LEVELS.length*3} étoiles`,"#e8590c",'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/>',page==="chrono"],
    ["libre","Libre","Tes couleurs","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',page==="libre"],
+   ["duel","Duel",`${duelRec.w} ${duelRec.w>1 ? "victoires" : "victoire"}`,"#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',page==="duel"],
    ["calcul","Calcul","Additions, soustractions","#0c8599",'<path d="M5 8h6M8 5v6M13.5 8h5.5M5 16.5h6M13.5 15l5 3M18.5 15l-5 3"/>',page==="calcul"],
    ["trophees","Trophées",`${nBadges} / ${BG.length} gagnés`,"#f0b429",'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4c0 3 1.5 4 3 4M17 6h3c0 3-1.5 4-3 4M12 14v4M8.5 20h7"/>',page==="trophees"],
    ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"]
@@ -2006,6 +2028,10 @@ function renderGallery(){
     const sw = el("span","swatches"); ["#e03131","#ff922b","#ffd43b","#2f9e44","#4dabf7","#7048e8"].forEach(h=>{ const i = el("i"); i.style.background = h; sw.appendChild(i); });
     fb.append(ft2, sw, el("span","btn","Dessiner")); fb.onclick = () => setPage("libre");
     pg.appendChild(fb);
+    const ub = el("button","wbanner duel"); ub.type = "button";
+    const ut = el("span","wt"); ut.append(el("b",null,"Duel"), el("small",null,"1 contre 1 : le premier qui finit le dessin gagne."));
+    ub.append(ut, el("span","big",`${duelRec.w} – ${duelRec.l}`), el("span","btn","Jouer")); ub.onclick = () => setPage("duel");
+    pg.appendChild(ub);
     const kb = el("button","wbanner chr"); kb.type = "button";
     const kt = el("span","wt"); kt.append(el("b",null,"Mode chrono"), el("small",null,`Finis le dessin avant la fin du temps. ${LEVELS.length} niveaux.`));
     kb.append(kt, el("span","big",`★ ${cStars} / ${LEVELS.length*3}`), el("span","btn","Jouer")); kb.onclick = () => setPage("chrono");
@@ -2068,6 +2094,36 @@ function renderGallery(){
     if(wp.open){ const g = el("div","grid"); wp.list.forEach(i=>g.appendChild(makeCard(i))); blk.appendChild(g); }
     else blk.appendChild(el("p","empty",`Cette planète est encore verrouillée. Termine ${UNLOCK_AT} dessins de la ${wp.prev} pour l'ouvrir.`));
     pg.appendChild(blk);
+    return;
+  }
+
+  /* Duel */
+  if(page === "duel"){
+    $("abTitle").textContent = "Duel";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Victoires – défaites"), el("b",null,`${duelRec.w} – ${duelRec.l}`));
+    hd.append(sc, el("p",null,`Vous coloriez le même dessin en même temps. Le premier qui finit gagne ${DUEL_WIN} étoiles, l'autre en reçoit ${DUEL_LOSS}. Tu vois le dessin de l'adversaire se remplir en petit. L'autre joueur ne voit que ton prénom et ton avatar.`));
+    b0.append(bk, hd); if(lob.msg) b0.appendChild(el("p","err",lob.msg)); pg.appendChild(b0);
+    const g = el("div","dgrid"); pg.appendChild(g);
+    const card = (title, text) => { const c = el("div","dcard"); c.append(el("h3",null,title), el("p",null,text)); g.appendChild(c); return c; };
+    const B = (label, cls, fn, parent) => { const b = el("button","btn "+cls, label); b.type = "button"; b.onclick = fn; parent.appendChild(b); return b; };
+    if(lob.view==="host"){
+      const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code)); c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c);
+    } else if(lob.view==="joining"){
+      const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c);
+    } else if(lob.view==="seek"){
+      const c = card("Recherche d'un joueur","On cherche quelqu'un qui veut jouer en ce moment. Si personne ne répond en 15 secondes, tu joueras contre le robot."); B("Annuler","ghost",()=>lobReset(""),c);
+    } else {
+      const c1 = card("Jouer avec un ami","Crée une partie et donne le code, ou entre le code de ton ami.");
+      B("Créer une partie","pink",duelCreate,c1);
+      const lab = el("label",null,"Code de la partie"); lab.htmlFor = "duelIn"; lab.style.cssText = "font-size:13px;font-weight:800;color:var(--muted)"; c1.appendChild(lab);
+      const inp = el("input"); inp.type = "text"; inp.id = "duelIn"; inp.inputMode = "numeric"; inp.maxLength = 4; inp.placeholder = "0000"; inp.autocomplete = "off"; c1.appendChild(inp);
+      B("Rejoindre","line",()=>{ const v = inp.value.replace(/\D/g,""); if(v.length!==4){ lob.msg = "Le code a 4 chiffres."; renderGallery(); return; } duelJoin(v); },c1);
+      const c2 = card("Trouver un joueur","Le jeu cherche un autre joueur connecté en ce moment."); B("Chercher","pink",duelSeek,c2);
+      const c3 = card("Contre le robot","Pour s'entraîner, à ton rythme."); const r = el("div","quick"); c3.appendChild(r);
+      B("Lent","line",()=>startBot(0),r); B("Normal","line",()=>startBot(1),r); B("Rapide","line",()=>startBot(2),r);
+    }
     return;
   }
 
@@ -2388,6 +2444,125 @@ function medalArt(cv, col, got){
   for(let y=0;y<16;y++) for(let x=0;x<16;x++){ const r = H(x+.5-8, y+.5-10); if(r<5.6) px(x,y,1,1, r>4.4 ? d : r<2.2 ? l : m); }
 }
 
+/* ---------- Duel : 1 contre 1 en direct (Supabase Realtime) ou contre le robot ---------- */
+const RT_URL = "wss://vfikxkdadiqkducklewv.supabase.co/realtime/v1/websocket?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmaWt4a2RhZGlxa2R1Y2tsZXd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ2MDg4ODUsImV4cCI6MjExMDE4NDg4NX0.UqEHxpwQTJHzwwlc0sujYWr7Dkp0vaAvSqAyPZpgNPc&vsn=1.0.0";
+const SID = Math.random().toString(36).slice(2,10);
+let duel = null, lob = {view:"menu", code:"", msg:"", net:null, timers:[]}, duelRec = store.get("cpn.duel", {w:0, l:0});
+const DUEL_WIN = 3, DUEL_LOSS = 1;
+const duelSelf = () => ({id:SID, name: me ? me.name : "Joueur", av: me ? me.av : "O_rose"});
+/* Canal temps réel : protocole Phoenix, messages diffusés à l'autre joueur de la salle */
+function Net(room, onMsg, onOpen, onErr){
+  let ws, ref = 1, hb = 0, open = false, dead = false; const topic = "realtime:"+room;
+  const fail = () => { if(!dead && !open){ dead = true; if(onErr) onErr(); } };
+  try{ ws = new WebSocket((window.__RT_URL || RT_URL)); }catch(e){ setTimeout(fail, 0); return {send(){}, close(){}}; }
+  ws.onopen = () => {
+    ws.send(JSON.stringify({topic, event:"phx_join", payload:{config:{broadcast:{ack:false,self:false},presence:{key:""},postgres_changes:[],private:false}}, ref:String(ref++), join_ref:"1"}));
+    hb = setInterval(()=>{ if(ws.readyState===1) ws.send(JSON.stringify({topic:"phoenix", event:"heartbeat", payload:{}, ref:String(ref++)})); }, 25000);
+  };
+  ws.onmessage = e => {
+    let m; try{ m = JSON.parse(e.data); }catch(x){ return; }
+    if(m.event==="phx_reply" && m.topic===topic && m.ref==="1"){ if(m.payload && m.payload.status==="ok"){ open = true; if(onOpen) onOpen(); } else fail(); }
+    else if(m.event==="broadcast" && m.topic===topic && m.payload && m.payload.event==="m" && !dead) onMsg(m.payload.payload || {});
+  };
+  ws.onerror = fail;
+  ws.onclose = () => { clearInterval(hb); if(open && !dead){ open = false; onMsg({t:"_closed"}); } else fail(); };
+  return {
+    send(o){ if(open && ws.readyState===1) ws.send(JSON.stringify({topic, event:"broadcast", payload:{type:"broadcast", event:"m", payload:o}, ref:String(ref++), join_ref:"1"})); },
+    close(){ dead = true; clearInterval(hb); try{ ws.close(); }catch(e){} }
+  };
+}
+function duelPool(){ return BUILTIN.filter(d=>["formes","lettres","chiffres","nature"].includes(d.cat) && starsOf(d)<=2); }
+function pickDuelDrawing(){ const p = duelPool(); return p[Math.floor(Math.random()*p.length)].id; }
+function lobClear(){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; if(lob.net){ lob.net.close(); lob.net = null; } }
+function lobReset(msg){ lobClear(); lob.view = "menu"; lob.code = ""; lob.msg = msg || ""; if(page==="duel" && !cur) renderGallery(); }
+const NET_ERR = "Connexion impossible pour l'instant. Tu peux jouer contre le robot.";
+/* L'hôte attend l'autre joueur dans la salle, puis lance la partie */
+function hostRoom(room, drawId, onFail){
+  let started = false;
+  const net = Net(room, m => {
+    if(m.t==="hello" && m.p && m.p.id!==SID){ net.send({t:"start", draw:drawId, host:duelSelf()}); if(!started){ started = true; lobClear0(net); beginDuel(drawId, m.p, net); } }
+    else if(started) duelMsg(m);
+  }, null, () => { if(!started) (onFail || lobReset)(NET_ERR); });
+  return net;
+}
+function guestRoom(room, onFail){
+  let started = false;
+  const net = Net(room, m => {
+    if(m.t==="start" && !started && m.host){ started = true; lobClear0(net); beginDuel(m.draw, m.host, net); }
+    else if(started) duelMsg(m);
+  }, () => { const hi = () => net.send({t:"hello", p:duelSelf()}); hi(); lob.timers.push(setInterval(()=>{ if(!started) hi(); }, 1000)); }, () => { if(!started) (onFail || lobReset)(NET_ERR); });
+  return net;
+}
+function lobClear0(keep){ lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; if(lob.net && lob.net!==keep) lob.net.close(); lob.net = null; lob.view = "menu"; lob.code = ""; lob.msg = ""; }
+function duelCreate(){
+  lobClear(); lob.code = String(Math.floor(1000+Math.random()*9000)); lob.view = "host"; lob.msg = "";
+  lob.net = hostRoom("coloriage-duel-"+lob.code, pickDuelDrawing()); renderGallery();
+}
+function duelJoin(code){
+  lobClear(); lob.view = "joining"; lob.code = code; lob.msg = "";
+  lob.net = guestRoom("coloriage-duel-"+code);
+  lob.timers.push(setTimeout(()=>lobReset("Aucune partie trouvée avec ce code. Vérifie-le et réessaie."), 12000)); renderGallery();
+}
+function duelSeek(){
+  lobClear(); lob.view = "seek"; lob.msg = ""; let matched = false;
+  const go = fn => { matched = true; const old = lob.net; lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; lob.net = fn(); if(old) old.close();
+    lob.timers.push(setTimeout(()=>{ lobClear(); startBot(1, "Personne n'a répondu : tu joues contre le robot."); }, 9000)); };
+  lob.net = Net("coloriage-lobby", m => {
+    if(matched) return;
+    if(m.t==="seek" && m.p && m.p.id!==SID && SID < m.p.id){ const room = "coloriage-m-"+SID+"-"+Date.now().toString(36), draw = pickDuelDrawing(); lob.net.send({t:"match", to:m.p.id, room}); go(()=>hostRoom(room, draw)); }
+    else if(m.t==="match" && m.to===SID && m.room) go(()=>guestRoom(m.room));
+  }, () => { const ping = () => { if(!matched && lob.net) lob.net.send({t:"seek", p:duelSelf()}); }; ping(); lob.timers.push(setInterval(ping, 1500)); },
+  () => { if(!matched){ lobClear(); startBot(1, "Connexion impossible : tu joues contre le robot."); } });
+  lob.timers.push(setTimeout(()=>{ if(!matched){ lobClear(); startBot(1, "Aucun joueur trouvé pour l'instant : tu joues contre le robot."); } }, 15000));
+  renderGallery();
+}
+function startBot(level, note){
+  lobClear0(null);
+  beginDuel(pickDuelDrawing(), {id:"bot", name:["Robot lent","Robot","Robot rapide"][level], av:"W_robot1"}, null, [1.1, 2.3, 4.2][level], note);
+}
+function beginDuel(drawId, opp, net, botRate, note){
+  const d = BUILTIN.find(x=>x.id===drawId) || duelPool()[0];
+  openDrawing(d, null, null, {opp, net, botRate: botRate||0, started:false, over:false, queue:[], oppDone:new Uint8Array(d.cells.length), oppN:0, note: note||""});
+}
+function duelUI(){
+  const on = !!duel; document.body.classList.toggle("duelplay", on); $("opp").hidden = !on; $("count").hidden = true;
+  if(!on) return;
+  $("pname").textContent = "Duel · "+cur.name; $("winBack").textContent = "Duels"; $("winNext").hidden = true;
+  $("oppName").textContent = duel.opp.name; drawOpp();
+  $("hint").textContent = duel.note || `Tu joues contre ${duel.opp.name}.`;
+  const c = $("count"); c.hidden = false; let n = 3; c.textContent = n;
+  duel.cd = setInterval(()=>{ n--; if(n>0) c.textContent = n; else if(n===0){ c.textContent = "Partez !"; if(duel){ duel.started = true; duelLoops(); } } else { clearInterval(duel && duel.cd); c.hidden = true; } }, 800);
+}
+function drawOpp(){ if(!duel) return; drawThumb($("oppCv"), cur, duel.oppDone); const tot = stats(cur, done).tot; $("oppPct").textContent = Math.floor(duel.oppN/tot*100)+" %"; }
+function duelLoops(){
+  duel.tx = setInterval(()=>{ if(duel && duel.net && duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); }, 350);
+  if(duel.botRate){
+    const order = []; for(let c=0;c<cur.palette.length;c++) for(let i=0;i<idx.length;i++) if(idx[i]===c) order.push(i);
+    let k = 0, carry = 0;
+    duel.bot = setInterval(()=>{ if(!duel || duel.over) return; carry += duel.botRate*.4*(.6+Math.random()*.8); const n = Math.floor(carry); carry -= n;
+      const cells = order.slice(k, k+n); k += cells.length; if(cells.length) duelMsg({t:"prog", c:cells}); if(k>=order.length) duelMsg({t:"done"}); }, 400);
+  }
+}
+function duelMsg(m){
+  if(!duel) return;
+  if(m.t==="prog" && Array.isArray(m.c)){ m.c.forEach(i=>{ if(i>=0 && i<duel.oppDone.length && idx[i]>=0 && !duel.oppDone[i]){ duel.oppDone[i] = 1; duel.oppN++; } }); drawOpp(); }
+  else if(m.t==="done" && !duel.over) duelEnd(false, `${duel.opp.name} a fini en premier. Bien essayé !`);
+  else if((m.t==="bye" || m.t==="_closed") && !duel.over){ if(duel.started) duelEnd(true, `${duel.opp.name} a quitté la partie. Tu gagnes !`); else { stopDuel(); cur = null; show("home"); lobReset(`${duel ? duel.opp.name : "L'autre joueur"} a quitté la partie.`); } }
+}
+function duelEnd(won, text){
+  duel.over = true; clearInterval(duel.tx); clearInterval(duel.bot);
+  if(won && duel.net){ if(duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); duel.net.send({t:"done"}); }
+  if(won) duelRec.w++; else duelRec.l++; store.set("cpn.duel", duelRec);
+  const ns = won ? DUEL_WIN : DUEL_LOSS;
+  $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; $("say").hidden = true; $("win").classList.add("on");
+  if(!won){ const a = audio(); if(a) [392,330,262].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .12, "triangle")); }
+}
+function stopDuel(){
+  if(!duel) return; clearInterval(duel.cd); clearInterval(duel.tx); clearInterval(duel.bot);
+  if(duel.net){ if(!duel.over) duel.net.send({t:"bye"}); const n = duel.net; setTimeout(()=>n.close(), 300); }
+  duel = null; duelUI();
+}
+
 /* ---------- Mode chrono ---------- */
 const CHRONO_DEF = [
   ["Formes", ["F_cercle","F_carre","F_losange","F_triangle","F_ovale","F_etoile"]],
@@ -2457,7 +2632,7 @@ function saveFree(){
   if(!flist.includes(cur.id)){ flist.unshift(cur.id); store.set("cpn.flist", flist); }
 }
 function openFree(d){
-  stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay");
+  stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay");
   free = true; document.body.classList.add("freeplay");
   sparks = []; undoS = []; cur = d; fcol = loadFree(d); done = new Uint8Array(d.cells.length); left = []; sel = -1;
   idx = new Int8Array(d.cells.length);
@@ -2581,13 +2756,14 @@ const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
 let cur=null, done=null, idx=null, sel=0, left=[], view={s:20,x:0,y:0}, W=0, Hh=0, dpr=1, raf=0;
 
 function show(v){ $("home").classList.toggle("on", v==="home"); $("play").classList.toggle("on", v==="play"); }
-function openDrawing(d, ch, math){
+function openDrawing(d, ch, math, du){
+  stopDuel(); duel = du || null;
   stopChrono(); chrono = ch || null; mathMode = math || null; document.body.classList.toggle("mathplay", !!mathMode);
   wandLeft = 3; wandOn = false; blinkT = 0;
   free = false; document.body.classList.remove("freeplay");
   const isWord = d.cat==="mots" || !!d.word;
   $("winTxt").textContent = isWord ? `Bravo ! Tu as colorié le mot ${d.name}.` : "Dessin terminé !"; $("say").hidden = !isWord || !canSpeak;
-  sparks = []; cur = d; done = chrono ? new Uint8Array(d.cols*d.rows) : loadDone(d, !!mathMode); if(!chrono && !mathMode) store.set("cpn.last", d.id);
+  sparks = []; cur = d; done = (chrono || duel) ? new Uint8Array(d.cols*d.rows) : loadDone(d, !!mathMode); if(!chrono && !mathMode && !duel) store.set("cpn.last", d.id);
   idx = new Int8Array(d.cells.length);
   left = d.palette.map(()=>0);
   for(let i=0;i<d.cells.length;i++){
@@ -2596,7 +2772,7 @@ function openDrawing(d, ch, math){
   }
   sel = Math.max(0, left.findIndex(n=>n>0));
   $("pname").textContent = mathMode ? "Calcul · "+d.name : d.name;
-  show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI(); updateTools();
+  show("play"); resize(); fit(); buildPalette(); updateProg(); chronoUI(); updateTools(); duelUI(); if(duel) fit();
 }
 function resize(){
   const r = stage.getBoundingClientRect();
@@ -2605,9 +2781,10 @@ function resize(){
   cv.width = Math.round(W*dpr); cv.height = Math.round(Hh*dpr);
   if(fitted && cur) fit(); else draw();
 }
-function fitScale(){ return Math.min(W/cur.cols, Hh/cur.rows)*.94; }
+const duelTop = () => duel ? 128 : 0;   /* place réservée à la vignette de l'adversaire */
+function fitScale(){ return Math.min(W/cur.cols, (Hh-duelTop())/cur.rows)*.94; }
 let fitted = true;
-function fit(){ fitted = true; view.s = fitScale(); view.x = (W-cur.cols*view.s)/2; view.y = (Hh-cur.rows*view.s)/2; draw(); }
+function fit(){ fitted = true; view.s = fitScale(); view.x = (W-cur.cols*view.s)/2; view.y = duelTop()+(Hh-duelTop()-cur.rows*view.s)/2; draw(); }
 function clampView(){
   const w = cur.cols*view.s, h = cur.rows*view.s, m = 60;
   view.x = Math.min(W-m, Math.max(m-w, view.x));
@@ -2668,29 +2845,31 @@ function selectColor(i, scroll){
 }
 function updateProg(){
   const st = stats(cur, done);
+  if(duel && duel.over){ $("pprog").textContent = `${st.ok} / ${st.tot}`; return; }
   $("pprog").textContent = `${st.ok} / ${st.tot} · ${Math.floor(st.ok/st.tot*100)} %`;
   $("win").classList.toggle("on", st.ok===st.tot);
 }
 let saveT = 0;
 function paintCell(i){
-  if(i<0 || idx[i]!==sel || done[i] || (chrono && chrono.over)) return false;
+  if(i<0 || idx[i]!==sel || done[i] || (chrono && chrono.over) || (duel && (!duel.started || duel.over))) return false;
   if(chrono && !chrono.started){ chrono.started = true; chrono.t0 = performance.now(); chrono.timer = setInterval(tickChrono, 200); }
-  done[i] = 1; left[sel]--; sparkle(i);
+  done[i] = 1; left[sel]--; sparkle(i); if(duel) duel.queue.push(i);
   if(left.every(v=>v===0)){
     sWin(); saveDone(cur, done); if(chrono) chronoWin();
+    if(duel) duelEnd(true, `Tu as gagné contre ${duel.opp.name} !`);
     if(cur.cat === "mots" || cur.word){ const w = cur.name; $("winTxt").textContent = `Bravo ! Tu as colorié le mot ${w}.`; setTimeout(()=>sayWord(w), 1200); }
     if(mathMode) $("winTxt").textContent = "Bravo ! Tous tes calculs sont justes.";
-    if(!chrono && !mathMode) dailyWon();
+    if(!chrono && !mathMode && !duel) dailyWon();
     const pw = PLANETS.find(p=>p.key===cur.cat);
     if(pw){
       const full = BUILTIN.filter(d=>d.cat===pw.key).every(d=>{ const st = stats(d, d===cur ? done : loadDone(d)); return st.ok===st.tot; });
       $("winTxt").textContent = full ? `${pw.name} complétée ! +${fmt(PTS_DRAW+PTS_PLANET)} points` : `Dessin terminé ! +${PTS_DRAW} points`;
     }
-    if(!chrono && !mathMode){ const ns = starsOf(cur); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
+    if(!chrono && !mathMode && !duel){ const ns = starsOf(cur); $("winTxt").textContent += ` ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; }
     const cellsIdx = []; for(let j=0;j<idx.length;j++) if(idx[j]>=0) cellsIdx.push(j);
     for(let n=0;n<36;n++) sparkle(cellsIdx[Math.floor(Math.random()*cellsIdx.length)], n*45);
   } else if(left[sel]===0) sColor(); else sPaint();
-  clearTimeout(saveT); if(!chrono){ const c = cur, dn = done, mm = mathMode; saveT = setTimeout(()=>saveDone(c, dn, mm), 250); }
+  clearTimeout(saveT); if(!chrono && !duel){ const c = cur, dn = done, mm = mathMode; saveT = setTimeout(()=>saveDone(c, dn, mm), 250); }
   if(left[sel]===0){
     const n = left.findIndex(v=>v>0);
     if(n>=0) selectColor(n, true); else refreshChips();
@@ -2702,7 +2881,7 @@ function paintCell(i){
 let wandLeft = 3, wandOn = false, blinkT = 0;
 function updateTools(){
   const w = $("wand"); w.textContent = `Baguette ×${wandLeft}`; w.disabled = wandLeft<=0; w.classList.toggle("on", wandOn); w.setAttribute("aria-pressed", wandOn);
-  w.hidden = !!chrono || !!mathMode; $("blink").hidden = !!mathMode; $("find").hidden = !!mathMode;
+  w.hidden = !!chrono || !!mathMode || !!duel; $("blink").hidden = !!mathMode; $("find").hidden = !!mathMode;
 }
 function useWand(i){
   const p = idx[i], seen = new Uint8Array(idx.length), st = [i], cells = []; seen[i] = 1;
@@ -2793,7 +2972,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
