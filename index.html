@@ -87,6 +87,39 @@ canvas{image-rendering:pixelated}
 .hello canvas{width:54px;height:54px;border-radius:15px;border:2px solid var(--ink);flex:0 0 auto}
 .hello small{display:block;color:var(--muted);font-weight:800;font-size:13px;font-variant-numeric:tabular-nums}
 
+/* Magasin : cadres d'avatar et tableaux de dessin */
+[data-fr]:not([data-fr=""]){border-width:3px!important;border-style:solid!important;border-color:transparent!important;background-origin:border-box;background-clip:border-box}
+[data-fr="or"]{background-image:linear-gradient(135deg,#fff3bf,#f08c00 45%,#ffe066 70%,#e67700)!important}
+[data-fr="argent"]{background-image:linear-gradient(135deg,#ffffff,#868e96 45%,#f1f3f5 70%,#495057)!important}
+[data-fr="glace"]{background-image:linear-gradient(135deg,#ffffff,#4dabf7 50%,#d0ebff)!important}
+[data-fr="feu"]{background-image:linear-gradient(0deg,#e03131,#ff6b00 50%,#ffd43b)!important}
+[data-fr="jungle"]{background-image:linear-gradient(135deg,#d8f5a2,#2b8a3e 50%,#8ce99a)!important}
+[data-fr="bonbon"]{background-image:repeating-linear-gradient(45deg,#ff6fae 0 5px,#ffffff 5px 10px)!important}
+[data-fr="damier"]{background-image:repeating-conic-gradient(#1d1b3a 0 25%,#ffffff 0 50%)!important;background-size:8px 8px!important}
+[data-fr="arcenciel"]{background-image:conic-gradient(#e03131,#ff922b,#ffd43b,#51cf66,#4dabf7,#7048e8,#f783ac,#e03131)!important}
+[data-fr="galaxie"]{background-image:conic-gradient(#7048e8,#f783ac,#4dabf7,#22b8cf,#7048e8)!important;box-shadow:0 0 0 2px #1d1b3a,0 0 12px 2px #b197fc}
+[data-bd="ciel"]{background:radial-gradient(circle at 20% 30%,#fff 0 14px,transparent 15px) 0 0/190px 150px,radial-gradient(circle at 30% 34%,#fff 0 18px,transparent 19px) 0 0/190px 150px,radial-gradient(circle at 75% 78%,#fff 0 16px,transparent 17px) 0 0/190px 150px,linear-gradient(#74c0fc,#d0ebff)!important}
+[data-bd="nuit"]{background:radial-gradient(circle,#fff 0 1.4px,transparent 2px) 0 0/46px 46px,radial-gradient(circle,#ffe066 0 1.8px,transparent 2.4px) 23px 30px/92px 92px,linear-gradient(#0b1026,#27306b)!important}
+[data-bd="prairie"]{background:radial-gradient(circle,#ffd43b 0 3px,transparent 4px) 0 0/56px 56px,radial-gradient(circle,#ff8fab 0 3px,transparent 4px) 28px 28px/56px 56px,linear-gradient(#b2f2bb,#51cf66)!important}
+[data-bd="ocean"]{background:radial-gradient(circle,rgba(255,255,255,.55) 0 3px,transparent 4px) 0 0/70px 90px,radial-gradient(circle,rgba(255,255,255,.35) 0 5px,transparent 6px) 35px 45px/110px 130px,linear-gradient(#66d9e8,#1971c2 70%,#1c3d8a)!important}
+[data-bd="bonbon"]{background:repeating-linear-gradient(45deg,#ffdeeb 0 22px,#fff0f6 22px 44px)!important}
+[data-bd="bois"]{background:repeating-linear-gradient(90deg,rgba(0,0,0,.10) 0 2px,transparent 2px 64px),repeating-linear-gradient(0deg,rgba(255,255,255,.07) 0 3px,transparent 3px 11px),linear-gradient(#c68b59,#a9713f)!important}
+[data-bd="ardoise"]{background:linear-gradient(rgba(255,255,255,.10) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(255,255,255,.10) 1px,transparent 1px) 0 0/24px 24px,#2f4a3c!important}
+[data-bd="pois"]{background:radial-gradient(circle,#ffa94d 0 7px,transparent 8px) 0 0/40px 40px,radial-gradient(circle,#ffa94d 0 7px,transparent 8px) 20px 20px/40px 40px,#fff3bf!important}
+[data-bd="pastel"]{background:linear-gradient(#ffc9c9 0 17%,#ffe8cc 17% 34%,#fff3bf 34% 50%,#d3f9d8 50% 67%,#d0ebff 67% 84%,#e5dbff 84%)!important}
+[data-bd="espace"]{background:radial-gradient(circle,#fff 0 1.3px,transparent 2px) 0 0/38px 38px,radial-gradient(circle,#f783ac 0 2px,transparent 3px) 19px 26px/114px 114px,radial-gradient(ellipse at 30% 20%,#7048e8,transparent 60%),radial-gradient(ellipse at 80% 85%,#c2255c,transparent 55%),#160f33!important}
+.shop .card{cursor:default}
+.shop .card:active{transform:none;box-shadow:0 4px 0 var(--ink)}
+.shop .card.use{border-color:var(--good);box-shadow:0 4px 0 var(--good)}
+.shop .btn{width:100%;padding:8px 6px;font-size:14px}
+.shop .btn:disabled{opacity:.55}
+.shop .need{font-size:11px;font-weight:800;color:var(--muted);text-align:center}
+.fprev,.bprev{aspect-ratio:1;border-radius:11px;background:#eceaf5;display:grid;place-items:center;overflow:hidden}
+.th .fprev canvas{width:62%;aspect-ratio:1;border-radius:22%;border:5px solid #fff;background-color:#fff}
+.th .fprev canvas[data-fr]:not([data-fr=""]){border-width:7px!important}
+.bprev{background:linear-gradient(var(--line) 1px,transparent 1px) 0 0/16px 16px,linear-gradient(90deg,var(--line) 1px,transparent 1px) 0 0/16px 16px,var(--paper)}
+.th .bprev canvas{width:54%;aspect-ratio:1;border-radius:6px;background:none;border:2px solid var(--ink)}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -1997,7 +2030,7 @@ const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorat
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","fetes","contes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && page !== "magasin" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -2120,8 +2153,9 @@ function renderGallery(){
     math: [].concat(...MATH_SETS.map(m=>m[3])).filter(id=>{ const d = BUILTIN.find(x=>x.id===id); if(!d) return false; const st = stats(d, loadDone(d, true)); return st.ok===st.tot; }).length,
     stars: totalStars, free: flist.length, best: Math.max(streak.best||0, streakNow()), noel: byCat("noel").filter(i=>i.pct===100).length};
   const BG = badges(STATE), nBadges = BG.filter(b=>b[2]>=b[3]).length;
-  $("ovPill").textContent = `★ ${fmt(totalStars)}`;
-  $("ovPill").setAttribute("aria-label", `${totalStars} étoiles`);
+  lastStars = totalStars; const bal = shopBal();
+  $("ovPill").textContent = `★ ${fmt(bal)}`;
+  $("ovPill").setAttribute("aria-label", `${bal} étoiles à dépenser`);
   drawThumb($("meCv"), avatarOf(me), null, true);
 
   /* Tiroir : accueil, modes de jeu, puis catégories regroupées avec sous-catégories dépliables */
@@ -2142,7 +2176,8 @@ function renderGallery(){
    ["duel","Duel",`${duelRec.w} ${duelRec.w>1 ? "victoires" : "victoire"}`,"#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',page==="duel"],
    ["calcul","Calcul","Additions, soustractions","#0c8599",'<path d="M5 8h6M8 5v6M13.5 8h5.5M5 16.5h6M13.5 15l5 3M18.5 15l-5 3"/>',page==="calcul"],
    ["trophees","Trophées",`${nBadges} / ${BG.length} gagnés`,"#f0b429",'<path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4c0 3 1.5 4 3 4M17 6h3c0 3-1.5 4-3 4M12 14v4M8.5 20h7"/>',page==="trophees"],
-   ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"]
+   ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"],
+   ["magasin","Magasin",`★ ${fmt(bal)} à dépenser`,"#e64980",'<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',page==="magasin"]
   ].forEach(([key,label,sub,color,path,on])=>{
     const b = el("button","md" + (on ? " on" : "")); b.type = "button"; b.style.setProperty("--c", color); if(on) b.setAttribute("aria-current","page");
     const i2 = el("span","ic"); i2.innerHTML = SVG(path);
@@ -2184,12 +2219,12 @@ function renderGallery(){
     }
   }
 
-  const pg = $("page"); pg.textContent = "";
+  const pg = $("page"); pg.textContent = ""; pg.classList.remove("shop");
   if(page === "menu"){
     $("abTitle").textContent = "Coloriage par numéros";
     if(me){
-      const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true);
-      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(totalStars)} étoiles · ◆ ${fmt(score)} points`));
+      const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true); hc.dataset.fr = shop.fr;
+      const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(bal)} étoiles · ◆ ${fmt(score)} points`));
       hl.append(hc, hx); pg.appendChild(hl);
     }
     const dd = items.find(i=>i.d.id===daily.id);
@@ -2223,7 +2258,8 @@ function renderGallery(){
     b2.onclick = () => { const pool = items.filter(i=>i.pct<100); const pick = (pool.length ? pool : items)[Math.floor(Math.random()*(pool.length||items.length))]; openDrawing(pick.d); };
     const b3 = el("button","btn line","Calcul"); b3.type = "button"; b3.onclick = () => setPage("calcul");
     const b4 = el("button","btn line",`Trophées ${nBadges} / ${BG.length}`); b4.type = "button"; b4.onclick = () => setPage("trophees");
-    q.append(b1, b2, b3, b4);
+    const b5 = el("button","btn line",`Magasin ★ ${fmt(bal)}`); b5.type = "button"; b5.onclick = () => setPage("magasin");
+    q.append(b1, b2, b3, b4, b5);
     const top = el("div","block"); top.append(f, q); pg.appendChild(top);
     const bn = el("button","wbanner"); bn.type = "button";
     const pl = el("span","pl"); world.forEach((w,i)=>{ const c = el("canvas"); planetArt(c, w.p, !w.open, i+1); pl.appendChild(c); });
@@ -2311,8 +2347,9 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${fmt(totalStars)}`));
-    hd.append(sc, el("p",null,"Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Le chrono et les duels en donnent aussi."));
-    b0.append(bk, hd); pg.appendChild(b0);
+    hd.append(sc, el("p",null,"Chaque dessin terminé donne de 1 à 5 étoiles selon sa difficulté. Le chrono et les duels en donnent aussi." + (shop.spent ? ` Tu en as dépensé ★ ${fmt(shop.spent)} au magasin : il t'en reste ★ ${fmt(bal)}.` : " Dépense-les au magasin !")));
+    const bsh = el("button","btn pink small","Aller au magasin"); bsh.type = "button"; bsh.style.alignSelf = "flex-start"; bsh.onclick = () => setPage("magasin");
+    b0.append(bk, hd, bsh); pg.appendChild(b0);
     const b1 = el("div","block"); b1.appendChild(el("h2",null,"D'où viennent tes étoiles"));
     const tb = el("div","slist");
     const dfmt = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
@@ -2414,6 +2451,42 @@ function renderGallery(){
       pg.appendChild(bl);
       if(me && duelRec.w+duelRec.l && !board.sent){ board.sent = true; reportDuel().then(()=>loadBoard(true)); } else loadBoard(false);   /* envoie une fois les duels déjà joués */
     }
+    return;
+  }
+
+  /* Magasin */
+  if(page === "magasin"){
+    $("abTitle").textContent = "Magasin";
+    pg.classList.add("shop");
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","À dépenser"), el("b",null,`★ ${fmt(bal)}`));
+    hd.append(sc, el("p",null,`Achète des avatars, des cadres pour ton avatar et des tableaux pour dessiner. Tu as gagné ★ ${fmt(totalStars)} étoiles en tout` + (shop.spent ? ` et dépensé ★ ${fmt(shop.spent)}.` : ".") + " Termine des dessins pour en gagner d'autres !"));
+    b0.append(bk, hd); pg.appendChild(b0);
+    const sample = BUILTIN.find(d=>d.id==="O_rose");
+    const section = (title, list, kind, cur2, preview) => {
+      const blk = el("div","block"); blk.appendChild(el("h2",null,title));
+      const g = el("div","grid");
+      list.forEach(([id,name,cost])=>{
+        const key = kind+":"+id, owned = !cost || shopOwns(key), used = cur2===id;
+        const card = el("div","card" + (used ? " use" : "")), th = el("div","th");
+        th.appendChild(preview(id)); if(used) th.appendChild(el("span","badge","✓ Utilisé")); else if(!owned) th.appendChild(el("span","badge","★ "+cost));
+        const b = el("button","btn small " + (used ? "line" : owned ? "ghost" : "pink"), used ? "Utilisé" : owned ? "Utiliser" : `Acheter ★ ${cost}`); b.type = "button";
+        card.append(th, el("div","nm",name), b);
+        if(used) b.disabled = true;
+        else if(owned) b.onclick = () => { shopUse(kind, id); sColor(); renderGallery(); };
+        else if(bal<cost){ b.disabled = true; card.appendChild(el("div","need",`Il te manque ★ ${cost-bal}`)); }
+        else b.onclick = () => { if(shopBuy(key, cost)){ shopUse(kind, id); renderGallery(); } };
+        g.appendChild(card);
+      });
+      blk.appendChild(g); pg.appendChild(blk);
+    };
+    section("Avatars", SHOP_AV.map(([id,c])=>{ const d = BUILTIN.find(x=>x.id===id); return d ? [id, d.name, c] : null; }).filter(Boolean), "av", me ? me.av : "",
+      id => { const cv = el("canvas"); drawThumb(cv, BUILTIN.find(x=>x.id===id), null, true); return cv; });
+    section("Cadres d'avatar", SHOP_FR, "fr", shop.fr,
+      id => { const w = el("div","fprev"), cv = el("canvas"); drawThumb(cv, avatarOf(me), null, true); cv.dataset.fr = id; w.appendChild(cv); return w; });
+    section("Tableaux pour dessiner", SHOP_BD, "bd", shop.bd,
+      id => { const w = el("div","bprev"), cv = el("canvas"); drawThumb(cv, sample, null, true); w.dataset.bd = id; w.appendChild(cv); return w; });
     return;
   }
 
@@ -2712,6 +2785,23 @@ function dailyWon(){
   bonus += DAILY_PTS; store.set("cpn.bonus", bonus);
   $("winTxt").textContent = `Dessin du jour terminé ! +${DAILY_PTS} points · série de ${streak.n} ${streak.n>1 ? "jours" : "jour"}`;
   return true;
+}
+/* ---------- Magasin : on dépense ses étoiles ---------- */
+const SHOP_AV = [["W_ct_bebedragon",5],["W_ct_chat",8],["W_ct_licorne",10],["W_ct_pingouin",12],["W_ct_fee",15],["W_ct_chevalier",15],["W_ct_sirene",20],["W_ct_bonhomme",20],["W_ct_princesse1",25],["W_ct_sorcier",30],["W_ct_dragon",40],["W_ct_phenix",60]];
+const SHOP_FR = [["","Sans cadre",0],["argent","Argent",5],["or","Or",10],["glace","Glace",12],["jungle","Jungle",12],["bonbon","Bonbon",15],["feu","Feu",15],["damier","Damier",20],["arcenciel","Arc-en-ciel",30],["galaxie","Galaxie",50]];
+const SHOP_BD = [["","Classique",0],["bonbon","Bonbon",5],["pois","Pois",8],["ciel","Ciel",10],["prairie","Prairie",12],["pastel","Arc-en-ciel pastel",15],["bois","Bois",15],["ardoise","Tableau noir",20],["ocean","Océan",25],["nuit","Nuit étoilée",30],["espace","Espace",50]];
+let shop = store.get("cpn.shop", null), lastStars = 0;
+if(!shop || typeof shop!=="object" || !Array.isArray(shop.own)) shop = {spent:0, own:[], fr:"", bd:""};
+shop.spent = Math.max(0, +shop.spent||0); shop.fr = shop.fr||""; shop.bd = shop.bd||"";
+if(!SHOP_FR.some(f=>f[0]===shop.fr)) shop.fr = ""; if(!SHOP_BD.some(f=>f[0]===shop.bd)) shop.bd = "";
+const shopOwns = key => shop.own.includes(key);
+const shopBal = () => Math.max(0, lastStars - shop.spent);
+function applyShop(){ $("meBtn").dataset.fr = shop.fr; $("stage").dataset.bd = shop.bd; }
+function shopBuy(key, cost){ if(shopOwns(key) || shopBal()<cost) return false; shop.own.push(key); shop.spent += cost; store.set("cpn.shop", shop); sWin(); return true; }
+function shopUse(kind, id){
+  if(kind==="av"){ if(!me) return; me.av = id; RAW.set("cpn.users", users); }
+  else { shop[kind] = id; store.set("cpn.shop", shop); }
+  applyShop();
 }
 const AV_LOCKED = [["W_fusee",200],["W_soucoupe",400],["W_lion",600],["W_panda",800],["W_renard",1000],["W_hibou",1500],["W_nl_pere",2000],["W_astronaute",3000],["W_noel_etoile",4000],["W_emo_cool",5000],["W_trophee",7000],["O_arcenciel",10000]];
 function badges(S){
@@ -3507,7 +3597,7 @@ function showLand(mode){
     const pl = $("ldPlayers"); pl.textContent = "";
     for(const u of users){
       const b = el("button","plb" + (me && u.id===me.id ? " on" : "")); b.type = "button";
-      const c = el("canvas"); drawThumb(c, avatarOf(u), null, true);
+      const c = el("canvas"); drawThumb(c, avatarOf(u), null, true); if(me && u.id===me.id) c.dataset.fr = shop.fr;
       const t = el("span"); t.append(el("b",null,u.name), el("small",null, me && u.id===me.id ? "Joueur actuel" : "Toucher pour jouer"));
       b.append(c, t);
       b.onclick = () => { if(me && u.id===me.id){ $("land").hidden = true; return; } RAW.set("cpn.user", u.id); sessFlag(true); location.reload(); };
@@ -3522,7 +3612,7 @@ function showLand(mode){
   $("ldBack").hidden = !me; $("ldHave").hidden = users.length>0 || !!sync;
   const g = $("ldAv"); g.textContent = "";
   const pts = mode==="edit" ? lastScore : 0;
-  AVATARS.map(id=>[id,0]).concat(AV_LOCKED).forEach(([id,cost])=>{
+  AVATARS.map(id=>[id,0]).concat(mode==="edit" ? SHOP_AV.filter(a=>shopOwns("av:"+a[0])).map(a=>[a[0],0]) : [], AV_LOCKED).forEach(([id,cost])=>{
     const d = BUILTIN.find(x=>x.id===id); if(!d) return; const locked = pts<cost;
     const b = el("button","av" + (id===ldAv ? " on" : "") + (locked ? " lock" : "")); b.type = "button"; b.disabled = locked;
     b.setAttribute("aria-label", locked ? `Avatar ${d.name}, à débloquer avec ${cost} points` : "Avatar "+d.name); b.setAttribute("aria-pressed", id===ldAv);
@@ -3549,6 +3639,7 @@ $("ldClose").onclick = () => { $("land").hidden = true; };
 $("meBtn").onclick = () => showLand(me ? "choose" : "create");
 $("ovPill").onclick = () => setPage("etoiles");
 
+applyShop();
 renderGallery();
 /* Jeu hors ligne : seulement sur le vrai site, pas dans un aperçu intégré */
 try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.top===window) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
