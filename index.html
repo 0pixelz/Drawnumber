@@ -369,6 +369,12 @@ body.chrono #reset{display:none}
 button.srow{border:0;background:var(--card);font:inherit;font-weight:700;font-size:15px;color:var(--ink);text-align:left;width:100%;cursor:pointer}
 .srow.tap:active{background:#eceaf5}
 .srow.on{background:#fff7d6}
+.srow .rank{flex:0 0 26px;color:var(--muted);text-align:center}
+.res{font-size:13px !important;border-radius:999px;padding:4px 10px;color:#fff !important}
+.res.ok{background:var(--good)}
+.res.ko{background:#b3261e}
+.chk{display:flex;align-items:flex-start;gap:8px;font-size:14px;font-weight:700;color:var(--muted)}
+.chk input{width:22px;height:22px;flex:0 0 auto;margin:0}
 .sthumb{flex:0 0 auto;width:44px;height:44px;border-radius:9px;background:#eceaf5}
 .srow + .srow{border-top:2px solid var(--line)}
 .srow small{display:block;color:var(--muted);font-size:12px;font-weight:700}
@@ -2230,7 +2236,7 @@ function renderGallery(){
     $("abTitle").textContent = "Duel";
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
-    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Victoires – défaites"), el("b",null,`${duelRec.w} – ${duelRec.l}`));
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Victoires – défaites"), el("b",null,`${duelRec.w} – ${duelRec.l}`), el("span","eyebrow",`${rate(duelRec.w,duelRec.l)} % de victoires`));
     hd.append(sc, el("p",null,`Vous coloriez le même dessin en même temps. Le premier qui finit gagne ${DUEL_WIN} étoiles, l'autre en reçoit ${DUEL_LOSS}. Tu vois le dessin de l'adversaire se remplir en petit. L'autre joueur ne voit que ton prénom et ton avatar.`));
     b0.append(bk, hd); if(lob.msg) b0.appendChild(el("p","err",lob.msg)); pg.appendChild(b0);
     const g = el("div","dgrid"); pg.appendChild(g);
@@ -2251,6 +2257,31 @@ function renderGallery(){
       const c2 = card("Trouver un joueur","Le jeu cherche un autre joueur connecté en ce moment."); B("Chercher","pink",duelSeek,c2);
       const c3 = card("Contre le robot","Pour s'entraîner, à ton rythme."); const r = el("div","quick"); c3.appendChild(r);
       B("Lent","line",()=>startBot(0),r); B("Normal","line",()=>startBot(1),r); B("Rapide","line",()=>startBot(2),r);
+      /* Derniers adversaires */
+      const dfm = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
+      const bh = el("div","block"); bh.appendChild(el("h2",null,"Derniers adversaires"));
+      if(!duelLog.length) bh.appendChild(el("p","empty", duelRec.w+duelRec.l ? "Le détail de tes anciens duels n'a pas été noté. Les prochains apparaîtront ici." : "Aucun duel joué pour l'instant."));
+      else { const hl = el("div","slist"); duelLog.slice().reverse().slice(0,20).forEach(([t,name,av,won,did])=>{
+          const r2 = el("div","srow"), cv = el("canvas","sthumb"), ad = BUILTIN.find(x=>x.id===av), dd = BUILTIN.find(x=>x.id===did); if(ad) drawThumb(cv, ad, null, true);
+          const tx = el("span"); tx.append(document.createTextNode(name), el("small",null, dfm(t)+(dd ? " · "+dd.name : "")));
+          r2.append(cv, tx, el("b", won ? "res ok" : "res ko", won ? "Victoire" : "Défaite")); hl.appendChild(r2); }); bh.appendChild(hl); }
+      pg.appendChild(bh);
+      /* Classement */
+      const bl = el("div","block"), sh = el("div","sec"); sh.appendChild(el("h2",null,"Classement des duels"));
+      const rf = B("Actualiser","ghost small",()=>{ loadBoard(true); rf.textContent = "…"; },sh); bl.appendChild(sh);
+      bl.appendChild(el("p","empty","Les 50 joueurs qui ont le plus de victoires, avec leur pourcentage de victoires. Les duels contre le robot comptent aussi."));
+      if(board.rows && board.rows.length){
+        const tl = el("div","slist");
+        board.rows.forEach((p2,i)=>{ const mine = me && p2.id===me.id, r2 = el("div","srow" + (mine ? " on" : "")), cv = el("canvas","sthumb"), ad = BUILTIN.find(x=>x.id===p2.av); if(ad) drawThumb(cv, ad, null, true);
+          const tx = el("span"); tx.append(document.createTextNode(String(p2.name||"Joueur").slice(0,14)+(mine ? " (toi)" : "")), el("small",null,`${p2.w} ${p2.w>1 ? "victoires" : "victoire"} · ${p2.l} ${p2.l>1 ? "défaites" : "défaite"}`));
+          r2.append(el("b","rank",String(i+1)), cv, tx, el("b",null,rate(p2.w,p2.l)+" %")); tl.appendChild(r2); });
+        bl.appendChild(tl);
+      } else bl.appendChild(el("p","empty", board.err ? "Le classement n'est pas joignable pour l'instant." : board.rows ? "Personne dans le classement pour l'instant. Joue un duel pour y entrer !" : "Chargement du classement…"));
+      const tg = el("label","chk"), cb = el("input"); cb.type = "checkbox"; cb.id = "duelShow"; cb.checked = !!duelShow;
+      cb.onchange = () => { duelShow = cb.checked; store.set("cpn.duelshow", duelShow); if(duelRec.w+duelRec.l) reportDuel().then(()=>loadBoard(true)); };
+      tg.append(cb, document.createTextNode(" Montrer mon prénom dans le classement (sinon : « Joueur mystère »)")); bl.appendChild(tg);
+      pg.appendChild(bl);
+      if(me && duelRec.w+duelRec.l && !board.sent){ board.sent = true; reportDuel().then(()=>loadBoard(true)); } else loadBoard(false);   /* envoie une fois les duels déjà joués */
     }
     return;
   }
@@ -2578,6 +2609,22 @@ const RT_URL = "wss://vfikxkdadiqkducklewv.supabase.co/realtime/v1/websocket?api
 const SID = Math.random().toString(36).slice(2,10);
 let duel = null, lob = {view:"menu", code:"", msg:"", net:null, timers:[]}, duelRec = store.get("cpn.duel", {w:0, l:0});
 const DUEL_WIN = 3, DUEL_LOSS = 1;
+/* Journal des duels [moment, prénom, avatar, gagné (1/0), dessin] et classement en ligne */
+let duelLog = store.get("cpn.duellog", []); if(!Array.isArray(duelLog)) duelLog = [];
+let duelShow = store.get("cpn.duelshow", true), board = {rows:null, at:0, err:false, busy:false};
+function duelKey(){ let k = store.get("cpn.duelkey", ""); if(!k){ const a = new Uint8Array(18); (window.crypto||window.msCrypto).getRandomValues(a); k = [...a].map(v=>v.toString(36).padStart(2,"0")).join(""); store.set("cpn.duelkey", k); } return k; }
+async function reportDuel(){
+  if(!me) return;
+  try{ await rpc("coloriage_duel_report", {p_id:me.id, p_key:duelKey(), p_name: duelShow ? me.name : "Joueur mystère", p_av:me.av, p_wins:duelRec.w, p_losses:duelRec.l}); board.at = 0; }catch(e){}
+}
+async function loadBoard(force){
+  if(board.busy || (!force && board.rows && Date.now()-board.at < 30000)) return;
+  board.busy = true;
+  try{ const r = await rpc("coloriage_duel_top", {}); board.rows = Array.isArray(r) ? r : []; board.err = false; board.at = Date.now(); }
+  catch(e){ board.err = true; board.at = Date.now(); if(!board.rows) board.rows = null; }
+  board.busy = false; if(page==="duel" && !cur && lob.view==="menu") renderGallery();
+}
+const rate = (w,l) => w+l ? Math.round(w/(w+l)*100) : 0;
 const duelSelf = () => ({id:SID, name: me ? me.name : "Joueur", av: me ? me.av : "O_rose"});
 /* Canal temps réel : protocole Phoenix, messages diffusés à l'autre joueur de la salle */
 function Net(room, onMsg, onOpen, onErr){
@@ -2719,6 +2766,8 @@ function duelEnd(won, text){
   duel.over = true; clearInterval(duel.tx); clearInterval(duel.bot);
   if(won && duel.net){ if(duel.queue.length) duel.net.send({t:"prog", c:duel.queue.splice(0)}); duel.net.send({t:"done"}); }
   if(won) duelRec.w++; else duelRec.l++; store.set("cpn.duel", duelRec);
+  duelLog.push([Date.now(), duel.opp.name, duel.opp.av, won ? 1 : 0, cur.id]); if(duelLog.length>100) duelLog = duelLog.slice(-100); store.set("cpn.duellog", duelLog);
+  reportDuel();
   const ns = won ? DUEL_WIN : DUEL_LOSS; logStar(won ? "w" : "l", duel.opp.name, ns);
   $("winTxt").textContent = `${text} ${"★".repeat(ns)} +${ns} ${ns>1 ? "étoiles" : "étoile"}`; $("say").hidden = true; $("win").classList.add("on");
   if(!won){ const a = audio(); if(a) [392,330,262].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .12, "triangle")); }
