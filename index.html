@@ -33,6 +33,9 @@
 }
 *{box-sizing:border-box}
 html,body{height:100%;margin:0}
+/* Appli installée sur iPhone : la hauteur « 100 % » peut être trop courte de la hauteur de la barre d'état */
+@media all and (display-mode: standalone){ html,body{height:100vh} }
+html.fullh,html.fullh body{height:var(--fullh)}
 body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;-webkit-tap-highlight-color:transparent;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 input{-webkit-user-select:text;user-select:text}
 button{font:inherit;color:inherit;cursor:pointer}
@@ -4437,6 +4440,18 @@ function duelLink(code){ try{ if(!/^https?:$/.test(location.protocol) || window.
   const t = setInterval(()=>{ const sp = $("splash"); if(!me || !$("land").hidden || (sp && !sp.hidden && getComputedStyle(sp).display!=="none")) return; clearInterval(t);
     try{ history.replaceState(null, "", location.pathname); }catch(e){}
     if(cur) goHome(); page = "duel"; store.set("cpn.page", "duel"); duelJoin(code); }, 400);
+})();
+
+/* iOS, appli sur l'écran d'accueil : si la page est plus courte que l'écran (bande vide en bas), on force la hauteur de l'écran */
+(function(){
+  const standalone = () => navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+  const fix = () => {
+    const root = document.documentElement; if(!standalone()){ root.classList.remove("fullh"); return; }
+    const portrait = innerHeight >= innerWidth, full = portrait ? Math.max(screen.height, screen.width) : Math.min(screen.height, screen.width), gap = full - innerHeight;
+    if(gap > 8 && gap < 90){ root.style.setProperty("--fullh", full+"px"); root.classList.add("fullh"); } else root.classList.remove("fullh");
+    try{ resize(); }catch(e){}
+  };
+  addEventListener("resize", fix); addEventListener("orientationchange", () => setTimeout(fix, 300)); addEventListener("pageshow", fix); fix(); setTimeout(fix, 600);
 })();
 
 /* ---------- Écran de chargement ---------- */
