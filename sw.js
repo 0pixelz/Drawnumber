@@ -1,4 +1,4 @@
-/* Coloriage par numéros : cache pour jouer hors ligne.
+/* Pixelo : cache pour jouer hors ligne.
    Réseau d'abord (pour recevoir les mises à jour), cache en secours. */
 const CACHE = "coloriage-v1";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png", "apple-touch-icon.png"];

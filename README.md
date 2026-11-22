@@ -1,6 +1,6 @@
-# Drawnumber
+# Pixelo
 
-Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée de ses icônes, sans dépendance ni étape de build.
+Pixelo : jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée de ses icônes, sans dépendance ni étape de build.
 
 - 945 dessins intégrés : quinze catégories (Noël, Contes et royaumes, Mots en images, Pieuvres, Lettres, Chiffres, Mots, Formes, Nature, Animaux, Nourriture, Transports, Fêtes et jeux, Découvertes, Mes photos) et six planètes de 10 dessins
 - Sous-catégories : Animaux (Ferme, Savane et jungle, Forêt, Animaux de compagnie), Nourriture (Fruits, Légumes), Transports (Sur la route, Dans l'air et sur l'eau), Fêtes et jeux (Fêtes, Sports et jeux), Découvertes (Drapeaux, Émotions, Météo, École, Vêtements), Contes et royaumes (Royaume, Magie, Créatures, Hiver enchanté — personnages originaux), Noël (Personnages, Décorations, Sapins, Cadeaux et bas, Gourmandises, Traditions), Chiffres (0 à 9, 10 à 20)

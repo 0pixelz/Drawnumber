@@ -6,12 +6,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Coloriage">
+<meta name="apple-mobile-web-app-title" content="Pixelo">
 <meta name="theme-color" content="#1d1b3a">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
-<title>Coloriage par numéros</title>
+<title>Pixelo – Coloriage par numéros</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
@@ -45,7 +45,8 @@ canvas{image-rendering:pixelated}
 #splash{position:fixed;inset:0;z-index:10;background:var(--ink);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center;transition:opacity .4s}
 #splash.gone{opacity:0;pointer-events:none}
 #splashCv{width:min(52vw,208px);height:auto;aspect-ratio:1;border-radius:22px;border:4px solid #fff;background:#2c2a55}
-.sp-t{font-family:var(--display);font-weight:800;font-size:30px;line-height:1.05}
+.sp-t{font-family:var(--display);font-weight:800;font-size:46px;line-height:1}
+.sp-t small{display:block;font-size:16px;font-weight:600;color:#cfcbe8;margin-top:4px}
 .sp-bar{width:min(60vw,240px);height:10px;border-radius:10px;background:#3a3769;overflow:hidden}
 .sp-bar i{display:block;height:100%;width:0;background:#ff6fae;border-radius:10px}
 .sp-s{font-weight:700;font-size:14px;color:#cfcbe8}
@@ -534,7 +535,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
 
 <div id="splash" role="status">
   <canvas id="splashCv" width="208" height="208"></canvas>
-  <div class="sp-t">Coloriage par numéros</div>
+  <div class="sp-t">Pixelo<small>Coloriage par numéros</small></div>
   <div class="sp-bar"><i id="spFill"></i></div>
   <div class="sp-s">Préparation des dessins…</div>
   <div class="sp-by">Fait par Jo pour Georges <span aria-hidden="true">♥</span></div>
@@ -544,7 +545,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
   <div class="ld">
     <div class="ld-top">
       <canvas id="ldLogo" width="52" height="52"></canvas>
-      <div><h1 id="ldTitle">Coloriage par numéros</h1><p class="tag" id="ldTag"></p></div>
+      <div><h1 id="ldTitle">Pixelo</h1><p class="tag" id="ldTag"></p></div>
     </div>
     <div class="ldcard" id="ldChoose" hidden>
       <div class="players" id="ldPlayers"></div>
@@ -573,7 +574,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
     <aside id="drawer" aria-label="Menu des catégories">
       <div class="dr-h">
         <canvas id="logo" width="52" height="52"></canvas>
-        <b>Coloriage<br>par numéros</b>
+        <b>Pixelo</b>
         <button class="icon" id="drawerClose" type="button" aria-label="Masquer le menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
       </div>
       <nav id="nav"></nav>
@@ -2308,7 +2309,7 @@ function renderGallery(){
 
   const pg = $("page"); pg.textContent = ""; pg.classList.remove("shop");
   if(page === "menu"){
-    $("abTitle").textContent = "Coloriage par numéros";
+    $("abTitle").textContent = "Pixelo";
     if(me){
       const hl = el("div","hello"), hc = el("canvas"); drawThumb(hc, avatarOf(me), null, true); hc.dataset.fr = shop.fr;
       const hx = el("div"); hx.append(el("h2",null,`Bonjour, ${me.name} !`), el("small",null,`${fin} dessins terminés · ★ ${fmt(bal)} étoiles · ◆ ${fmt(score)} points`));
@@ -2510,7 +2511,7 @@ function renderGallery(){
       const c = card("Ta partie est prête","Donne ce code à l'autre joueur. La partie démarre dès qu'il l'entre."); c.appendChild(el("div","dcode",lob.code));
       { const link = duelLink(lob.code), qc = link ? qrCanvas(link) : null;
         if(qc){ const qb = el("div","qrbox"); qc.setAttribute("role","img"); qc.setAttribute("aria-label","Code QR pour rejoindre la partie "+lob.code); qb.append(qc, el("p",null,"Ou scanne ce code QR avec l'appareil photo de l'autre téléphone : il rejoint la partie directement."));
-          if(navigator.share){ const sb = el("button","btn line small","Envoyer le lien"); sb.type = "button"; sb.onclick = () => { navigator.share({title:"Duel de coloriage", text:"Rejoins mon duel de coloriage ! Code : "+lob.code, url:link}).catch(()=>{}); }; qb.appendChild(sb); }
+          if(navigator.share){ const sb = el("button","btn line small","Envoyer le lien"); sb.type = "button"; sb.onclick = () => { navigator.share({title:"Pixelo – duel de coloriage", text:"Rejoins mon duel sur Pixelo ! Code : "+lob.code, url:link}).catch(()=>{}); }; qb.appendChild(sb); }
           c.appendChild(qb); }
         else c.appendChild(el("p",null,"Le code QR s'affiche quand tu joues sur le site du jeu (pas dans cet aperçu).")); }
       c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
@@ -4004,7 +4005,7 @@ function showLand(mode){
   $("land").hidden = false; $("ldChoose").hidden = !choose; $("ldForm").hidden = choose; $("ldErr").hidden = true;
   $("syncBox").hidden = mode==="edit" || (mode==="create" && users.length>0); renderSync();
   drawThumb($("ldLogo"), BUILTIN.find(d=>d.id==="O_rose"), null, true);
-  $("ldTitle").textContent = choose ? "Qui joue ?" : mode==="edit" ? "Mon profil" : "Coloriage par numéros";
+  $("ldTitle").textContent = choose ? "Qui joue ?" : mode==="edit" ? "Mon profil" : "Pixelo";
   $("ldTag").textContent = choose ? "Choisis ton joueur pour retrouver tes dessins." : mode==="edit" ? "Change ton prénom ou ton avatar." : users.length ? "Crée un nouveau joueur : il aura ses propres dessins et ses propres points." : "Crée ton joueur, choisis ton avatar, puis commence à colorier.";
   const ft = $("ldFeat"); ft.textContent = "";
   if(mode==="create") [["#ff6fae",`${all().length} dessins à colorier, des pieuvres aux mots en français`],["#4dabf7","Six planètes à compléter pour gagner des points"],["#ffd43b","Un mode libre avec tes couleurs et des dégradés"]].forEach(([c,t])=>{ const li = el("li"), sq = el("i"); sq.style.background = c; li.append(sq, document.createTextNode(t)); ft.appendChild(li); });

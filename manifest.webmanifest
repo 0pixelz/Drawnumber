@@ -1,6 +1,6 @@
 {
-  "name": "Coloriage par numéros",
-  "short_name": "Coloriage",
+  "name": "Pixelo – Coloriage par numéros",
+  "short_name": "Pixelo",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#1d1b3a",
