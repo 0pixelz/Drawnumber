@@ -3045,13 +3045,13 @@ function renderGallery(){
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
     const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Tes étoiles"), el("b",null,`★ ${cStars} / ${LEVELS.length*3}`));
-    hd.append(sc, el("p",null,`Le chrono démarre à ta première case. Finis le dessin à temps pour ouvrir le niveau suivant. Une étoile si tu finis, deux s'il te reste le quart du temps, trois s'il t'en reste la moitié. Chaque étoile rapporte ${STAR_PTS} points.`));
+    hd.append(sc, el("p",null,`Le chrono démarre à ta première case. Finis le dessin à temps pour ouvrir le niveau suivant. Les étapes difficiles (à partir de la 5) sont ouvertes tout de suite : leur premier niveau est toujours jouable. Une étoile si tu finis, deux s'il te reste le quart du temps, trois s'il t'en reste la moitié. Chaque étoile rapporte ${STAR_PTS} points.`));
     b0.append(bk, hd); pg.appendChild(b0);
     CHRONO_DEF.forEach(([stage], si)=>{
       const blk = el("div","block"); blk.appendChild(el("h2",null,`Étape ${si+1} · ${stage}`));
       const g = el("div","grid");
       LEVELS.filter(l=>l.si===si).forEach(l=>{
-        const res = chronoRes[l.i], open = l.i===0 || !!chronoRes[l.i-1];
+        const res = chronoRes[l.i], open = l.i===0 || l.free || !!chronoRes[l.i-1];
         const card = el("div","card lvl" + (open ? "" : " lock")); card.style.setProperty("--c", "#e8590c");
         const th = el("div","th"), cv = el("canvas"); drawThumb(cv, l.d, new Uint8Array(l.d.cells.length), open); th.append(cv, el("span","num",`Niveau ${l.i+1}`));
         const meta = el("div","meta"); meta.append(el("span",null,`Temps : ${mmss(l.T)}`), el("span",null, res ? `reste ${mmss(res.l)}` : open ? `${l.cells} cases` : "Verrouillé"));
@@ -3648,15 +3648,24 @@ const CHRONO_DEF = [
   ["Formes", ["F_cercle","F_carre","F_losange","F_triangle","F_ovale","F_etoile"]],
   ["Lettres et chiffres", ["L_A","N_1","L_B","N_2","L_C","N_3"]],
   ["Nature", ["coeur","champi","fleur","arc","chat","poisson"]],
-  ["Pieuvres", ["O_bebe","O_rose","O_pirate","O_reine","O_arcenciel","O_geante"]]
+  ["Pieuvres", ["O_bebe","O_rose","O_pirate","O_reine","O_arcenciel","O_geante"]],
+  /* Étapes difficiles : grands dessins, beaucoup de couleurs, temps serré (3e valeur = part du temps normal) */
+  ["Animaux · difficile", ["W_lion","W_renard","W_hibou","W_vache","W_elephant","W_girafe"], .72],
+  ["Sports · difficile", ["W_sp_basket","W_sp_soccer","W_sp_casquehockey","W_sp_velo","W_sp_coupe","W_sp_patin"], .68],
+  ["Nature sauvage · difficile", ["W_nat_chene","W_nat_cascade","W_nat_montagne","W_nat_vague","W_nat_couchersoleil","W_nat_aurore"], .64],
+  ["Machines · très difficile", ["W_fusee","W_avion","W_auto","W_camion","W_robot1","W_robot2"], .6],
+  ["Contes · très difficile", ["W_ct_chateau","W_ct_licorne","W_ct_dragon","W_ct_carrosse","W_ct_sorcier","W_ct_palais"], .56],
+  ["Noël · très difficile", ["W_sapinnoel","W_noel_chalet","W_noel_lettre","W_noel_chocolat","W_noel_boule3","W_noel_sapin3"], .52],
+  ["Mosaïques · casse-tête", ["F_mos_damier","F_mos_zigzag","F_mos_losanges","F_mos_tissage","F_mos_confettis","F_mos_pixelsfous"], .85],
+  ["Expert", ["W_astronaute","W_nl_casse","W_ct_fee","W_ct_sirene","W_ct_reineneiges","W_train"], .46]
 ];
 const LEVELS = [];
-CHRONO_DEF.forEach(([stage, ids], si) => ids.forEach(id => {
+CHRONO_DEF.forEach(([stage, ids, k], si) => ids.forEach((id, n) => {
   const d = BUILTIN.find(x=>x.id===id); if(!d) return;
   const cells = [...d.cells].filter(c=>c!==".").length;
   /* temps raisonnable : environ une demi-seconde par case, plus quelques secondes par couleur ; un peu plus serré à chaque étape */
-  const T = Math.round((cells*.55 + d.palette.length*7 + 20) * (1 - si*.05) / 5) * 5;
-  LEVELS.push({i: LEVELS.length, stage, si, d, T, cells});
+  const T = Math.round((cells*.55 + d.palette.length*7 + 20) * (k || (1 - si*.05)) / 5) * 5;
+  LEVELS.push({i: LEVELS.length, stage, si, d, T, cells, free: !!k && n===0});
 }));
 const STAR_PTS = 50;
 let chrono = null, chronoRes = store.get("cpn.chrono", {});
