@@ -224,6 +224,21 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .seekcd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-weight:800;color:var(--muted)}
 .seekcd b{font-family:var(--display);font-size:30px;color:var(--ink);font-variant-numeric:tabular-nums}
 
+/* Éditeur « Mon dessin », partage, album */
+.modes .md:last-child:nth-child(odd){grid-column:1/-1}
+.edwrap{display:flex;flex-direction:column;align-items:center;gap:10px}
+#edcv{width:min(100%,440px);height:auto;border:3px solid var(--ink);border-radius:14px;background:#fff;touch-action:none;image-rendering:pixelated;display:block}
+.edpal{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.edpal button{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);padding:0}
+.edpal button.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink)}
+.edpal button.gm{background:repeating-conic-gradient(#dee2e6 0 25%,#fff 0 50%) 0 0/12px 12px}
+.edname{width:100%;max-width:440px;border:2px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-weight:800;background:var(--card);color:var(--ink)}
+.albd{font-size:12px;font-weight:800;color:var(--muted)}
+.card.alb{cursor:default}
+.card.alb:active{transform:none;box-shadow:0 4px 0 var(--ink)}
+.card.alb .row2{display:flex;gap:6px}
+.card.alb .row2 .btn{flex:1 1 0;padding:7px 4px;font-size:13px}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -654,6 +669,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
             <button class="btn line" id="finAgain" type="button">Recommencer</button>
             <button class="btn line" id="finSay" type="button" hidden>Écouter le mot</button>
             <button class="btn line" id="finRep" type="button">Voir le replay</button>
+            <button class="btn line" id="finImg" type="button">Enregistrer l'image</button>
             <button class="btn ghost" id="finSee" type="button">Voir mon dessin</button>
           </div>
         </div>
@@ -2416,7 +2432,7 @@ const CATS = [["noel","Noël","#b3261e",[["personnages","Personnages"],["decorat
 let filt = "tous", subSel = "", openCat = null;
 const GROUPS = [["De saison",["noel"]],["Apprendre",["lettres","chiffres","mots","imagier","formes"]],["Dessins",["pieuvres","nature","animaux","nourriture","transports","sports","fetes","contes","decouvertes"]],["À moi",["photos"]]];
 let page = store.get("cpn.page", "menu");
-if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && page !== "magasin" && page !== "defis" && page !== "collections" && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
+if(page !== "menu" && page !== "monde" && page !== "libre" && page !== "encours" && page !== "chrono" && page !== "calcul" && page !== "trophees" && page !== "duel" && page !== "etoiles" && page !== "magasin" && page !== "defis" && page !== "collections" && !["creer","album","ecole","histoires"].includes(page) && !CATS.some(c=>c[0]===page) && !PLANETS.some(p=>p.key===page)) page = "menu";
 let cat = store.get("cpn.cat", "pieuvres");
 if(!CATS.some(c=>c[0]===cat)) cat = "pieuvres";
 
@@ -2557,9 +2573,8 @@ function renderGallery(){
   const ic = el("span","ic"); ic.innerHTML = HOME_SVG;
   const ht = el("span"); ht.append(el("b",null,"Menu principal"), el("small",null, me ? `Bonjour, ${me.name} !` : "Accueil"));
   hb.append(ic, ht); hb.onclick = () => setPage("menu"); nav.appendChild(hb);
-  nav.appendChild(el("div","dr-l","Modes de jeu"));
-  const mg = el("div","modes");
-  [["monde","Monde",`◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
+  const albumN = items.filter(i=>i.pct===100).length;
+  const tilesAll = [["monde","Monde",`◆ ${fmt(world.reduce((a,w)=>a+w.pts,0))} points`,"#7048e8",'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3 3 14 0 17M12 3.5c-3 3-3 14 0 17"/>',inWorld],
    ["chrono","Chrono",`★ ${cStars} / ${LEVELS.length*3} étoiles`,"#e8590c",'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.5 1.5M9.5 3h5M12 3v3"/>',page==="chrono"],
    ["libre","Libre","Tes couleurs","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',page==="libre"],
    ["duel","Duel",`${duelRec.w} ${duelRec.w>1 ? "victoires" : "victoire"}`,"#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',page==="duel"],
@@ -2568,13 +2583,20 @@ function renderGallery(){
    ["encours","En cours", ongoing.length ? `${ongoing.length} ${ongoing.length>1 ? "dessins" : "dessin"}` : "Aucun dessin","#1971c2",'<path d="M5 4h14M5 20h14M7 4c0 5 10 5 10 0M7 20c0-5 10-5 10 0"/>',page==="encours"],
    ["magasin","Magasin",`★ ${fmt(bal)} à dépenser`,"#e64980",'<path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2"/>',page==="magasin"],
    ["defis","Défis et cadeau", toClaim ? `${toClaim} à réclamer` : `${chNow.got.filter(Boolean).length} / 3 défis faits`,"#7048e8",'<path d="M4 10h16v10H4zM3 6h18v4H3zM12 6v14M12 6c-2-4-6-3-5 0M12 6c2-4 6-3 5 0"/>',page==="defis"],
-   ["collections","Collections", colReady ? `${colReady} à réclamer` : `${colDone} / ${COLS.length} complètes`,"#2f9e44",'<path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v6H4zM13 14h7v6h-7z"/>',page==="collections"]
-  ].forEach(([key,label,sub,color,path,on])=>{
-    const b = el("button","md" + (on ? " on" : "")); b.type = "button"; b.style.setProperty("--c", color); if(on) b.setAttribute("aria-current","page");
-    const i2 = el("span","ic"); i2.innerHTML = SVG(path);
-    b.append(i2, el("b",null,label), el("small",null,sub)); b.onclick = () => setPage(key); mg.appendChild(b);
+   ["collections","Collections", colReady ? `${colReady} à réclamer` : `${colDone} / ${COLS.length} complètes`,"#2f9e44",'<path d="M4 5h7v7H4zM13 5h7v7h-7zM4 14h7v6H4zM13 14h7v6h-7z"/>',page==="collections"],
+   ["ecole","École","Dictée, lettres, anglais","#1c7ed6",'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.500V16c0 1.500 2.500 3 5 3s5-1.500 5-3v-4.500M21 9v6"/>',page==="ecole"],
+   ["histoires","Histoires","À lire et à colorier","#ae3ec9",'<path d="M4 5c3-1 5-1 8 1 3-2 5-2 8-1v14c-3-1-5-1-8 1-3-2-5-2-8-1z"/><path d="M12 6v14"/>',page==="histoires"],
+   ["creer","Mon dessin","Dessine et partage","#f08c00",'<path d="M4 20l4-1L19 8l-3-3L5 16z"/><path d="M14 7l3 3"/>',page==="creer"],
+   ["album","Album",`${albumN} ${albumN>1 ? "souvenirs" : "souvenir"}`,"#0ca678",'<rect x="4" y="5" width="16" height="14" rx="2"/><path d="M4 15l4-4 4 4 3-3 5 5"/><circle cx="15" cy="9" r="1.500"/>',page==="album"]
+  ];
+  [["Jouer",["monde","chrono","libre","duel"]],["Apprendre",["calcul","ecole","histoires"]],["Créer et garder",["creer","album","encours"]],["Récompenses",["defis","trophees","collections","magasin"]]].forEach(([gl, keys])=>{
+    nav.appendChild(el("div","dr-l",gl)); const mg = el("div","modes");
+    keys.forEach(k=>{ const t = tilesAll.find(x=>x[0]===k); if(!t) return; const [key,label,sub,color,path,on] = t;
+      const b = el("button","md" + (on ? " on" : "")); b.type = "button"; b.style.setProperty("--c", color); if(on) b.setAttribute("aria-current","page");
+      const i2 = el("span","ic"); i2.innerHTML = SVG(path);
+      b.append(i2, el("b",null,label), el("small",null,sub)); b.onclick = () => setPage(key); mg.appendChild(b); });
+    nav.appendChild(mg);
   });
-  nav.appendChild(mg);
   const CHEV = SVG('<path d="M9 6l6 6-6 6"/>');
   for(const [glabel, keys] of GROUPS){
     nav.appendChild(el("div","dr-l",glabel));
@@ -2870,6 +2892,87 @@ function renderGallery(){
       pg.appendChild(bl);
       if(me && duelRec.w+duelRec.l && !board.sent){ board.sent = true; reportDuel().then(()=>loadBoard(true)); } else loadBoard(false);   /* envoie une fois les duels déjà joués */
     }
+    return;
+  }
+
+  /* Mon dessin : éditeur et partage */
+  if(page === "creer"){
+    $("abTitle").textContent = "Mon dessin";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"); hd.appendChild(el("p",null,"Invente ton propre coloriage par numéros : dessine sur la grille, enregistre, puis colorie-le ou envoie-le à un ami avec un code."));
+    b0.append(bk, hd); if(shr.msg){ const pm = el("p","err",shr.msg); if(/reçu/.test(shr.msg)) pm.style.color = "#2b8a3e"; b0.appendChild(pm); } pg.appendChild(b0);
+    const mk = (label, cls, fn, parent) => { const b = el("button","btn "+cls, label); b.type = "button"; b.onclick = fn; parent.appendChild(b); return b; };
+    if(shr.mode==="send"){
+      const b1 = el("div","block"); b1.appendChild(el("h2",null,`Envoyer « ${shr.name} »`));
+      const c = el("div","dcard"); c.append(el("p",null,"Ton ami ouvre Pixelo, va dans « Mon dessin », touche « Recevoir un dessin » et entre ce code :"), el("div","dcode",shr.code));
+      const link = shareLink(shr.code), qc = link ? qrCanvas(link) : null;
+      if(qc){ const qb = el("div","qrbox"); qb.append(qc, el("p",null,"Ou il scanne ce code QR avec l'appareil photo.")); c.appendChild(qb); }
+      c.appendChild(el("p",null,"En attente de ton ami…")); mk("Annuler","ghost",()=>{ shrStop(""); renderGallery(); },c); b1.appendChild(c); pg.appendChild(b1); return;
+    }
+    if(shr.mode==="recv"){
+      const b1 = el("div","block"); const c = el("div","dcard"); c.append(el("h3",null,"Réception du dessin"), el("p",null,"Recherche du dessin "+shr.code+"…")); mk("Annuler","ghost",()=>{ shrStop(""); renderGallery(); },c); b1.appendChild(c); pg.appendChild(b1); return;
+    }
+    const b1 = el("div","block"); b1.appendChild(el("h2",null,"Dessiner"));
+    const wrap = el("div","edwrap"), seg = el("div","quick"); seg.style.cssText = "display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;justify-content:center";
+    [12,16,20].forEach(n=>{ const b = mk(`${n} × ${n}`, ed.n===n ? "pink small" : "line small", ()=>{ edResize(n); renderGallery(); }, seg); b.setAttribute("aria-pressed", ed.n===n); });
+    const cv = el("canvas"); cv.id = "edcv"; cv.setAttribute("aria-label","Grille pour dessiner"); edDraw(cv);
+    let down = false, lastI = -1;
+    const at = e => { const r = cv.getBoundingClientRect(), x = Math.floor((e.clientX-r.left)/r.width*ed.n), y = Math.floor((e.clientY-r.top)/r.height*ed.n); return x<0||y<0||x>=ed.n||y>=ed.n ? -1 : y*ed.n+x; };
+    const dab = i => { if(i<0 || ed.cells[i]===ed.col) return; ed.cells[i] = ed.col; edDraw(cv); edSave(); if(ed.col>=0) sPaint(); };
+    cv.onpointerdown = e => { e.preventDefault(); down = true; try{ cv.setPointerCapture(e.pointerId); }catch(x){} lastI = at(e); dab(lastI); };
+    cv.onpointermove = e => { if(!down) return; const i = at(e); if(i<0 || i===lastI) return;
+      if(lastI>=0){ const x0 = lastI%ed.n, y0 = Math.floor(lastI/ed.n), x1 = i%ed.n, y1 = Math.floor(i/ed.n), st = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)); for(let k=1;k<=st;k++) dab(Math.round(y0+(y1-y0)*k/st)*ed.n+Math.round(x0+(x1-x0)*k/st)); } else dab(i); lastI = i; };
+    cv.onpointerup = cv.onpointercancel = () => { down = false; lastI = -1; };
+    const pal = el("div","edpal");
+    ED_COLS.forEach((h,k)=>{ const b = el("button", ed.col===k ? "on" : ""); b.type = "button"; b.style.background = h; b.setAttribute("aria-label","Couleur "+(k+1)); b.setAttribute("aria-pressed", ed.col===k); b.onclick = () => { ed.col = k; pal.querySelectorAll("button").forEach((x,j)=>x.classList.toggle("on", j===k)); }; pal.appendChild(b); });
+    { const g = el("button","gm" + (ed.col===-1 ? " on" : "")); g.type = "button"; g.setAttribute("aria-label","Gomme"); g.onclick = () => { ed.col = -1; pal.querySelectorAll("button").forEach(x=>x.classList.toggle("on", x===g)); }; pal.appendChild(g); }
+    const nm = el("input","edname"); nm.type = "text"; nm.maxLength = 24; nm.placeholder = "Nom de ton dessin"; nm.value = ed.name||""; nm.setAttribute("aria-label","Nom de ton dessin"); nm.oninput = () => { ed.name = nm.value; edSave(); };
+    const er = el("p","err",""); er.hidden = true;
+    const row = el("div","quick");
+    mk("Enregistrer mon dessin","pink",()=>{ const m = edKeep(); if(m){ er.textContent = m; er.hidden = false; } else { sWin(); shr.msg = ""; renderGallery(); } },row);
+    mk("Tout effacer","line",()=>{ ed.cells.fill(-1); edDraw(cv); edSave(); },row);
+    wrap.append(seg, cv, pal, el("p","empty","Les cases vides (damier clair) ne feront pas partie du coloriage."), nm, er, row); b1.appendChild(wrap); pg.appendChild(b1);
+    const mine = customs.filter(d=>d.made);
+    const b2 = el("div","block"); b2.appendChild(el("h2",null,"Mes dessins"));
+    if(!mine.length) b2.appendChild(el("p","empty","Tes dessins enregistrés et ceux reçus de tes amis apparaîtront ici."));
+    else { const g = el("div","grid");
+      mine.slice().reverse().forEach(d=>{ const dn = loadDone(d), st = stats(d, dn), card = el("div","card alb"), th = el("div","th"), c2 = el("canvas"); drawThumb(c2, d, null, true); th.appendChild(c2);
+        if(st.ok===st.tot && st.tot) th.appendChild(el("span","badge","✓ Colorié"));
+        const r2 = el("div","row2"); mk("Colorier","small pink",()=>openDrawing(d),r2); mk("Envoyer","small line",()=>shareSend(d),r2);
+        const rm = mk("Supprimer","small ghost",()=>{ if(rm.dataset.sure){ customs = customs.filter(x=>x.id!==d.id); store.set("cpn.custom", customs); store.del("cpn.p."+d.id); store.del("cpn.r."+d.id); store.del("cpn.t."+d.id); renderGallery(); } else { rm.dataset.sure = "1"; rm.textContent = "Sûr ? Supprimer"; setTimeout(()=>{ delete rm.dataset.sure; rm.textContent = "Supprimer"; }, 3000); } },card);
+        card.append(th, el("div","nm",d.name), el("div","albd",`${d.cols} × ${d.rows} · ${d.palette.length} couleurs`+(d.from ? ` · de ${d.from}` : "")), r2, rm); g.appendChild(card); });
+      b2.appendChild(g); }
+    pg.appendChild(b2);
+    const b3 = el("div","block"); b3.appendChild(el("h2",null,"Recevoir un dessin"));
+    const rc = el("div","dcard"); rc.appendChild(el("p",null,"Ton ami t'envoie un dessin ? Entre son code à 4 chiffres."));
+    const rr = el("div","drow"), ri = el("input"); ri.type = "text"; ri.inputMode = "numeric"; ri.maxLength = 4; ri.placeholder = "Code"; ri.setAttribute("aria-label","Code du dessin"); rr.appendChild(ri); mk("Recevoir","pink",()=>shareRecv(ri.value),rr);
+    ri.onkeydown = e => { if(e.key==="Enter") shareRecv(ri.value); }; rc.appendChild(rr); b3.appendChild(rc); pg.appendChild(b3);
+    return;
+  }
+
+  /* Album souvenir */
+  if(page === "album"){
+    $("abTitle").textContent = "Album";
+    const when = {}; for(const [t,k,ref] of starLog) if(k==="d" && !when[ref]) when[ref] = t;
+    const fin = items.filter(i=>i.pct===100).sort((a,b)=>(when[b.d.id]||0)-(when[a.d.id]||0));
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow","Dessins terminés"), el("b",null,fmt(fin.length)));
+    hd.append(sc, el("p",null,"Tous tes dessins finis, du plus récent au plus ancien. Revois-les en replay ou enregistre l'image pour l'envoyer ou l'imprimer."));
+    b0.append(bk, hd); pg.appendChild(b0);
+    const b1 = el("div","block");
+    if(!fin.length) b1.appendChild(el("p","empty","Aucun dessin terminé pour l'instant. Finis ton premier dessin pour commencer ton album !"));
+    else { const g = el("div","grid");
+      fin.slice(0, albumMax).forEach(({d})=>{ const card = el("div","card alb"), th = el("div","th"), c2 = el("canvas"); drawThumb(c2, d, null, true); th.appendChild(c2);
+        const tt = +store.get("cpn.t."+d.id, 0) || 0, r2 = el("div","row2");
+        const nm2 = el("div","nm"); nameInto(nm2, d);
+        const rb = el("button","btn small line","Replay"); rb.type = "button"; rb.onclick = () => openSoloReplay(d, loadDone(d), loadRec(d, false));
+        const ib = el("button","btn small pink","Image"); ib.type = "button"; ib.onclick = () => saveImage(d, null); r2.append(rb, ib);
+        card.append(th, nm2, el("div","albd", (when[d.id] ? dateFr(when[d.id]) : "Avant l'album") + (tt ? " · "+fmtDur(tt) : "")), r2); g.appendChild(card); });
+      b1.appendChild(g);
+      if(fin.length>albumMax){ const more = el("button","btn line",`Voir ${Math.min(40, fin.length-albumMax)} de plus`); more.type = "button"; more.style.alignSelf = "center"; more.onclick = () => { albumMax += 40; renderGallery(); }; b1.appendChild(more); } }
+    pg.appendChild(b1);
     return;
   }
 
@@ -3370,7 +3473,7 @@ const SHOP_FX = [["","Étoile",0],["coeur","Cœurs",10],["bulle","Bulles",10],["
 const SHOP_SND = [["","Clochette",0],["xylo","Xylophone",8],["bit","Jeu vidéo",12],["bulle","Bulles",15],["piano","Piano",20]];
 const SHOP_CF = [["","Confettis",0],["etoile","Étoiles",10],["coeur","Cœurs",10],["neige","Neige",15],["arc","Arc-en-ciel",25]];
 const SHOP_TH = [["","Classique",0,"#1d1b3a","#f3f1fa","#c81fd0"],["ocean","Océan",15,"#0b3d70","#e7f5ff","#1971c2"],["foret","Forêt",15,"#1b4332","#ebfbee","#2f9e44"],["soleil","Coucher de soleil",20,"#7a2e0e","#fff4e6","#e8590c"],["raisin","Raisin",20,"#4a1d6e","#f8f0fc","#9c36b5"],["nuit","Nuit",30,"#07070d","#e3e6ee","#364fc7"]];
-let shop = store.get("cpn.shop", null), lastStars = 0, shopTab = "av";
+let shop = store.get("cpn.shop", null), lastStars = 0, shopTab = "av", albumMax = 40;
 if(!shop || typeof shop!=="object" || !Array.isArray(shop.own)) shop = {spent:0, own:[], fr:"", bd:""};
 shop.spent = Math.max(0, +shop.spent||0); shop.fr = shop.fr||""; shop.bd = shop.bd||"";
 if(!SHOP_FR.some(f=>f[0]===shop.fr)) shop.fr = ""; if(!SHOP_BD.some(f=>f[0]===shop.bd)) shop.bd = "";
@@ -3993,6 +4096,7 @@ function replayCur(){
   else openSoloReplay(cur, done, rec);
 }
 $("finRep").onclick = replayCur; $("winRep").onclick = replayCur;
+$("finImg").onclick = () => { if(cur && !free) saveImage(cur, done); };
 
 /* ---------- Jeu ---------- */
 const cv = $("cv"), ctx = cv.getContext("2d"), stage = $("stage");
@@ -4226,7 +4330,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ hideFin(); closeReplay(); if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ hideFin(); closeReplay(); if(shr.mode) shrStop(""); if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
@@ -4463,6 +4567,76 @@ function duelLink(code){ try{ if(!/^https?:$/.test(location.protocol) || window.
   };
   addEventListener("resize", fix); addEventListener("orientationchange", () => setTimeout(fix, 300)); addEventListener("pageshow", fix); fix(); setTimeout(fix, 600);
 })();
+
+const dateFr = t => { const d = new Date(t); return d.toLocaleDateString("fr-CA",{day:"numeric",month:"long"})+", "+String(d.getHours()).padStart(2,"0")+" h "+String(d.getMinutes()).padStart(2,"0"); };
+/* ---------- Mon dessin : éditeur de grille, partage par code, image à garder ---------- */
+const ED_COLS = ["#e03131","#ff922b","#ffd43b","#51cf66","#2f9e44","#22b8cf","#4dabf7","#7048e8","#f783ac","#8b5a2b","#1d1b3a","#ffffff","#adb5bd","#ffd8b5"];
+let ed = store.get("cpn.draft", null);
+if(!ed || !Array.isArray(ed.cells) || ![12,16,20].includes(ed.n) || ed.cells.length!==ed.n*ed.n) ed = {n:16, cells:new Array(256).fill(-1), col:0, name:""};
+let edT = 0; const edSave = () => { clearTimeout(edT); edT = setTimeout(()=>store.set("cpn.draft", ed), 400); };
+function edResize(n){ const o = ed.cells, on = ed.n, c = new Array(n*n).fill(-1); for(let y=0;y<Math.min(n,on);y++) for(let x=0;x<Math.min(n,on);x++) c[y*n+x] = o[y*on+x]; ed.n = n; ed.cells = c; edSave(); }
+function edDraw(cv){
+  const n = ed.n, K = 24; if(cv.width!==n*K){ cv.width = n*K; cv.height = n*K; } const c = cv.getContext("2d");
+  for(let i=0;i<n*n;i++){ const x = i%n, y = Math.floor(i/n), v = ed.cells[i]; c.fillStyle = v<0 ? ((x+y)%2 ? "#f4f3fa" : "#ffffff") : ED_COLS[v]; c.fillRect(x*K, y*K, K, K); }
+  c.strokeStyle = "rgba(29,27,58,.12)"; c.lineWidth = 1; c.beginPath(); for(let k=1;k<n;k++){ c.moveTo(k*K+.5,0); c.lineTo(k*K+.5,n*K); c.moveTo(0,k*K+.5); c.lineTo(n*K,k*K+.5); } c.stroke();
+}
+function edBuild(){
+  const used = []; for(const v of ed.cells) if(v>=0 && !used.includes(v)) used.push(v);
+  const cells = ed.cells.map(v=>v<0 ? "." : CH[used.indexOf(v)]).join("");
+  return {used, n: ed.cells.filter(v=>v>=0).length, d:{cols:ed.n, rows:ed.n, palette:used.map(v=>ED_COLS[v]), cells}};
+}
+function edKeep(){
+  const b = edBuild(); if(b.used.length<2 || b.n<8) return "Colorie au moins 8 cases avec 2 couleurs différentes.";
+  const d = Object.assign({id:"c"+Date.now().toString(36), name:(ed.name||"").trim().slice(0,24) || "Mon dessin", custom:true, made:true}, b.d);
+  customs.push(d); store.set("cpn.custom", customs); ed = {n:ed.n, cells:new Array(ed.n*ed.n).fill(-1), col:ed.col, name:""}; store.set("cpn.draft", ed); return "";
+}
+const validDrawing = d => d && Number.isInteger(d.cols) && Number.isInteger(d.rows) && d.cols>=4 && d.rows>=4 && d.cols<=32 && d.rows<=32 && Array.isArray(d.palette) && d.palette.length>=1 && d.palette.length<=CH.length
+  && d.palette.every(h=>/^#[0-9a-f]{6}$/i.test(h)) && typeof d.cells==="string" && d.cells.length===d.cols*d.rows && [...d.cells].every(ch=>ch==="." || (CH.indexOf(ch)>=0 && CH.indexOf(ch)<d.palette.length));
+let shr = {mode:"", code:"", net:null, timers:[], msg:""};
+function shrStop(msg){ shr.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); if(shr.net) shr.net.close(); shr = {mode:"", code:"", net:null, timers:[], msg:msg||""}; }
+function shareSend(d){
+  shrStop(); const code = String(1000+Math.floor(Math.random()*9000)); shr.mode = "send"; shr.code = code; shr.name = d.name;
+  const pay = {t:"draw", from: me ? me.name : "Un ami", d:{name:d.name, cols:d.cols, rows:d.rows, palette:d.palette, cells:d.cells}};
+  shr.net = Net("coloriage-share-"+code, m => { if(m.t==="got" && shr.mode==="send"){ shrStop(`${String(m.by||"Ton ami").slice(0,16)} a reçu « ${d.name} » !`); sWin(); renderGallery(); } },
+    () => { const go = () => { if(shr.net && shr.mode==="send") shr.net.send(pay); }; go(); shr.timers.push(setInterval(go, 1500)); },
+    () => { shrStop("Connexion impossible. Vérifie Internet et réessaie."); renderGallery(); });
+  shr.timers.push(setTimeout(()=>{ if(shr.mode==="send"){ shrStop("Personne n'a pris le dessin. Réessaie quand ton ami est prêt."); renderGallery(); } }, 180000));
+  renderGallery();
+}
+function shareRecv(code){
+  code = String(code||"").replace(/\D/g,""); if(code.length!==4){ shr.msg = "Le code a 4 chiffres."; renderGallery(); return; }
+  shrStop(); shr.mode = "recv"; shr.code = code;
+  shr.net = Net("coloriage-share-"+code, m => {
+    if(m.t!=="draw" || shr.mode!=="recv" || !validDrawing(m.d)) return;
+    const d = {id:"c"+Date.now().toString(36), name:String(m.d.name||"Dessin reçu").slice(0,24), custom:true, made:true, from:String(m.from||"").slice(0,16), cols:m.d.cols, rows:m.d.rows, palette:m.d.palette.map(h=>h.toLowerCase()), cells:m.d.cells};
+    customs.push(d); store.set("cpn.custom", customs); shr.net.send({t:"got", by: me ? me.name : "Ton ami"}); const n = shr.net; shr.net = null; setTimeout(()=>n.close(), 400);
+    shrStop(`Dessin reçu : « ${d.name} »${d.from ? " de "+d.from : ""}. Il est dans « Mes dessins ».`); sWin(); renderGallery();
+  }, () => {}, () => { shrStop("Connexion impossible. Vérifie Internet et réessaie."); renderGallery(); });
+  shr.timers.push(setTimeout(()=>{ if(shr.mode==="recv"){ shrStop("Aucun dessin trouvé avec ce code."); renderGallery(); } }, 30000));
+  renderGallery();
+}
+function shareLink(code){ try{ if(!/^https?:$/.test(location.protocol) || window.top!==window) return ""; }catch(e){ return ""; } return location.origin+location.pathname+"?recu="+code; }
+(function(){
+  let code = ""; try{ code = (new URLSearchParams(location.search).get("recu")||"").replace(/\D/g,""); }catch(e){}
+  if(code.length!==4) return;
+  const t = setInterval(()=>{ const sp = $("splash"); if(!me || !$("land").hidden || (sp && !sp.hidden && getComputedStyle(sp).display!=="none")) return; clearInterval(t);
+    try{ history.replaceState(null, "", location.pathname); }catch(e){}
+    if(cur) goHome(); page = "creer"; store.set("cpn.page", "creer"); shareRecv(code); }, 400);
+})();
+/* Image d'un dessin terminé, à enregistrer ou à envoyer */
+function saveImage(d, dn){
+  const K = Math.max(8, Math.floor(900/Math.max(d.cols,d.rows))), M = 30, W = d.cols*K+M*2, Hh = d.rows*K+M*2+70, cv = document.createElement("canvas"); cv.width = W; cv.height = Hh;
+  const c = cv.getContext("2d"); c.fillStyle = "#ffffff"; c.fillRect(0,0,W,Hh);
+  for(let i=0;i<d.cells.length;i++){ const ch = d.cells[i]; if(ch==="." || (dn && !dn[i])) continue; c.fillStyle = d.palette[CH.indexOf(ch)]; c.fillRect(M+(i%d.cols)*K, M+Math.floor(i/d.cols)*K, K, K); }
+  c.strokeStyle = "#1d1b3a"; c.lineWidth = 6; c.strokeRect(M-3, M-3, d.cols*K+6, d.rows*K+6);
+  c.fillStyle = "#1d1b3a"; c.textBaseline = "middle"; c.font = "800 34px 'Baloo 2', system-ui, sans-serif"; c.fillText(d.name, M, Hh-48, W-M*2-150);
+  c.fillStyle = "#c81fd0"; c.textAlign = "right"; c.font = "800 26px 'Baloo 2', system-ui, sans-serif"; c.fillText("Pixelo", W-M, Hh-48);
+  cv.toBlob(async blob => {
+    if(!blob) return; const fname = "pixelo-"+(d.name||"dessin").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";
+    try{ const f = new File([blob], fname, {type:"image/png"}); if(navigator.canShare && navigator.canShare({files:[f]})){ await navigator.share({files:[f], title:d.name}); return; } }catch(e){ if(e && e.name==="AbortError") return; }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = fname; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }, "image/png");
+}
 
 /* ---------- Écran de chargement ---------- */
 (function(){
