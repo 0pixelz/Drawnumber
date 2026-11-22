@@ -221,6 +221,9 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .wico{width:26px;height:26px;border-radius:7px;flex:0 0 auto;vertical-align:-7px;margin-right:6px;display:inline-block;image-rendering:pixelated}
 #pname .wico{width:24px;height:24px;vertical-align:-5px}
 
+.seekcd{display:flex;align-items:baseline;justify-content:space-between;gap:10px;font-weight:800;color:var(--muted)}
+.seekcd b{font-family:var(--display);font-size:30px;color:var(--ink);font-variant-numeric:tabular-nums}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -2816,9 +2819,13 @@ function renderGallery(){
         else c.appendChild(el("p",null,"Le code QR s'affiche quand tu joues sur le site du jeu (pas dans cet aperçu).")); }
       c.appendChild(el("p",null,"En attente de l'autre joueur…")); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
     } else if(lob.view==="joining"){
-      const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
+      miniPad(g); const c = card("Recherche de la partie","Connexion à la partie "+lob.code+"…"); B("Annuler","ghost",()=>lobReset(""),c);
     } else if(lob.view==="seek"){
-      const c = card("Recherche d'un joueur","On cherche quelqu'un qui veut jouer en ce moment. Si personne ne répond en 15 secondes, tu joueras contre le robot."); B("Annuler","ghost",()=>lobReset(""),c); miniPad(g);
+      miniPad(g);
+      const c = card("Recherche d'un joueur","Si personne ne répond à temps, tu joueras contre le robot.");
+      const cd = el("div","seekcd"); cd.append(el("span",null,"Robot dans"), el("b",null,mmss(Math.max(0,(lob.until-Date.now())/1000)))); cd.querySelector("b").id = "seekLeft"; cd.setAttribute("aria-live","off");
+      const sb = el("div","bar"); const sbi = el("i"); sbi.id = "seekBar"; sbi.style.background = "var(--accent)"; sbi.style.width = Math.max(0, Math.min(100, (lob.until-Date.now())/SEEK_MS*100))+"%"; sb.appendChild(sbi);
+      c.append(cd, sb); B("Annuler","ghost",()=>lobReset(""),c);
     } else {
       const c0 = card("Options de la partie","Pour jouer avec un ami ou contre le robot. La recherche d'un joueur reste en une manche, dessin au hasard.");
       const seg = el("div","quick"); c0.appendChild(seg);
@@ -3557,8 +3564,10 @@ function duelJoin(code){
   lob.net = guestRoom("coloriage-duel-"+code);
   lob.timers.push(setTimeout(()=>lobReset("Aucune partie trouvée avec ce code. Vérifie-le et réessaie."), 12000)); renderGallery();
 }
+const SEEK_MS = 60000;
 function duelSeek(){
-  lobClear(); lob.view = "seek"; lob.msg = ""; let matched = false;
+  lobClear(); lob.view = "seek"; lob.msg = ""; lob.until = Date.now()+SEEK_MS; let matched = false;
+  lob.timers.push(setInterval(()=>{ const n = $("seekLeft"), b = $("seekBar"), left = Math.max(0, lob.until-Date.now()); if(n) n.textContent = mmss(left/1000); if(b) b.style.width = (left/SEEK_MS*100)+"%"; }, 500));
   const go = fn => { matched = true; const old = lob.net; lob.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); lob.timers = []; lob.net = fn(); if(old) old.close();
     lob.timers.push(setTimeout(()=>{ lobClear(); startBot(1, "Personne n'a répondu : tu joues contre le robot."); }, 9000)); };
   lob.net = Net("coloriage-lobby", m => {
@@ -3567,8 +3576,9 @@ function duelSeek(){
     else if(m.t==="match" && m.to===SID && m.room) go(()=>guestRoom(m.room));
   }, () => { const ping = () => { if(!matched && lob.net) lob.net.send({t:"seek", p:duelSelf()}); }; ping(); lob.timers.push(setInterval(ping, 1500)); },
   () => { if(!matched){ lobClear(); startBot(1, "Connexion impossible : tu joues contre le robot."); } });
-  lob.timers.push(setTimeout(()=>{ if(!matched){ lobClear(); startBot(1, "Aucun joueur trouvé pour l'instant : tu joues contre le robot."); } }, 15000));
+  lob.timers.push(setTimeout(()=>{ if(!matched){ lobClear(); startBot(1, "Aucun joueur trouvé pour l'instant : tu joues contre le robot."); } }, SEEK_MS));
   renderGallery();
+  setTimeout(()=>{ const pc = document.querySelector(".padcv"); if(pc && lob.view==="seek"){ const card = pc.closest(".dcard") || pc; card.scrollIntoView({block:"start"}); } }, 60);
 }
 function startBot(level, note){
   lobClear0(null);
