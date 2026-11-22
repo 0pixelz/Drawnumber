@@ -20,6 +20,7 @@ Jeu de coloriage par numéros, en une seule page web (`index.html`) accompagnée
 - Étoiles : chaque dessin vaut de 1 à 5 étoiles selon sa difficulté (cases × couleurs), gagnées quand il est terminé
 - Magasin : les étoiles se dépensent en avatars (12), cadres d'avatar (9) et tableaux de fond pour dessiner (10) ; achats enregistrés par joueur (`cpn.shop`)
 - Replay : l'ordre des cases coloriées est gardé et rejoué (pause, vitesse ×1/×2/×4) ; en duel, les deux dessins se rejouent côte à côte (12 derniers duels gardés sur l'appareil)
+- Étoiles bonus : chaque trophée gagné se réclame (★ 2 à ★ 60 selon la difficulté), cadeau du jour avec série de connexions (★ 1 à ★ 10 sur 7 jours), trois défis du jour tirés au hasard (★ 3 à ★ 8)
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
