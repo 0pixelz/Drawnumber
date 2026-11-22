@@ -239,6 +239,47 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .card.alb .row2{display:flex;gap:6px}
 .card.alb .row2 .btn{flex:1 1 0;padding:7px 4px;font-size:13px}
 
+/* Accueil simplifié, compagnon, école, histoires, tutoriel */
+.big3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.big3 button{border:3px solid var(--ink);border-radius:22px;background:var(--c);color:#fff;box-shadow:0 5px 0 var(--ink);padding:14px 6px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;font-family:var(--display);font-weight:800;font-size:17px;line-height:1.05;min-width:0}
+.big3 button:active{transform:translateY(3px);box-shadow:0 2px 0 var(--ink)}
+.big3 svg{width:38px;height:38px}
+.big3 small{font-family:var(--body,inherit);font-size:11px;font-weight:800;opacity:.9}
+.pet{background:var(--card);border:2px solid var(--ink);border-radius:20px;box-shadow:0 4px 0 var(--ink);padding:12px;display:flex;gap:12px;align-items:center}
+.pet canvas{width:84px;height:84px;border-radius:20px;flex:0 0 auto;border:3px solid var(--ink);background-color:#eceaf5}
+.pet .pt{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.pet .pt b{font-family:var(--display);font-weight:800;font-size:21px;line-height:1.1}
+.pet .pt small{font-size:13px;font-weight:800;color:var(--muted)}
+.pet input{border:2px solid var(--line);border-radius:10px;padding:6px 8px;font:inherit;font-weight:800;width:100%;background:var(--card);color:var(--ink)}
+.fin-pet{font-weight:800;font-size:14px;color:var(--muted);margin:0}
+.qz{display:flex;flex-direction:column;gap:12px;align-items:center}
+.qz .ask{font-family:var(--display);font-weight:800;font-size:24px;text-align:center;line-height:1.15}
+.qz .askpic{width:140px;height:140px;border-radius:22px;border:3px solid var(--ink);image-rendering:pixelated}
+.qz .opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;width:100%;max-width:420px}
+.qz .opts button{border:3px solid var(--ink);border-radius:18px;background:var(--card);box-shadow:0 4px 0 var(--ink);padding:8px;font-family:var(--display);font-weight:800;font-size:40px;color:var(--ink);display:grid;place-items:center;min-height:96px}
+.qz .opts canvas{width:86px;height:86px;border-radius:14px;image-rendering:pixelated;display:block}
+.qz .opts button.ok{background:#d3f9d8;border-color:var(--good);box-shadow:0 4px 0 var(--good)}
+.qz .opts button.ko{background:#ffe3e3;border-color:#e03131;box-shadow:0 4px 0 #e03131;opacity:.6}
+.stch{display:flex;gap:10px;align-items:center;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:8px}
+.stch.open{border-color:var(--ink);box-shadow:0 3px 0 var(--ink)}
+.stch canvas{width:64px;height:64px;border-radius:12px;flex:0 0 auto;background:#eceaf5}
+.stch .tx{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink);line-height:1.3}
+.stch .tx b{display:block;font-family:var(--display);font-size:16px}
+.stch .bt{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
+.stch .btn{padding:6px 10px;font-size:13px}
+.stch.lock{opacity:.55}
+#tuto{position:fixed;inset:0;z-index:9;background:rgba(29,27,58,.9);display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--st)) 16px calc(16px + var(--sb))}
+#tuto[hidden]{display:none}
+.tu-card{background:var(--card);border:3px solid var(--ink);border-radius:28px;box-shadow:0 7px 0 #0d0c20;padding:18px;width:100%;max-width:400px;display:flex;flex-direction:column;gap:12px;align-items:center;text-align:center}
+.tu-card canvas{width:150px;height:150px;border-radius:26px;border:3px solid var(--ink);image-rendering:pixelated}
+.tu-card h2{font-family:var(--display);font-weight:800;font-size:26px;margin:0;line-height:1.1}
+.tu-card p{margin:0;font-weight:700;font-size:16px;color:var(--muted);line-height:1.35}
+.tu-dots{display:flex;gap:6px}
+.tu-dots i{width:10px;height:10px;border-radius:50%;background:var(--line)}
+.tu-dots i.on{background:var(--accent)}
+.tu-btns{display:flex;gap:8px;width:100%}
+.tu-btns .btn{flex:1 1 0}
+
 /* Accueil : tiroir de catégories (masquable) + contenu */
 #home{overflow:hidden}
 .shell{flex:1;min-height:0;display:flex;position:relative}
@@ -662,6 +703,7 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
           <div class="fin-pic"><canvas id="finCv" width="8" height="8"></canvas></div>
           <div class="fin-stars" id="finStars"></div>
           <p id="finTime" hidden></p>
+          <p class="fin-pet" id="finPet" hidden></p>
           <p id="finTxt"></p>
           <div class="fin-btns">
             <button class="btn pink" id="finNext" type="button" hidden></button>
@@ -736,6 +778,10 @@ select,input[type=text]{font:inherit;font-weight:700;color:var(--ink);border:2px
     <div class="rep-bar" aria-hidden="true"><i id="repBar"></i></div>
     <div class="rep-btns"><button class="btn pink" id="repPlay" type="button">Pause</button><button class="btn line" id="repAgain" type="button">Depuis le début</button><button class="btn line" id="repSpd" type="button">Vitesse ×1</button></div>
   </div>
+</div>
+<div id="tuto" hidden role="dialog" aria-modal="true" aria-labelledby="tuT">
+  <div class="tu-card"><canvas id="tuCv" width="8" height="8"></canvas><h2 id="tuT"></h2><p id="tuP"></p><div class="tu-dots" id="tuDots"></div>
+    <div class="tu-btns"><button class="btn ghost" id="tuSkip" type="button">Passer</button><button class="btn pink" id="tuNext" type="button">Suivant</button></div></div>
 </div>
 <script>
 "use strict";
@@ -2397,10 +2443,17 @@ const MATH_SETS = [
   ["add","Additions","Chaque case cache une addition.",["F_cercle","F_carre","F_triangle","F_etoile","F_losange","F_rectangle","F_ovale","F_hexagone","F_lune"]],
   ["sub","Soustractions","Chaque case cache une soustraction.",["N_0","N_1","N_2","N_3","N_4","N_5","N_6","N_7","N_8","N_9"]],
   ["mix","Additions et soustractions","Les deux sont mélangées.",["coeur","O_bebe","L_A","L_B","L_C","L_D","L_E","L_F"]],
+  ["mul","Multiplications et divisions","Tables de multiplication et petites divisions.",["L_G","L_H","L_I","L_J","L_K","L_L","L_M","L_N"]],
   ["mix","Défi : couleurs mélangées","Plus difficile : chaque case a un résultat différent de ses voisines.",["F_mos_diagonales","F_mos_carrelage","F_mos_damier","F_mos_zigzag","F_mos_losanges","F_mos_tissage","F_mos_carreaux9","F_mos_confettis","F_mos_coeur","F_mos_etoile","F_mos_soleil","F_mos_pixelsfous"]]
 ];
+const MULV = [12,18,20,24,30,36,40,16,48,60,72,8];
+const colNum = i => mathMode==="mul" ? MULV[i%MULV.length] : i+1;
 function exprOf(i, n){
   const h = (Math.imul(i+7, 2654435761)>>>0) % 97;
+  if(mathMode==="mul"){   /* chaque couleur vaut un produit des tables ; la case montre une multiplication ou une division qui le donne */
+    const v = MULV[(n-1)%MULV.length], pairs = []; for(let a=2;a<=10;a++) if(v%a===0 && v/a>=2 && v/a<=10) pairs.push([a, v/a]);
+    const k = 2+h%4; if(h%3===0 && v*k<=100) return (v*k)+"÷"+k;
+    const [a2,b2] = pairs[h%pairs.length]; return a2+"×"+b2; }
   if(mathMode==="add" || (mathMode==="mix" && h%2)){ const a = h%(n+1); return a+"+"+(n-a); }
   const b = h % Math.max(1, 11-n); return (n+b)+"−"+b;
 }
@@ -2478,7 +2531,7 @@ const stars5 = n => "★".repeat(n)+"☆".repeat(5-n);
 /* Journal des étoiles : [moment, type (d = dessin, c = chrono, w = duel gagné, l = duel perdu), référence, nombre] */
 let starOpen = "";
 let starLog = store.get("cpn.starlog", []); if(!Array.isArray(starLog)) starLog = [];
-const xLabel = (k, ref) => k==="o" ? `Coloriage à deux avec ${ref}` : k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
+const xLabel = (k, ref) => k==="e" ? `École : ${ref}` : k==="s" ? `Histoire : ${ref}` : k==="o" ? `Coloriage à deux avec ${ref}` : k==="t" ? `Trophée : ${ref}` : k==="j" ? `Cadeau du jour (jour ${ref} de suite)` : k==="k" ? `Collection : ${ref}` : k==="h" ? `Défi de la semaine : ${ref}` : `Défi : ${ref}`;
 function logStar(kind, ref, n){
   if(kind==="d" && starLog.some(e=>e[1]==="d" && e[2]===ref)) return;
   starLog.push([Date.now(), kind, ref, n]); if(starLog.length>600) starLog = starLog.slice(-600); store.set("cpn.starlog", starLog);
@@ -2535,7 +2588,7 @@ function toggleDrawer(){
 }
 if(store.get("cpn.drawerOff", false)) document.body.classList.add("drawer-off");
 $("drawerBtn").onclick = toggleDrawer; $("drawerClose").onclick = closeDrawer; $("scrim").onclick = closeDrawer;
-function setPage(p, sub){ if(p!=="duel" && (lob.net || lob.view!=="menu")) { lobClear(); lob.view = "menu"; lob.msg = ""; } page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
+function setPage(p, sub){ if(p!=="ecole") qz = null; if(p!=="duel" && (lob.net || lob.view!=="menu")) { lobClear(); lob.view = "menu"; lob.msg = ""; } page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
 
 function renderGallery(){
   const items = all().map(d=>{ const done = loadDone(d), st = stats(d, done); const pct = !st.tot ? 0 : st.ok===st.tot ? 100 : st.ok>0 ? Math.max(1, Math.floor(st.ok/st.tot*100)) : 0; return {d, done, st, pct}; });
@@ -2669,11 +2722,22 @@ function renderGallery(){
     const b1 = el("button","btn pink","Importer une photo"); b1.type = "button"; b1.onclick = () => $("file").click();
     const b2 = el("button","btn line","Dessin au hasard"); b2.type = "button";
     b2.onclick = () => { const pool = items.filter(i=>i.pct<100); const pick = (pool.length ? pool : items)[Math.floor(Math.random()*(pool.length||items.length))]; openDrawing(pick.d); };
-    const b3 = el("button","btn line","Calcul"); b3.type = "button"; b3.onclick = () => setPage("calcul");
-    const b4 = el("button","btn line",`Trophées ${nBadges} / ${BG.length}`); b4.type = "button"; b4.onclick = () => setPage("trophees");
-    const b5 = el("button","btn line",`Magasin ★ ${fmt(bal)}`); b5.type = "button"; b5.onclick = () => setPage("magasin");
-    q.append(b1, b2, b3, b4, b5);
-    const top = el("div","block"); top.append(f, q); pg.appendChild(top);
+    const b3 = el("button","btn line","Comment jouer ?"); b3.type = "button"; b3.onclick = () => tutoShow(0);
+    q.append(b2, b1, b3);
+    const big = el("div","big3");
+    [["Colorier","Choisis un dessin","#c81fd0",'<path d="M14 4l6 6-9 9H5v-6z"/><path d="M12 6l6 6"/>',()=>{ const ld = all().find(x=>x.id===store.get("cpn.last","")), k = ld && CATS.some(c=>c[0]===catOf(ld)) ? catOf(ld) : "animaux"; setPage(k); }],
+     ["Jouer à deux","Duel ou ensemble","#1971c2",'<path d="M5 5l9 9M14 14l2 5 3-3-5-2zM19 5l-9 9M10 14l-2 5-3-3 5-2z"/>',()=>setPage("duel")],
+     ["Apprendre","Mots, calcul, anglais","#2f9e44",'<path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11.500V16c0 1.500 2.500 3 5 3s5-1.500 5-3v-4.500M21 9v6"/>',()=>setPage("ecole")]
+    ].forEach(([l,sub,c,path,fn])=>{ const b = el("button"); b.type = "button"; b.style.setProperty("--c", c); b.innerHTML = SVG(path); b.append(el("span",null,l), el("small",null,sub)); b.onclick = fn; big.appendChild(b); });
+    const ps = petState(), pc = el("div","pet"), pcv = el("canvas"); drawThumb(pcv, ps.d, null, true); pcv.dataset.fr = shop.fr;
+    const ptx = el("div","pt"), pnm = el("b",null,ps.name);
+    const mood = chNow.p.cells ? `${ps.name} est content : tu as colorié aujourd'hui !` : lg.claimed ? `${ps.name} a hâte de te voir colorier.` : `${ps.name} t'attend : un cadeau est prêt !`;
+    ptx.append(pnm, el("small",null, ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour grandir` : " · taille maximale !")), barEl(ps.pct), el("small",null,mood));
+    const prn = el("button","btn small ghost","Changer son nom"); prn.type = "button"; prn.style.alignSelf = "flex-start";
+    prn.onclick = () => { const inp = el("input"); inp.type = "text"; inp.maxLength = 12; inp.value = xs.pet; inp.setAttribute("aria-label","Nom de ta pieuvre"); pnm.replaceWith(inp); prn.remove(); inp.focus();
+      const ok = () => { const v = inp.value.trim().slice(0,12); if(v){ xs.pet = v; saveXs(); } renderGallery(); }; inp.onkeydown = e => { if(e.key==="Enter") ok(); }; inp.onblur = ok; };
+    ptx.appendChild(prn); pc.append(pcv, ptx);
+    const top = el("div","block"); top.append(f, big, pc, q); pg.appendChild(top);
     const gb = el("button","wbanner gift"); gb.type = "button";
     const gt = el("span","wt"); gt.append(el("b",null, lg.claimed ? "Défis du jour" : `Cadeau du jour : ★ ${lg.reward}`), el("small",null, (lg.claimed ? `Cadeau reçu · jour ${lg.day} de suite` : `Jour ${lg.day} de suite · reviens chaque jour !`) + ` · ${chNow.got.filter(Boolean).length} / 3 défis` + (chReady ? ` · ${chReady} à réclamer` : "") + (trReady ? ` · ${trReady} ${trReady>1 ? "trophées" : "trophée"} à réclamer` : "") + (colReady ? ` · ${colReady} ${colReady>1 ? "collections" : "collection"} à réclamer` : "")));
     gb.append(gt, el("span","btn pink", lg.claimed ? (chReady ? "Réclamer" : "Voir") : "Réclamer")); gb.onclick = () => setPage("defis");
@@ -2794,7 +2858,7 @@ function renderGallery(){
       else { const cl = el("div","slist"); du.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(k==="w" ? `Gagné contre ${ref}` : `Perdu contre ${ref}`), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les duels"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("duel"); b1.appendChild(go);
     } else if(starOpen==="x"){
-      const xl = starLog.filter(e=>"tjfkho".includes(e[1])).reverse();
+      const xl = starLog.filter(e=>"tjfkhoes".includes(e[1])).reverse();
       if(!xl.length) b1.appendChild(el("p","empty","Aucune récompense pour l'instant. Réclame ton cadeau du jour, tes défis et tes trophées."));
       else { const cl = el("div","slist"); xl.slice(0,60).forEach(([t,k,ref,n])=>{ const r = el("div","srow"), tx = el("span"); tx.append(document.createTextNode(xLabel(k, ref)), el("small",null,dfmt(t))); r.append(tx, el("b",null,`+${n} ★`)); cl.appendChild(r); }); b1.appendChild(cl); }
       const go = el("button","btn line","Ouvrir les défis"); go.type = "button"; go.style.alignSelf = "flex-start"; go.onclick = () => setPage("defis"); b1.appendChild(go);
@@ -2804,7 +2868,7 @@ function renderGallery(){
     const hl = el("div","slist"), logged = new Set(starLog.filter(e=>e[1]==="d").map(e=>e[2]));
     starLog.slice().reverse().slice(0,150).forEach(([t,kind,ref,n])=>{
       const d = kind==="d" ? BUILTIN.find(x=>x.id===ref) || customs.find(x=>x.id===ref) : null;
-      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkho".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
+      const label = kind==="d" ? `Dessin terminé : ${d ? d.name : "dessin supprimé"}` : kind==="c" ? `Chrono, niveau ${ref+1}` : kind==="w" ? `Duel gagné contre ${ref}` : "tjfkhoes".includes(kind) ? xLabel(kind, ref) : `Duel contre ${ref}`;
       const r = el(d ? "button" : "div","srow" + (d ? " tap" : "")), tx = el("span"); tx.append(document.createTextNode(label), el("small",null,dfmt(t)));
       if(d){ r.type = "button"; const cv = el("canvas","sthumb"); drawThumb(cv, d, null, true); r.appendChild(cv); r.onclick = () => openDrawing(d); r.setAttribute("aria-label", label+", ouvrir le dessin"); }
       r.append(tx, el("b",null,`+${n} ★`)); hl.appendChild(r);
@@ -2894,6 +2958,59 @@ function renderGallery(){
       tg.append(cb, document.createTextNode(" Montrer mon prénom dans le classement (sinon : « Joueur mystère »)")); bl.appendChild(tg);
       pg.appendChild(bl);
       if(me && duelRec.w+duelRec.l && !board.sent){ board.sent = true; reportDuel().then(()=>loadBoard(true)); } else loadBoard(false);   /* envoie une fois les duels déjà joués */
+    }
+    return;
+  }
+
+  /* École */
+  if(page === "ecole"){
+    $("abTitle").textContent = "École";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small", qz ? "‹ École" : "‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => { if(qz){ qz = null; renderGallery(); } else setPage("menu"); };
+    b0.appendChild(bk);
+    if(qz && !qz.done){
+      const c = qz.q[qz.i], box = el("div","qz"); b0.appendChild(el("span","eyebrow",`${QZ_TYPES[qz.type][0]} · question ${qz.i+1} / ${qz.q.length}`)); b0.appendChild(barEl(qz.i/qz.q.length*100));
+      if(qz.type==="lettre"){ const pc2 = el("canvas","askpic"); drawThumb(pc2, wordIcon(c.w), null, true); box.append(pc2, el("div","ask","Quelle lettre commence ce mot ?")); }
+      else box.appendChild(el("div","ask", qz.type==="anglais" ? "Quel mot entends-tu en anglais ?" : "Quel mot entends-tu ?"));
+      const lb = el("button","btn pink","Écouter encore"); lb.type = "button"; lb.onclick = qzSay; box.appendChild(lb);
+      const og = el("div","opts");
+      c.opts.forEach(o=>{ const b = el("button"); b.type = "button"; if(qz.type==="lettre"){ b.textContent = o; } else { const cv2 = el("canvas"); drawThumb(cv2, wordIcon(o), null, true); b.appendChild(cv2); b.setAttribute("aria-label","Image "+(c.opts.indexOf(o)+1)); } b.onclick = () => qzPick(b, o); og.appendChild(b); });
+      box.appendChild(og); if(!canSpeak) box.appendChild(el("p","empty","La voix n'est pas disponible sur cet appareil."));
+      b0.appendChild(box); pg.appendChild(b0); return;
+    }
+    if(qz && qz.done){
+      const hd = el("div","whead"), sc = el("div","wscore"); sc.append(el("span","eyebrow",QZ_TYPES[qz.type][0]), el("b",null,`${qz.good} / ${qz.q.length}`));
+      hd.append(sc, el("p",null, (qz.good>=6 ? "Bravo ! " : "Bien essayé ! ") + (qz.star ? "Tu gagnes ★ 1." : qz.good>=6 ? "Tu as déjà gagné tes 3 étoiles d'école aujourd'hui." : "Il faut 6 bonnes réponses du premier coup pour gagner une étoile.")));
+      const r = el("div","quick"); const again = el("button","btn pink","Rejouer"); again.type = "button"; again.onclick = () => qzStart(qz.type); const out = el("button","btn line","Autres jeux"); out.type = "button"; out.onclick = () => { qz = null; renderGallery(); }; r.append(again, out);
+      b0.append(hd, r); pg.appendChild(b0); return;
+    }
+    const hd = el("div","whead"); hd.appendChild(el("p",null,"Des petits jeux pour apprendre en s'amusant. Huit questions par partie : avec 6 bonnes réponses du premier coup, tu gagnes ★ 1 (jusqu'à 3 par jour)."));
+    b0.appendChild(hd); pg.appendChild(b0);
+    const g = el("div","dgrid"); pg.appendChild(g);
+    Object.entries(QZ_TYPES).forEach(([k,[t,d]])=>{ const c = el("div","dcard"); c.append(el("h3",null,t), el("p",null,d)); const b = el("button","btn pink","Jouer"); b.type = "button"; b.onclick = () => qzStart(k); c.appendChild(b); g.appendChild(c); });
+    [["Calcul","Additions, soustractions, multiplications et divisions cachées dans les cases.","calcul"],["Mots à colorier","468 mots faciles, classés par lettre, dits à voix haute quand tu as fini.","mots"],["Histoires","Une histoire à écouter et à colorier, chapitre par chapitre.","histoires"]].forEach(([t,d,k])=>{
+      const c = el("div","dcard"); c.append(el("h3",null,t), el("p",null,d)); const b = el("button","btn line","Ouvrir"); b.type = "button"; b.onclick = () => setPage(k); c.appendChild(b); g.appendChild(c); });
+    return;
+  }
+
+  /* Histoires à colorier */
+  if(page === "histoires"){
+    $("abTitle").textContent = "Histoires";
+    const b0 = el("div","block");
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => setPage("menu");
+    const hd = el("div","whead"); hd.appendChild(el("p",null,`Écoute chaque chapitre, puis colorie son dessin pour ouvrir le suivant. Une histoire terminée donne ★ ${STORY_R}.`));
+    b0.append(bk, hd); pg.appendChild(b0);
+    for(const st of STORIES){
+      const chs = st.ch.map(([id,t])=>({d:BUILTIN.find(x=>x.id===id), t})).filter(c=>c.d); if(!chs.length) continue;
+      const fin = chs.map(c=>{ const s2 = stats(c.d, loadDone(c.d)); return s2.ok===s2.tot; }), nOk = fin.filter(Boolean).length, got = xs.st.includes(st.id);
+      const blk = el("div","block"), sh = el("div","sec"); sh.append(el("h2",null,st.title), el("span","eyebrow", got ? `✓ Terminée · ★ ${STORY_R} reçues` : `${nOk} / ${chs.length} chapitres`)); blk.appendChild(sh);
+      chs.forEach((c,k)=>{ const open = k===0 || fin[k-1], row = el("div","stch" + (open ? " open" : " lock")), cv2 = el("canvas"); drawThumb(cv2, c.d, new Uint8Array(c.d.cells.length), fin[k]);
+        const tx = el("div","tx"); tx.append(el("b",null,`Chapitre ${k+1}` + (fin[k] ? " ✓" : "")), document.createTextNode(open ? c.t : "Colorie le chapitre d'avant pour lire la suite."));
+        const bt = el("div","bt");
+        if(open){ const l = el("button","btn small line","Écouter"); l.type = "button"; l.onclick = () => sayText(c.t); const go = el("button","btn small " + (fin[k] ? "ghost" : "pink"), fin[k] ? "Revoir" : "Colorier"); go.type = "button"; go.onclick = () => { openDrawing(c.d); setTimeout(()=>sayText(c.t), 500); }; bt.append(l, go); }
+        row.append(cv2, tx, bt); blk.appendChild(row); });
+      if(nOk===chs.length && !got){ const cb = el("button","btn pink",`Réclamer ★ ${STORY_R}`); cb.type = "button"; cb.style.alignSelf = "flex-start"; cb.onclick = () => { if(xs.st.includes(st.id)) return; xs.st.push(st.id); xsAdd("s", st.title, STORY_R); renderGallery(); }; blk.appendChild(cb); }
+      pg.appendChild(blk);
     }
     return;
   }
@@ -3144,7 +3261,7 @@ function renderGallery(){
         const card = el("div","card" + (pct===100 ? " done" : "")); card.style.setProperty("--c", "#0c8599"); card.tabIndex = 0; card.setAttribute("role","button");
         const th = el("div","th"), cv = el("canvas"); drawThumb(cv, d, dn, st.ok===0); th.appendChild(cv);
         if(st.ok>0) th.appendChild(el("span","badge", pct===100 ? "✓ Terminé" : pct+" %"));
-        const meta = el("div","meta"); meta.appendChild(el("span",null,`Résultats de 1 à ${d.palette.length} · ${st.tot} cases`));
+        const meta = el("div","meta"); meta.appendChild(el("span",null,(mode==="mul" ? `Résultats : ${MULV.slice(0,d.palette.length).join(", ")}` : `Résultats de 1 à ${d.palette.length}`)+` · ${st.tot} cases`));
         { const nm2 = el("div","nm"); nameInto(nm2, d); card.append(th, nm2, barEl(pct), meta); }
         card.onclick = () => openDrawing(d, null, mode);
         card.onkeydown = e => { if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openDrawing(d, null, mode); } };
@@ -3468,6 +3585,90 @@ function weeklyDrawing(){
   const lab = (CATS.find(c=>c[0]===best.key)||[,best.key])[1];
   return weeklyCache = {wk, id:"WK_"+wk, name:"Grand dessin : "+lab, cat:best.key, cols:44, rows:44, palette:best.pal, cells, weekly:true, parts:best.pick.map(d=>d.name)};
 }
+/* ---------- Compagnon : la pieuvre grandit avec les étoiles gagnées ---------- */
+const PET_ST = [[0,"Bébé pieuvre","O_bebe"],[15,"Petite pieuvre","O_rose"],[50,"Pieuvre pirate","O_pirate"],[120,"Pieuvre arc-en-ciel","O_arcenciel"],[250,"Reine pieuvre","O_reine"],[500,"Pieuvre géante","O_geante"]];
+if(typeof xs.pet!=="string" || !xs.pet.trim()) xs.pet = "Pixou";
+if(!Array.isArray(xs.st)) xs.st = []; if(!xs.ecole || typeof xs.ecole!=="object") xs.ecole = {day:"", n:0};
+function petState(){ let k = 0; for(let i=0;i<PET_ST.length;i++) if(lastStars>=PET_ST[i][0]) k = i; const nx = PET_ST[k+1] || null;
+  return {k, name:xs.pet, stage:PET_ST[k][1], d:BUILTIN.find(x=>x.id===PET_ST[k][2]) || BUILTIN[0], next:nx, pct: nx ? Math.min(100, (lastStars-PET_ST[k][0])/(nx[0]-PET_ST[k][0])*100) : 100}; }
+const PET_SAY = ["Bravo !","Trop beau !","Tu es un artiste !","J'adore ces couleurs !","Encore un !","Wow, quel talent !","Je suis fier de toi !"];
+/* ---------- Voix : n'importe quel texte, en français ou en anglais ---------- */
+function sayText(text, lang){
+  if(muted || !canSpeak) return;
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text);
+    if(lang==="en"){ u.lang = "en-US"; const v = speechSynthesis.getVoices().find(x=>/^en[-_]/i.test(x.lang)); if(v) u.voice = v; } else { u.lang = frVoice ? frVoice.lang : "fr-CA"; if(frVoice) u.voice = frVoice; }
+    u.rate = .88; speechSynthesis.speak(u); }catch(e){}
+}
+/* ---------- École : dictée en images, première lettre, anglais ---------- */
+const EN_WORDS = {CHAT:"cat",CHIEN:"dog",POMME:"apple",MAISON:"house",SOLEIL:"sun",LUNE:"moon",ÉTOILE:"star",FLEUR:"flower",ARBRE:"tree",POISSON:"fish",OISEAU:"bird",VACHE:"cow",CHEVAL:"horse",LAPIN:"rabbit",SOURIS:"mouse",LION:"lion",TIGRE:"tiger",OURS:"bear",SINGE:"monkey",TORTUE:"turtle",
+  BATEAU:"boat",AVION:"plane",TRAIN:"train",VOITURE:"car",VÉLO:"bike",LIVRE:"book",CRAYON:"pencil",CHAISE:"chair",TABLE:"table",LIT:"bed",PORTE:"door",CLÉ:"key",PAIN:"bread",FROMAGE:"cheese",BANANE:"banana",CAROTTE:"carrot",FRAISE:"strawberry",GÂTEAU:"cake",PIZZA:"pizza",
+  ROI:"king",REINE:"queen",ROBOT:"robot",MAIN:"hand",DENT:"tooth",CADEAU:"gift",NUAGE:"cloud",FEU:"fire",EAU:"water",COCHON:"pig",CANARD:"duck",MOUTON:"sheep",POULE:"hen",ORANGE:"orange",CITRON:"lemon",CAMION:"truck",ÉCOLE:"school",ŒIL:"eye",YEUX:"eyes",CŒUR:"heart",BALLON:"balloon"};
+const QZ_TYPES = {dictee:["Dictée en images","Écoute le mot, puis touche la bonne image."], lettre:["Première lettre","Regarde l'image et trouve la lettre qui commence le mot."], anglais:["Anglais","Écoute le mot en anglais, puis touche la bonne image."]};
+let qz = null;
+function qzStart(type){
+  const ws = Object.values(WORDS).flat().filter(w=>wordIcon(w) && WICO[w] !== "@num:?" && (type!=="anglais" || EN_WORDS[w])).filter(w=>w.length>=3 || type!=="dictee");
+  const pick = a => a[Math.floor(Math.random()*a.length)], q = [], used = new Set();
+  while(q.length<8 && used.size<ws.length){ const w = pick(ws); if(used.has(w)) continue; used.add(w);
+    let opts;
+    if(type==="lettre"){ const L = w.normalize("NFD")[0], set = new Set([L]); while(set.size<4) set.add("ABCDEFGHIJKLMNOPRSTUV"[Math.floor(Math.random()*21)]); opts = [...set]; }
+    else { const set = new Set([w]); let guard = 0; while(set.size<4 && guard++<200){ const o = pick(ws); if(wordIcon(o)!==wordIcon(w)) set.add(o); } opts = [...set]; }
+    for(let i=opts.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [opts[i],opts[j]] = [opts[j],opts[i]]; }
+    q.push({w, opts, ok: type==="lettre" ? w.normalize("NFD")[0] : w}); }
+  qz = {type, q, i:0, good:0, miss:false, done:false}; renderGallery(); qzSay();
+}
+function qzSay(){ if(!qz || qz.done) return; const c = qz.q[qz.i]; if(qz.type==="anglais") sayText(EN_WORDS[c.w], "en"); else sayWord(c.w); }
+function qzPick(btn, o){
+  if(!qz || qz.done || qz.lock) return; const c = qz.q[qz.i];
+  if(o===c.ok){ btn.classList.add("ok"); if(!qz.miss) qz.good++; sColor(); qz.lock = true;
+    setTimeout(()=>{ if(!qz) return; qz.lock = false; qz.miss = false; qz.i++; if(qz.i>=qz.q.length){ qz.done = true; if(qz.good>=6){ const t = today(); if(xs.ecole.day!==t) xs.ecole = {day:t, n:0}; if(xs.ecole.n<3){ xs.ecole.n++; qz.star = true; xsAdd("e", QZ_TYPES[qz.type][0], 1); } else sWin(); } } renderGallery(); qzSay(); }, 750); }
+  else { btn.classList.add("ko"); btn.disabled = true; qz.miss = true; const a = audio(); if(a && !muted) tone(196, a.currentTime, .18, .1, "triangle"); }
+}
+/* ---------- Histoires à colorier ---------- */
+const STORIES = [
+  {id:"dragon", title:"Le petit dragon qui avait froid", color:"#7048e8", ch:[
+    ["W_ct_bebedragon","Il était une fois un bébé dragon qui avait toujours froid. Même son feu était tout petit."],
+    ["W_ct_palais","Un matin, il arriva devant un grand palais de glace. Brr ! Il faisait encore plus froid ici."],
+    ["W_ct_feehiver","La fée de l'hiver l'entendit claquer des dents. Elle eut une idée pour l'aider."],
+    ["W_ct_chaudron","Elle prépara une soupe magique dans son chaudron. Le dragon en but trois grands bols."],
+    ["W_ct_dragon","Son feu devint grand et chaud ! Depuis ce jour, c'est lui qui réchauffe tout le royaume."]]},
+  {id:"pieuvre", title:"La pieuvre et le trésor", color:"#d6336c", ch:[
+    ["O_bebe","Au fond de la mer vivait une petite pieuvre très curieuse."],
+    ["W_poisson1","Un poisson lui parla d'un trésor caché près d'un vieux bateau."],
+    ["W_bateau","La pieuvre nagea longtemps et trouva enfin le bateau endormi sur le sable."],
+    ["W_crabe","Un crabe gardait l'entrée. « Dis-moi bonjour et tu pourras passer », dit-il."],
+    ["O_reine","Le trésor était une couronne ! La petite pieuvre devint la reine de l'océan."]]},
+  {id:"match", title:"Le grand match", color:"#e8590c", ch:[
+    ["W_sp_patin","Ce matin, c'est le grand match. Léo attache bien ses patins."],
+    ["W_sp_baton","Il prend son bâton et glisse sur la glace avec son équipe."],
+    ["W_sp_masque","Le gardien d'en face est très fort. Il arrête tous les tirs !"],
+    ["W_sp_filet","Mais Léo fait une passe à son amie, et la rondelle entre dans le filet !"],
+    ["W_sp_coupe","Toute l'équipe lève la coupe. Bravo, les champions !"]]},
+  {id:"jardin", title:"Le jardin de la fée", color:"#2f9e44", ch:[
+    ["W_ct_fee","Une petite fée voulait le plus beau jardin du monde."],
+    ["W_nat_rose","Elle planta d'abord une rose rouge qui sentait très bon."],
+    ["W_nat_cerisier","Puis un cerisier se couvrit de fleurs roses, douces comme des nuages."],
+    ["W_nat_orage","Un soir, un gros orage éclata. La fée eut peur pour ses fleurs."],
+    ["W_nat_leversoleil","Au matin, le soleil se leva. Tout le jardin brillait de gouttes de pluie !"]]}
+];
+const STORY_R = 10;
+/* ---------- Tutoriel du premier lancement ---------- */
+let tuI = 0;
+const TUTO = [
+  ["Bienvenue dans Pixelo !", () => `Moi, c'est ${xs.pet}, ta pieuvre. Je vais te montrer comment jouer.`, "O_bebe"],
+  ["1. Choisis un dessin", () => "Chaque case du dessin porte un numéro. Chaque numéro est une couleur.", "coeur"],
+  ["2. Colorie les bons numéros", () => "Touche une couleur en bas, puis colorie toutes les cases qui ont son numéro. Glisse ton doigt pour aller plus vite !", "arc"],
+  ["3. Gagne des étoiles", () => "Chaque dessin fini donne des étoiles ★. Dépense-les au magasin, et regarde-moi grandir !", "O_reine"]
+];
+function tutoShow(i){
+  tuI = i; const [t, p, id] = TUTO[i], d = BUILTIN.find(x=>x.id===id) || BUILTIN[0];
+  $("tuT").textContent = t; $("tuP").textContent = p(); drawThumb($("tuCv"), d, null, true);
+  const dots = $("tuDots"); dots.textContent = ""; TUTO.forEach((_,k)=>dots.appendChild(el("i", k===i ? "on" : "")));
+  $("tuNext").textContent = i===TUTO.length-1 ? "Colorier mon premier dessin" : "Suivant"; $("tuSkip").hidden = i===TUTO.length-1; $("tuto").hidden = false;
+}
+function tutoClose(){ $("tuto").hidden = true; RAW.set("cpn.tutoTodo", ""); }
+$("tuSkip").onclick = tutoClose;
+$("tuNext").onclick = () => { if(tuI<TUTO.length-1) tutoShow(tuI+1); else { tutoClose(); const d = BUILTIN.find(x=>x.id==="coeur"); if(d){ const st = stats(d, loadDone(d)); if(st.ok<st.tot) openDrawing(d); } } };
+function maybeTuto(){ if(me && RAW.get("cpn.tutoTodo", "")===me.id && $("land").hidden) setTimeout(()=>tutoShow(0), 500); }
 /* ---------- Magasin : on dépense ses étoiles ---------- */
 const SHOP_AV = [["W_ct_bebedragon",5],["W_ct_chat",8],["W_ct_licorne",10],["W_ct_pingouin",12],["W_ct_fee",15],["W_ct_chevalier",15],["W_ct_sirene",20],["W_ct_bonhomme",20],["W_ct_princesse1",25],["W_ct_sorcier",30],["W_ct_dragon",40],["W_ct_phenix",60]];
 const SHOP_FR = [["","Sans cadre",0],["argent","Argent",5],["or","Or",10],["glace","Glace",12],["jungle","Jungle",12],["bonbon","Bonbon",15],["feu","Feu",15],["damier","Damier",20],["arcenciel","Arc-en-ciel",30],["galaxie","Galaxie",50]];
@@ -4004,6 +4205,7 @@ function celebrate(nStars, title){
   const f = $("fin"); f.hidden = false;
   $("finT").textContent = title || "Bravo !"; $("finTxt").textContent = $("winTxt").textContent;
   $("finTime").hidden = !finTimeTxt; $("finTime").textContent = finTimeTxt ? "Temps : "+finTimeTxt : "";
+  $("finPet").hidden = false; $("finPet").textContent = `${xs.pet} : « ${PET_SAY[Math.floor(Math.random()*PET_SAY.length)]} »`;
   drawThumb($("finCv"), cur, done);
   const st = $("finStars"); st.textContent = "";
   for(let k=0;k<nStars;k++){ const i = el("i",null,"★"); i.style.animationDelay = (.55+k*.22)+"s"; st.appendChild(i); if(!calmFx) setTimeout(()=>{ const a = audio(); if(a && !$("fin").hidden) tone(880*Math.pow(2,k/6), a.currentTime, .16, .1, "triangle"); }, 550+k*220); }
@@ -4208,11 +4410,11 @@ function refreshChips(){
   cur.palette.forEach((col,i)=>{
     const b = $("chip"+i); if(!b) return;
     b.className = "chip" + (i===sel ? " sel" : "") + (left[i]===0 ? " fin" : "");
-    b.textContent = left[i]===0 ? "✓" : i+1;
+    b.textContent = left[i]===0 ? "✓" : colNum(i);
     b.setAttribute("aria-label", `Couleur ${i+1}, ${left[i]} cases restantes`);
     if(left[i]>0){ const sm = document.createElement("small"); sm.textContent = left[i]; b.appendChild(sm); }
   });
-  $("hint").textContent = wandOn ? "Baguette : touche une zone pour la colorier d'un coup." : left[sel]>0 ? (mathMode ? `Trouve les calculs qui donnent ${sel+1} : ${left[sel]} cases` : `Couleur ${sel+1} : ${left[sel]} cases`) : "";
+  $("hint").textContent = wandOn ? "Baguette : touche une zone pour la colorier d'un coup." : left[sel]>0 ? (mathMode ? `Trouve les calculs qui donnent ${colNum(sel)} : ${left[sel]} cases` : `Couleur ${sel+1} : ${left[sel]} cases`) : "";
 }
 function selectColor(i, scroll){
   sel = i; refreshChips(); draw();
@@ -4356,7 +4558,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ hideFin(); closeReplay(); if(shr.mode) shrStop(""); if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ hideFin(); closeReplay(); if(shr.mode) shrStop(""); qz = null; if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
@@ -4516,9 +4718,9 @@ $("ldForm").addEventListener("submit", e => {
   if(!name){ $("ldErr").hidden = false; $("ldName").focus(); return; }
   if(ldMode==="edit" && me){ me.name = name; me.av = ldAv; RAW.set("cpn.users", users); $("land").hidden = true; renderGallery(); return; }
   const id = "u"+Date.now().toString(36), u = {id, name, av: ldAv, pfx: users.length ? id : ""};
-  users.push(u); RAW.set("cpn.users", users); RAW.set("cpn.user", id); sessFlag(true);
+  users.push(u); RAW.set("cpn.users", users); RAW.set("cpn.user", id); RAW.set("cpn.tutoTodo", id); sessFlag(true);
   if(u.pfx){ location.reload(); return; }      /* nouveau joueur : on recharge avec son espace à lui */
-  me = u; $("land").hidden = true; renderGallery();
+  me = u; $("land").hidden = true; renderGallery(); maybeTuto();
 });
 $("ldBack").onclick = () => showLand("choose");
 $("ldHave").onclick = () => { syncAsk = true; renderSync(); $("syncBox").scrollIntoView({block:"center"}); const i = $("syncIn"); if(i) i.focus(); };
@@ -4530,6 +4732,7 @@ $("ovPill").onclick = () => setPage("etoiles");
 
 applyShop();
 renderGallery();
+maybeTuto();
 /* Jeu hors ligne : seulement sur le vrai site, pas dans un aperçu intégré */
 try{ if("serviceWorker" in navigator && location.protocol==="https:" && window.top===window) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
 if(!me) showLand("create"); else if(users.length>1 && !sessFlag(false)) showLand("choose");

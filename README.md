@@ -27,6 +27,13 @@ Pixelo : jeu de coloriage par numéros, en une seule page web (`index.html`) acc
 - Duel : cadre d'avatar visible par l'adversaire et au classement, choix du dessin, meilleur de 3, revanche en un bouton
 - Duel par code QR : l'hôte affiche un code QR (généré dans la page, sans service externe) et un lien `?duel=1234` qui fait rejoindre la partie directement
 - Icônes maison : une icône devant le texte des boutons d'outils (masques SVG), et une icône en pixels à côté de 425 des 468 mots (dessin du jeu ou icône 16 × 16 dessinée exprès) ; aucun émoji
+- Mon dessin : éditeur de grille (12, 16 ou 20 cases de côté), enregistré comme coloriage par numéros, envoyé à un ami par code à 4 chiffres ou code QR (`?recu=1234`, canal Realtime `coloriage-share-<code>`)
+- Coloriage à deux : un même grand dessin colorié en direct par deux joueurs (ou avec le robot), ★ 2 chacun
+- Compagnon : la pieuvre du joueur grandit en six étapes avec les étoiles gagnées et réagit sur l'accueil et l'écran de fin
+- École : dictée en images, première lettre, anglais (8 questions, voix), plus un jeu de multiplications et divisions dans Calcul
+- Histoires : quatre histoires de cinq chapitres à écouter et à colorier, ★ 10 par histoire
+- Album : tous les dessins terminés avec date, temps, replay et image PNG à enregistrer ou partager
+- Accueil : trois gros boutons (Colorier, Jouer à deux, Apprendre), tiroir rangé par groupes, tutoriel au premier lancement
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)
