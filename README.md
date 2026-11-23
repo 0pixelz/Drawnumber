@@ -38,6 +38,7 @@ Pixelo : jeu de coloriage par numéros, en une seule page web (`index.html`) acc
 - Compagnon virtuel : dix espèces au choix, barres de faim, d'énergie et de joie qui descendent avec le temps, pommes gagnées en coloriant, sieste, jeu de saut d'obstacles, et un monde de 24 × 14 cases que le joueur peint lui-même (décor de la scène et du jeu)
 - Objets du monde : 25 objets en pixels à acheter (★ 3 à ★ 40), à poser, déplacer, ranger ou revendre à moitié prix
 - Compagnon : âge et anniversaire chaque semaine (5 pommes), six évolutions visibles pour toutes les espèces (taille, étincelles, aura, arc-en-ciel) avec animation d'évolution, barre de propreté et bain, bulle qui montre le besoin, ombre, marche dans les deux sens, cœurs au toucher, nuit étoilée selon l'heure
+- Compagnon : six aliments aux effets différents (pomme gratuite, les autres ★ 1 à ★ 4), jeu des pommes à attraper (30 s), visite du monde d'un ami par code ou QR (`?visite=1234`, canal `coloriage-visit-<code>`) avec une pomme à offrir
 - Trophées : 20 badges, 12 avatars à débloquer avec les points
 - Dessin du jour avec série de jours consécutifs (+50 points)
 - Aides en jeu : Indice (les cases de la couleur clignotent) et Baguette (colorie une zone, 3 par dessin)

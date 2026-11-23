@@ -2620,7 +2620,7 @@ function toggleDrawer(){
 }
 if(store.get("cpn.drawerOff", false)) document.body.classList.add("drawer-off");
 $("drawerBtn").onclick = toggleDrawer; $("drawerClose").onclick = closeDrawer; $("scrim").onclick = closeDrawer;
-function setPage(p, sub){ if(p!=="ecole") qz = null; if(p!=="compagnon"){ petUI.mode = "home"; petUI.game = null; petUI.anim = null; petUI.msg = ""; } if(p!=="duel" && (lob.net || lob.view!=="menu")) { lobClear(); lob.view = "menu"; lob.msg = ""; } page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
+function setPage(p, sub){ if(p!=="ecole") qz = null; if(p!=="compagnon"){ petUI.mode = "home"; petUI.game = null; petUI.cg = null; petUI.anim = null; petUI.msg = ""; petUI.feed = false; if(vis.mode) visStop(""); } if(p!=="duel" && (lob.net || lob.view!=="menu")) { lobClear(); lob.view = "menu"; lob.msg = ""; } page = p; filt = "tous"; subSel = sub || ""; if(p==="mots" || (CATS.find(c=>c[0]===p)||[])[3]) openCat = p; store.set("cpn.page", p); closeDrawer(); renderGallery(); $("content").scrollTop = 0; }
 
 function renderGallery(){
   const items = all().map(d=>{ const done = loadDone(d), st = stats(d, done); const pct = !st.tot ? 0 : st.ok===st.tot ? 100 : st.ok>0 ? Math.max(1, Math.floor(st.ok/st.tot*100)) : 0; return {d, done, st, pct}; });
@@ -3008,7 +3008,7 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     { const wk = Math.floor(petAge()/7); if(wk>(PT.bw||0)){ PT.bw = wk; petFoodAdd(5); petUI.msg = `Joyeux anniversaire ! ${ps.name} a ${wk} ${wk>1 ? "semaines" : "semaine"} : 5 pommes en cadeau.`; } }
     $("abTitle").textContent = ps.name;
     const b0 = el("div","block");
-    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => { petUI.mode = "home"; petUI.game = null; petUI.pick = false; setPage("menu"); };
+    const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => { petUI.mode = "home"; petUI.game = null; petUI.cg = null; petUI.pick = false; setPage("menu"); };
     const mk = (label, cls, fn, parent, sub) => { const b = el("button","btn "+cls, label); b.type = "button"; if(sub) b.appendChild(el("small",null,sub)); b.onclick = fn; parent.appendChild(b); return b; };
     const cv = el("canvas"); cv.id = "petcv"; cv.width = WORLD_W*WK; cv.height = WORLD_H*WK; cv.setAttribute("aria-label", "Le monde de "+ps.name);
     b0.append(bk, cv); if(petUI.msg) b0.appendChild(el("p","err",petUI.msg)); pg.appendChild(b0);
@@ -3016,13 +3016,16 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     let down = false, lastI = -1;
     const dab = i => { if(i<0 || petWorld[i]===CH[petUI.col]) return; petWorld = petWorld.slice(0,i)+CH[petUI.col]+petWorld.slice(i+1); worldRender(); clearTimeout(dab.t); dab.t = setTimeout(()=>store.set("cpn.petworld", petWorld), 400); };
     cv.onpointerdown = e => { e.preventDefault();
+      if(petUI.mode==="visit") return;
+      if(petUI.mode==="catch"){ const g = petUI.cg; if(!g) return; if(g.over){ petCatch(); renderGallery(); return; } g.started = true; down = true; try{ cv.setPointerCapture(e.pointerId); }catch(x){} const r = cv.getBoundingClientRect(); g.tx = Math.max(30, Math.min(cv.width-30, (e.clientX-r.left)/r.width*cv.width)); return; }
       if(petUI.mode==="game"){ const g = petUI.game; if(g && g.over){ petPlay(); renderGallery(); } else petJump(); return; }
       if(petUI.mode==="world" && petUI.wtab==="items"){ const r = cv.getBoundingClientRect(), hx = Math.floor((e.clientX-r.left)/r.width*WORLD_W*WK/OPX), hy = Math.floor((e.clientY-r.top)/r.height*WORLD_H*WK/OPX);
         if(petUI.hand && xs.wo.inv[petUI.hand]>0){ objPlace(petUI.hand, hx, hy); if(!(xs.wo.inv[petUI.hand]>0)) petUI.hand = ""; petUI.sel = -1; } else { petUI.sel = objAt(hx, hy); petUI.hand = ""; }
         renderGallery(); return; }
       if(petUI.mode==="world"){ down = true; try{ cv.setPointerCapture(e.pointerId); }catch(x){} lastI = cell(e); dab(lastI); return; }
       if(!petUI.anim){ petUI.anim = {type:"hop", t:0}; PT.j = clamp100(PT.j+1); sColor(); const r = cv.getBoundingClientRect(), fx = (e.clientX-r.left)/r.width*cv.width, fy = (e.clientY-r.top)/r.height*cv.height; petUI.fx = (petUI.fx||[]).concat([0,1,2].map(q=>({x:fx+(q-1)*18, y:fy-10, t:q*.12-.01, s:q*2}))); } };
-    cv.onpointermove = e => { if(!down) return; const i = cell(e); if(i<0 || i===lastI) return;
+    cv.onpointermove = e => { if(!down) return; if(petUI.mode==="catch"){ const g = petUI.cg, r = cv.getBoundingClientRect(); if(g) g.tx = Math.max(30, Math.min(cv.width-30, (e.clientX-r.left)/r.width*cv.width)); return; }
+      const i = cell(e); if(i<0 || i===lastI) return;
       if(lastI>=0){ const x0 = lastI%WORLD_W, y0 = Math.floor(lastI/WORLD_W), x1 = i%WORLD_W, y1 = Math.floor(i/WORLD_W), st = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)); for(let k=1;k<=st;k++) dab(Math.round(y0+(y1-y0)*k/st)*WORLD_W+Math.round(x0+(x1-x0)*k/st)); } else dab(i); lastI = i; };
     cv.onpointerup = cv.onpointercancel = () => { down = false; lastI = -1; };
     worldRender(); petLoop(cv);
@@ -3063,6 +3066,36 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
         g.appendChild(card); });
       b2.appendChild(g); pg.appendChild(b2); return;
     }
+    if(petUI.mode==="catch"){
+      const b1 = el("div","block"), g = petUI.cg, r = el("div","quick");
+      const mv = d => () => { const gg = petUI.cg; if(!gg) return; if(gg.over){ petCatch(); renderGallery(); return; } gg.started = true; gg.tx = Math.max(30, Math.min(cv.width-30, gg.tx+d*70)); };
+      mk("◀ Gauche","line",mv(-1),r); mk("Droite ▶","line",mv(1),r); mk("Arrêter le jeu","ghost",()=>{ petUI.mode = "home"; petUI.cg = null; renderGallery(); },r);
+      b1.append(el("p","empty", g && g.over ? `Bien joué ! Touche l'image pour rejouer (il faut de l'énergie).` : `Glisse ton doigt sur l'image (ou utilise les flèches) pour déplacer ${ps.name} sous les pommes pendant 30 secondes. Tous les 5 points, tu gagnes une vraie pomme (3 au plus). 15 points donnent ★ 1 une fois par jour. Meilleur score : ${PT.bestC||0}.`), r); pg.appendChild(b1); return;
+    }
+    if(petUI.mode==="visit"){
+      const b1 = el("div","block"); if(vis.msg) b1.appendChild(el("p","err",vis.msg));
+      if(vis.mode==="view"){
+        b1.appendChild(el("h2",null,`Tu es dans le monde de ${vis.data.from}`)); b1.appendChild(el("p","empty",`${ps.name} se promène avec ${vis.data.pet.name}. Tu peux regarder, mais pas modifier ce monde.`));
+        const r = el("div","quick"); const gb = mk(vis.gift ? "Pomme offerte ✓" : "Laisser une pomme en cadeau","pink",()=>{ if(vis.gift) return; if((PT.food||0)<1){ vis.msg = "Tu n'as pas de pomme à offrir."; renderGallery(); return; } PT.food--; saveXs(); vis.gift = true; vis.msg = ""; if(vis.net) vis.net.send({t:"gift", by: me ? me.name : "Un ami"}); sWin(); renderGallery(); },r); gb.disabled = vis.gift;
+        mk("Rentrer chez moi","line",()=>{ visStop(""); petUI.mode = "home"; renderGallery(); },r); b1.appendChild(r);
+      } else if(vis.mode==="host"){
+        b1.appendChild(el("h2",null,"Inviter un ami"));
+        const c = el("div","dcard"); c.append(el("p",null,"Ton ami ouvre Pixelo, va voir son compagnon, touche « Visiter un ami » et entre ce code :"), el("div","dcode",vis.code));
+        const link = visLink(vis.code), qc = link ? qrCanvas(link) : null; if(qc){ const qb = el("div","qrbox"); qb.append(qc, el("p",null,"Ou il scanne ce code QR avec l'appareil photo.")); c.appendChild(qb); }
+        c.appendChild(el("p",null, vis.guest ? `${vis.guest} est chez toi. Garde cette page ouverte tant qu'il visite.` : "En attente de ton ami… Garde cette page ouverte."));
+        mk("Fermer l'invitation","ghost",()=>{ visStop(""); petUI.mode = "home"; renderGallery(); },c); b1.appendChild(c);
+      } else if(vis.mode==="join"){
+        const c = el("div","dcard"); c.append(el("h3",null,"Voyage en cours"), el("p",null,"Recherche du monde "+vis.code+"…")); mk("Annuler","ghost",()=>{ visStop(""); renderGallery(); },c); b1.appendChild(c);
+      } else {
+        b1.appendChild(el("h2",null,"Visiter un ami")); b1.appendChild(el("p","empty","Montre ton monde à un ami, ou va voir le sien. Vos deux compagnons s'y promènent ensemble. Il faut être en ligne tous les deux en même temps."));
+        const g = el("div","dgrid");
+        const c1 = el("div","dcard"); c1.append(el("h3",null,"Inviter chez moi"), el("p",null,"Crée un code pour que ton ami vienne voir ton monde.")); mk("Inviter un ami","pink",visHost,c1); g.appendChild(c1);
+        const c2 = el("div","dcard"); c2.append(el("h3",null,"Aller chez un ami"), el("p",null,"Entre le code à 4 chiffres que ton ami te donne."));
+        const rr = el("div","drow"), ri = el("input"); ri.type = "text"; ri.inputMode = "numeric"; ri.maxLength = 4; ri.placeholder = "Code"; ri.setAttribute("aria-label","Code du monde"); rr.appendChild(ri); mk("Visiter","pink",()=>visJoin(ri.value),rr); ri.onkeydown = e => { if(e.key==="Enter") visJoin(ri.value); }; c2.appendChild(rr); g.appendChild(c2);
+        b1.appendChild(g); mk("‹ Retour","ghost small",()=>{ visStop(""); petUI.mode = "home"; renderGallery(); },b1).style.alignSelf = "flex-start";
+      }
+      pg.appendChild(b1); return;
+    }
     if(petUI.mode==="game"){
       const b1 = el("div","block"); const g = petUI.game;
       const r = el("div","quick"); mk("Sauter","pink",()=>{ const gg = petUI.game; if(gg && gg.over){ petPlay(); renderGallery(); } else petJump(); },r); mk("Arrêter le jeu","line",()=>{ petUI.mode = "home"; petUI.game = null; renderGallery(); },r);
@@ -3073,17 +3106,31 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
     [["Faim",PT.h,"#ff922b"],["Énergie",PT.e,"#4dabf7"],["Propreté",PT.c,"#22b8cf"],["Joie",PT.j,"#f783ac"]].forEach(([l,v,cc])=>{ const row = el("div","need"), b = barEl(v); b.firstChild.style.background = cc; row.append(el("span",null,l), b, el("b",null,Math.round(v)+" %")); b1.appendChild(row); });
     b1.appendChild(el("p","empty", petMood()+" · Les barres descendent doucement quand tu ne joues pas. Chaque dessin terminé donne une pomme. La bulle au-dessus de sa tête montre ce qu'il veut."));
     const acts = el("div","petacts");
-    mk("Nourrir","pink",()=>{ petFeed(); renderGallery(); },acts,`${PT.food} ${PT.food>1 ? "pommes" : "pomme"}`);
+    { const nf = FOODS.reduce((a,f)=>a+foodCount(f[0]),0); mk("Nourrir","pink",()=>{ petUI.feed = !petUI.feed; petUI.pick = false; renderGallery(); },acts,`${nf} ${nf>1 ? "aliments" : "aliment"} · choisir`); }
     mk("Sieste","line",()=>{ petNap(); renderGallery(); },acts,"Redonne de l'énergie");
     mk("Bain","line",()=>{ petBath(); renderGallery(); },acts,"Tout propre, tout doux");
     mk("Jouer à sauter","line",()=>{ petPlay(); renderGallery(); },acts,"Coûte 15 d'énergie");
+    mk("Jeu des pommes","line",()=>{ petCatch(); renderGallery(); },acts,"Attrape-les ! 15 d'énergie");
+    mk("Visiter un ami","line",()=>{ petUI.mode = "visit"; petUI.msg = ""; renderGallery(); },acts,"Ou l'inviter chez toi");
     mk("Décorer son monde","line",()=>{ petUI.mode = "world"; petUI.msg = ""; renderGallery(); },acts,"Peindre et poser des objets");
-    mk("Changer de compagnon","line",()=>{ petUI.pick = !petUI.pick; renderGallery(); },acts,(PET_KINDS.find(x=>x[0]===PT.kind)||PET_KINDS[0])[1]);
+    mk("Changer de compagnon","line",()=>{ petUI.pick = !petUI.pick; petUI.feed = false; renderGallery(); },acts,(PET_KINDS.find(x=>x[0]===PT.kind)||PET_KINDS[0])[1]);
     mk("Accessoires","line",()=>{ shopTab = "hat"; setPage("magasin"); },acts,"Au magasin");
     b1.appendChild(acts);
     if(petUI.name){ const inp = el("input","edname"); inp.type = "text"; inp.maxLength = 12; inp.value = xs.pet; inp.setAttribute("aria-label","Nom de ton compagnon"); const ok = () => { const v = inp.value.trim().slice(0,12); if(v){ xs.pet = v; saveXs(); } petUI.name = false; renderGallery(); }; inp.onkeydown = e => { if(e.key==="Enter") ok(); }; b1.appendChild(inp); mk("Enregistrer le nom","pink small",ok,b1).style.alignSelf = "flex-start"; }
     else mk("Changer son nom","ghost small",()=>{ petUI.name = true; renderGallery(); },b1).style.alignSelf = "flex-start";
     pg.appendChild(b1);
+    if(petUI.feed){
+      const b2 = el("div","block shop"), sh2 = el("div","sec"); sh2.append(el("h2",null,`Que donner à ${ps.name} ?`), el("span","eyebrow",`★ ${fmt(bal)} à dépenser`)); b2.appendChild(sh2);
+      const g = el("div","grid");
+      FOODS.forEach(f=>{ const n = foodCount(f[0]), card = el("div","card"), th = el("div","th"), c2 = el("canvas"); c2.width = c2.height = 120; const cc = c2.getContext("2d"); cc.fillStyle = "#fff3bf"; cc.fillRect(0,0,120,120);
+        const k = Math.floor(84/Math.max(f[4][0].length, f[4].length)); objDraw(cc, [0,0,0,f[4]], Math.floor((120-f[4][0].length*k)/2), Math.floor((120-f[4].length*k)/2), k);
+        th.append(c2, el("span","badge","× "+n)); const ef = f[3], efx = [ef.h ? `faim +${ef.h}` : "", ef.e ? `énergie +${ef.e}` : "", ef.j ? `joie +${ef.j}` : "", ef.c ? `propreté ${ef.c}` : ""].filter(Boolean).join(" · ");
+        card.append(th, el("div","nm",f[1]), el("small","bd",efx));
+        const give = el("button","btn small pink","Donner"); give.type = "button"; give.disabled = n<1; give.onclick = () => { petFeed(f[0]); renderGallery(); $("content").scrollTop = 0; }; card.appendChild(give);
+        if(f[2]){ const buy = el("button","btn small line",`Acheter ★ ${f[2]}`); buy.type = "button"; buy.disabled = bal<f[2]; buy.onclick = () => { if(foodBuy(f[0])) renderGallery(); }; card.appendChild(buy); } else card.appendChild(el("div","need",f[5]));
+        g.appendChild(card); });
+      b2.appendChild(g); pg.appendChild(b2);
+    }
     if(petUI.pick){
       const b2 = el("div","block"); b2.appendChild(el("h2",null,"Choisis ton compagnon")); b2.appendChild(el("p","empty","Tu peux changer quand tu veux : il garde son nom, ses barres et ses accessoires."));
       const g = el("div","kinds");
@@ -3793,13 +3840,71 @@ function objPlace(id, hx, hy){ const o = objOf(id); if(!o || !(xs.wo.inv[id]>0))
 function objTake(i){ const p = xs.wo.put[i]; if(!p) return; xs.wo.put.splice(i,1); xs.wo.inv[p[0]] = (xs.wo.inv[p[0]]||0)+1; saveXs(); worldRender(); }
 function objAt(hx, hy){ for(let i=xs.wo.put.length-1;i>=0;i--){ const b = objBox(xs.wo.put[i]); if(hx>=b.x-1 && hx<=b.x+b.w && hy>=b.y-1 && hy<=b.y+b.h) return i; } return -1; }
 let petUI = {mode:"home", anim:null, game:null, col:9, pick:false, name:false, msg:"", wtab:"paint", hand:"", sel:-1};
-function petFeed(){ petTick(); if(PT.food<=0){ petUI.msg = "Plus de pommes ! Termine un dessin pour en gagner une."; return; } if(PT.h>=98){ petUI.msg = `${xs.pet} n'a plus faim.`; return; }
-  PT.food--; PT.h = clamp100(PT.h+25); PT.j = clamp100(PT.j+4); saveXs(); petUI.anim = {type:"eat", t:0}; petUI.msg = ""; sColor(); }
+const FOODS = [
+  ["pomme","Pomme",0,{h:25,j:4},["..D..",".RRR.","RRRRR","RRRRR",".RRR."],"Gagnée en coloriant"],
+  ["bonbon","Bonbon",1,{h:5,j:18,c:-10},["P...P","PPMPP","PMMMP","PPMPP","P...P"],"Beaucoup de joie, mais ça colle"],
+  ["carotte","Carotte",2,{h:30,e:6},["...DD","..DD.",".EE..",".EE..","EE...","E...."],"Cale bien, un peu d'énergie"],
+  ["lait","Verre de lait",2,{h:10,e:25},["SSSS","WWWW","WWWW","WWWW","SSSS"],"Redonne de l'énergie"],
+  ["gateau","Gâteau",3,{h:18,j:22},["..R..","PPPPP","WWWWW","NNNNN","NNNNN"],"Miam ! Faim et joie"],
+  ["pizza","Pizza",4,{h:50,j:6},["NNNNNN","YRYYRY",".YYRY.","..YY..","..Y..."],"Un vrai repas"]
+];
+if(!PT.foods || typeof PT.foods!=="object") PT.foods = {};
+const foodOf = id => FOODS.find(f=>f[0]===id), foodCount = id => id==="pomme" ? (PT.food||0) : (PT.foods[id]||0);
+function foodBuy(id){ const f = foodOf(id); if(!f || !f[2] || shopBal()<f[2]) return false; shop.spent += f[2]; store.set("cpn.shop", shop); PT.foods[id] = (PT.foods[id]||0)+1; saveXs(); sColor(); return true; }
+function petFeed(id){ petTick(); const f = foodOf(id||"pomme"); if(!f) return;
+  if(foodCount(f[0])<=0){ petUI.msg = f[0]==="pomme" ? "Plus de pommes ! Termine un dessin ou gagne-en au jeu des pommes." : `Tu n'as pas de ${f[1].toLowerCase()}. Achète-en un d'abord.`; return; }
+  const ef = f[3]; if(PT.h>=98 && (ef.j||0)<10 && (ef.e||0)<10){ petUI.msg = `${xs.pet} n'a plus faim.`; return; }
+  if(f[0]==="pomme") PT.food--; else { PT.foods[f[0]]--; if(!PT.foods[f[0]]) delete PT.foods[f[0]]; }
+  PT.h = clamp100(PT.h+(ef.h||0)); PT.e = clamp100(PT.e+(ef.e||0)); PT.j = clamp100(PT.j+(ef.j||0)); PT.c = clamp100(PT.c+(ef.c||0)); saveXs(); petUI.anim = {type:"eat", t:0, food:f[0]}; petUI.msg = ""; petUI.feed = false; sColor(); }
 function petBath(){ petTick(); if(PT.c>=95){ petUI.msg = `${xs.pet} est déjà tout propre.`; return; } petUI.anim = {type:"bath", t:0}; petUI.msg = ""; }
 function petOldDrawing(k){ const kd = PET_KINDS.find(x=>x[0]===PT.kind) || PET_KINDS[0]; return (kd[2] && BUILTIN.find(x=>x.id===kd[2])) || BUILTIN.find(x=>x.id===PET_ST[Math.max(0,Math.min(PET_ST.length-1,k))][2]) || BUILTIN[0]; }
 function petNap(){ petTick(); if(PT.e>=90){ petUI.msg = `${xs.pet} n'est pas fatigué.`; return; } petUI.anim = {type:"nap", t:0}; petUI.msg = ""; }
 function petPlay(){ petTick(); if(PT.e<15){ petUI.msg = `${xs.pet} est trop fatigué pour jouer. Fais-lui faire une sieste !`; return; }
   PT.e = clamp100(PT.e-15); saveXs(); petUI.mode = "game"; petUI.msg = ""; petUI.anim = null; petUI.game = {y:0, vy:0, obs:[], speed:210, score:0, over:false, started:false, gap:260, scroll:0}; }
+/* Deuxième jeu : attraper les pommes qui tombent */
+function petCatch(){ petTick(); if(PT.e<15){ petUI.msg = `${xs.pet} est trop fatigué pour jouer. Fais-lui faire une sieste !`; return; }
+  PT.e = clamp100(PT.e-15); saveXs(); petUI.mode = "catch"; petUI.msg = ""; petUI.anim = null; petUI.game = null; petUI.cg = {x:WORLD_W*WK/2, tx:WORLD_W*WK/2, items:[], left:30, score:0, over:false, started:false, spawn:.4, flash:0}; }
+function petCatchOver(){ const g = petUI.cg; g.over = true; const gain = Math.max(8, Math.min(45, 8+g.score*2)), apples = Math.min(3, Math.floor(g.score/5)); PT.j = clamp100(PT.j+gain); if(g.score>(PT.bestC||0)) PT.bestC = g.score; if(apples) petFoodAdd(apples);
+  let star = false; if(g.score>=15 && PT.catchDay!==today()){ PT.catchDay = today(); star = true; } saveXs(); if(star) xsAdd("r", xs.pet, 1); else sWin();
+  g.txt = `Score : ${g.score}` + (apples ? ` · ${apples} ${apples>1 ? "pommes gagnées" : "pomme gagnée"}` : "") + (star ? " · ★ 1 !" : ""); renderGallery(); }
+/* Visite : on montre son monde à un ami, ou on va voir le sien */
+let vis = {mode:"", code:"", net:null, timers:[], data:null, cv:null, msg:"", gift:false};
+function visStop(msg){ vis.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); if(vis.net) vis.net.close(); vis = {mode:"", code:"", net:null, timers:[], data:null, cv:null, msg:msg||"", gift:false}; }
+function visHost(){
+  visStop(); const code = String(1000+Math.floor(Math.random()*9000)); vis.mode = "host"; vis.code = code;
+  vis.net = Net("coloriage-visit-"+code, m => {
+    if(m.t==="hi"){ const ps = petState(); vis.net.send({t:"world", from: me ? me.name : "Un ami", w:petWorld, put:xs.wo.put, pet:{name:xs.pet, id:ps.d.id, k:ps.k, hat:shop.hat||""}}); const who = String(m.by||"Un ami").slice(0,16); if(vis.guest!==who){ vis.guest = who; vis.msg = `${who} visite ton monde !`; sColor(); renderGallery(); } }
+    else if(m.t==="gift"){ petFoodAdd(1); vis.msg = `${String(m.by||"Ton ami").slice(0,16)} t'a laissé une pomme en cadeau !`; sWin(); renderGallery(); }
+  }, () => {}, () => { visStop("Connexion impossible. Vérifie Internet et réessaie."); renderGallery(); });
+  vis.timers.push(setTimeout(()=>{ if(vis.mode==="host"){ visStop("L'invitation est terminée."); renderGallery(); } }, 600000));
+  renderGallery();
+}
+function visValid(m){ return m && typeof m.w==="string" && m.w.length===WORLD_W*WORLD_H && [...m.w].every(ch=>{ const i = CH.indexOf(ch); return i>=0 && i<WORLD_COLS.length; })
+  && Array.isArray(m.put) && m.put.length<=120 && m.put.every(p=>Array.isArray(p) && objOf(p[0]) && Number.isInteger(p[1]) && Number.isInteger(p[2]) && p[1]>=0 && p[2]>=0 && p[1]<60 && p[2]<40)
+  && m.pet && BUILTIN.some(d=>d.id===m.pet.id) && Number.isInteger(m.pet.k) && m.pet.k>=0 && m.pet.k<=5 && (m.pet.hat==="" || !!HATS[m.pet.hat]); }
+function visJoin(code){
+  code = String(code||"").replace(/\D/g,""); if(code.length!==4){ vis.msg = "Le code a 4 chiffres."; renderGallery(); return; }
+  visStop(); vis.mode = "join"; vis.code = code;
+  vis.net = Net("coloriage-visit-"+code, m => {
+    if(m.t!=="world" || vis.mode!=="join" || !visValid(m)) return;
+    vis.data = {from:String(m.from||"Un ami").slice(0,16), pet:{name:String(m.pet.name||"").slice(0,12) || "Compagnon", id:m.pet.id, k:m.pet.k, hat:m.pet.hat}};
+    const cvw = document.createElement("canvas"); cvw.width = WORLD_W*WK; cvw.height = WORLD_H*WK; const c = cvw.getContext("2d");
+    for(let i=0;i<m.w.length;i++){ c.fillStyle = WORLD_COLS[CH.indexOf(m.w[i])]; c.fillRect((i%WORLD_W)*WK, Math.floor(i/WORLD_W)*WK, WK, WK); }
+    m.put.slice().sort((a,b)=>(a[2]+objOf(a[0])[3].length)-(b[2]+objOf(b[0])[3].length)).forEach(p=>objDraw(c, objOf(p[0]), p[1]*OPX, p[2]*OPX, OPX));
+    vis.cv = cvw; vis.mode = "view"; vis.timers.forEach(t=>{ clearTimeout(t); clearInterval(t); }); vis.timers = []; vis.msg = ""; sWin(); renderGallery();
+  }, () => { const hi = () => { if(vis.net && vis.mode==="join") vis.net.send({t:"hi", by: me ? me.name : "Un ami"}); }; hi(); vis.timers.push(setInterval(hi, 1500)); },
+  () => { visStop("Connexion impossible. Vérifie Internet et réessaie."); renderGallery(); });
+  vis.timers.push(setTimeout(()=>{ if(vis.mode==="join"){ visStop("Aucun monde trouvé avec ce code. Ton ami doit garder son invitation ouverte."); renderGallery(); } }, 30000));
+  renderGallery();
+}
+function visLink(code){ try{ if(!/^https?:$/.test(location.protocol) || window.top!==window) return ""; }catch(e){ return ""; } return location.origin+location.pathname+"?visite="+code; }
+(function(){
+  let code = ""; try{ code = (new URLSearchParams(location.search).get("visite")||"").replace(/\D/g,""); }catch(e){}
+  if(code.length!==4) return;
+  const t = setInterval(()=>{ const sp = $("splash"); if(!me || !$("land").hidden || (sp && !sp.hidden && getComputedStyle(sp).display!=="none")) return; clearInterval(t);
+    try{ history.replaceState(null, "", location.pathname); }catch(e){}
+    if(cur) goHome(); page = "compagnon"; store.set("cpn.page", "compagnon"); petUI.mode = "visit"; visJoin(code); }, 400);
+})();
 function petJump(){ const g = petUI.game; if(!g) return; if(g.over){ return; } g.started = true; if(g.y<=.5){ g.vy = 590; const a = audio(); if(a && !muted) tone(520, a.currentTime, .12, .08, "triangle"); } }
 function petGameOver(){
   const g = petUI.game; g.over = true; const gain = Math.max(8, Math.min(45, 8+g.score*2)); PT.j = clamp100(PT.j+gain); if(g.score>PT.best) PT.best = g.score;
@@ -3809,6 +3914,35 @@ function petGameOver(){
 }
 function petFrame(cv, c, dt, now){
   const Wd = cv.width, gy = GROUND*WK, ps = petState(), sp = petSprite(ps.d, shop.hat), wc = worldCv || worldRender();
+  if(petUI.mode==="visit" && vis.mode==="view" && vis.cv){
+    const t = now/1000; c.drawImage(vis.cv, 0, 0);
+    const fd = BUILTIN.find(x=>x.id===vis.data.pet.id), duo = [[petSprite(fd, vis.data.pet.hat), PET_SCALE[vis.data.pet.k], vis.data.pet.name, 0], [sp, PET_SCALE[ps.k], ps.name, 2.6]];
+    for(const [spr, sc, nm, ph] of duo){ const sh = 96*sc, sw = spr.width/spr.height*sh, cx = Wd/2+Math.sin(t*.45+ph)*150, dir = Math.cos(t*.45+ph)>=0 ? 1 : -1, lift = Math.abs(Math.sin(t*2.2+ph))*5;
+      c.fillStyle = "rgba(20,20,50,.22)"; c.beginPath(); c.ellipse(cx, gy+4, sw*.36, 5, 0, 0, 6.3); c.fill();
+      c.save(); c.translate(cx, 0); c.scale(dir, 1); c.drawImage(spr, -sw/2, gy-sh-lift, sw, sh); c.restore();
+      c.font = "800 15px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "center"; c.lineWidth = 4; c.strokeStyle = "#fff"; c.strokeText(nm, cx, gy-sh-lift-8); c.fillStyle = "#1d1b3a"; c.fillText(nm, cx, gy-sh-lift-8); }
+    if(vis.gift){ c.fillStyle = "#f783ac"; const x = Wd/2, y = 60+Math.sin(t*3)*6; c.beginPath(); c.moveTo(x, y+14); c.bezierCurveTo(x-24, y-2, x-10, y-20, x, y-6); c.bezierCurveTo(x+10, y-20, x+24, y-2, x, y+14); c.fill(); }
+    return;
+  }
+  if(petUI.mode==="catch" && petUI.cg){
+    const g = petUI.cg, sh = 78, sw = sp.width/sp.height*sh;
+    if(g.started && !g.over){ g.left -= dt; g.x += (g.tx-g.x)*Math.min(1, dt*12); g.flash = Math.max(0, g.flash-dt); g.spawn -= dt;
+      if(g.spawn<=0){ const r = Math.random(), kind = r<.14 ? "roc" : r<.24 ? "or" : "pomme"; g.items.push({x:24+Math.random()*(Wd-48), y:-16, v:120+Math.random()*90+(30-g.left)*4, kind}); g.spawn = .32+Math.random()*.45; }
+      for(const it of g.items){ it.y += it.v*dt; if(!it.hit && it.y>gy-sh*.8 && it.y<gy-6 && Math.abs(it.x-g.x)<sw*.5){ it.hit = true; const a = audio();
+          if(it.kind==="roc"){ g.score = Math.max(0, g.score-2); g.flash = .3; if(a && !muted) tone(150, a.currentTime, .16, .12, "square"); }
+          else { g.score += it.kind==="or" ? 3 : 1; if(a && !muted) tone(it.kind==="or" ? 1175 : 880, a.currentTime, .08, .07, "sine"); } } }
+      g.items = g.items.filter(it=>!it.hit && it.y<cv.height+20); if(g.left<=0){ g.left = 0; petCatchOver(); } }
+    c.drawImage(wc, 0, 0);
+    for(const it of g.items){ if(it.kind==="roc"){ c.fillStyle = "#868e96"; c.fillRect(it.x-11, it.y-9, 22, 18); c.fillStyle = "#495057"; c.fillRect(it.x-11, it.y+3, 22, 6); c.fillStyle = "#ced4da"; c.fillRect(it.x-6, it.y-6, 8, 5); }
+      else { c.fillStyle = it.kind==="or" ? "#ffd43b" : "#e03131"; c.fillRect(it.x-10, it.y-8, 20, 18); c.fillStyle = "#2f9e44"; c.fillRect(it.x-1, it.y-14, 8, 6); c.fillStyle = it.kind==="or" ? "#fff3bf" : "#ff8787"; c.fillRect(it.x-7, it.y-5, 5, 5); } }
+    c.fillStyle = "rgba(20,20,50,.22)"; c.beginPath(); c.ellipse(g.x, gy+4, sw*.36, 5, 0, 0, 6.3); c.fill();
+    c.save(); c.translate(g.x, 0); c.scale(g.tx<g.x-2 ? -1 : 1, 1); c.drawImage(sp, -sw/2, gy-sh, sw, sh); c.restore();
+    if(g.flash>0){ c.fillStyle = `rgba(224,49,49,${g.flash})`; c.fillRect(0,0,Wd,cv.height); }
+    c.fillStyle = "#1d1b3a"; c.font = "800 22px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "right"; c.fillText(String(g.score), Wd-14, 30); c.textAlign = "left"; c.fillText(Math.ceil(g.left)+" s", 14, 30);
+    if(!g.started || g.over){ c.fillStyle = "rgba(29,27,58,.55)"; c.fillRect(0,0,Wd,cv.height); c.fillStyle = "#fff"; c.textAlign = "center"; c.font = "800 24px 'Baloo 2', system-ui, sans-serif"; c.fillText(g.over ? g.txt : "Glisse ton doigt pour attraper !", Wd/2, cv.height/2-4);
+      c.font = "800 16px 'Baloo 2', system-ui, sans-serif"; c.fillText(g.over ? `Meilleur score : ${PT.bestC||0}` : "Pommes +1 · pomme d'or +3 · évite les cailloux", Wd/2, cv.height/2+24); }
+    return;
+  }
   if(petUI.mode==="game" && petUI.game){
     const g = petUI.game; if(g.started && !g.over){ g.scroll = (g.scroll+g.speed*dt*.5)%Wd; g.vy -= 1700*dt; g.y = Math.max(0, g.y+g.vy*dt); if(g.y===0 && g.vy<0) g.vy = 0;
       g.gap -= g.speed*dt; if(g.gap<=0){ const kind = Math.floor(Math.random()*3); g.obs.push({x:Wd+10, w:20+Math.floor(Math.random()*2)*10, h:30+Math.floor(Math.random()*2)*10, kind, ok:false}); g.gap = 230+Math.random()*190+g.speed*.25; }
@@ -3835,7 +3969,7 @@ function petFrame(cv, c, dt, now){
   let cx = Wd/2 + (inWorld ? 150 : Math.sin(t*.45)*110), lift = Math.abs(Math.sin(t*2.2))*5, dir = Math.cos(t*.45)>=0 ? 1 : -1, sq = 1, alpha = inWorld ? .55 : 1;
   if(an && an.type!=="hop"){ cx = Wd/2; dir = 1; }
   if(an && an.type==="hop"){ const u = Math.min(1, an.t/.5); lift = Math.sin(u*Math.PI)*46; sq = 1+Math.sin(u*Math.PI)*.08; if(an.t>.5) petUI.anim = null; }
-  if(an && an.type==="eat"){ const u = Math.min(1, an.t/.7), ax = Wd/2, ay = 20+(gy-sh*.55-20)*u; if(an.t<.7){ c.fillStyle = "#e03131"; c.fillRect(ax-9, ay-9, 18, 18); c.fillStyle = "#2f9e44"; c.fillRect(ax-2, ay-15, 8, 6); c.fillStyle = "#ff8787"; c.fillRect(ax-6, ay-6, 5, 5); }
+  if(an && an.type==="eat"){ const u = Math.min(1, an.t/.7), ax = Wd/2, ay = 20+(gy-sh*.55-20)*u; if(an.t<.7){ const fr = (foodOf(an.food)||FOODS[0])[4]; objDraw(c, [0,0,0,fr], ax-fr[0].length*2.5, ay-fr.length*2.5, 5); }
     else { lift = Math.abs(Math.sin((an.t-.7)*9))*14; for(let q=0;q<4;q++){ c.fillStyle = "#e03131"; c.fillRect(Wd/2-20+q*13+Math.sin(an.t*8+q)*4, gy-sh*.5+(an.t-.7)*60+q*3, 4, 4); } } if(an.t>1.6){ petUI.anim = null; renderGallery(); } }
   if(an && an.type==="nap"){ lift = 0; sq = .86; }
   if(an && an.type==="evolve"){ lift = Math.abs(Math.sin(an.t*7))*6; }
@@ -4871,7 +5005,7 @@ $("find").onclick = () => {
   view.x = W/2-(best%cur.cols+.5)*view.s; view.y = Hh/2-(Math.floor(best/cur.cols)+.5)*view.s;
   clampView(); draw();
 };
-function goHome(){ hideFin(); closeReplay(); if(shr.mode) shrStop(""); qz = null; if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
+function goHome(){ hideFin(); closeReplay(); if(shr.mode) shrStop(""); if(vis.mode) visStop(""); qz = null; if(sync && sync.dirty){ clearTimeout(syncTimer); syncTimer = setTimeout(syncPush, 1500); } clearTimeout(saveT); clearTimeout(freeT); if(cur){ if(free) saveFree(); else saveDone(cur, done); } stopChrono(); chrono = null; chronoUI(); stopDuel(); mathMode = null; document.body.classList.remove("mathplay"); cur = null; renderGallery(); show("home"); }
 $("back").onclick = goHome; $("winBack").onclick = goHome;
 const rs = $("reset");
 rs.onclick = () => {
