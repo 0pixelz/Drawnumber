@@ -297,7 +297,7 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 
 /* Compagnon : scène animée, besoins, jeu de saut, monde dessiné */
 #petcv{width:100%;max-width:560px;height:auto;display:block;border:3px solid var(--ink);border-radius:18px;background:#a5d8ff;touch-action:none;image-rendering:pixelated;margin:0 auto}
-.need{display:grid;grid-template-columns:74px 1fr 40px;align-items:center;gap:8px;font-weight:800;font-size:14px}
+.need{display:grid;grid-template-columns:78px 1fr 40px;align-items:center;gap:8px;font-weight:800;font-size:14px}
 .need .bar{height:12px}
 .need b{text-align:right;font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted)}
 .petacts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -309,7 +309,7 @@ body[data-th]:not([data-th=""]) #drawer .md{background:rgba(255,255,255,.13)}
 .kinds canvas{width:100%;aspect-ratio:1;border-radius:10px;image-rendering:pixelated}
 .block h3{font-family:var(--display);font-weight:800;font-size:18px;margin:4px 0 0}
 .shop .card .need{display:block}
-.pet .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pet .mini{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
 .pet .mini .bar{height:7px}
 
 /* Accueil : tiroir de catégories (masquable) + contenu */
@@ -2765,13 +2765,13 @@ function renderGallery(){
     ].forEach(([l,sub,c,path,fn])=>{ const b = el("button"); b.type = "button"; b.style.setProperty("--c", c); b.innerHTML = SVG(path); b.append(el("span",null,l), el("small",null,sub)); b.onclick = fn; big.appendChild(b); });
     const ps = petState(), pc = el("div","pet"), pcv = el("canvas"); petCanvas(pcv, ps.d, shop.hat); pcv.dataset.fr = shop.fr; pcv.setAttribute("role","button"); pcv.setAttribute("aria-label","Chatouiller "+ps.name);
     const ptx = el("div","pt"), pnm = el("b",null,ps.name);
-    const mood = PT.h<25 ? `${ps.name} a très faim ! Donne-lui une pomme.` : PT.e<25 ? `${ps.name} est fatigué : une petite sieste ?` : PT.j<25 ? `${ps.name} s'ennuie : joue avec lui !` : chNow.p.cells ? `${ps.name} est content : tu as colorié aujourd'hui !` : lg.claimed ? `${ps.name} a hâte de te voir colorier.` : `${ps.name} t'attend : un cadeau est prêt !`;
+    const mood = (PT.lv!==undefined && PT.lv!==null && ps.k>PT.lv) ? `${ps.name} est prêt à évoluer ! Va vite le voir.` : PT.h<25 ? `${ps.name} a très faim ! Donne-lui une pomme.` : PT.c<25 ? `${ps.name} a besoin d'un bain.` : PT.e<25 ? `${ps.name} est fatigué : une petite sieste ?` : PT.j<25 ? `${ps.name} s'ennuie : joue avec lui !` : chNow.p.cells ? `${ps.name} est content : tu as colorié aujourd'hui !` : lg.claimed ? `${ps.name} a hâte de te voir colorier.` : `${ps.name} t'attend : un cadeau est prêt !`;
     const moodEl = el("small",null,mood);
     pcv.onclick = () => { pcv.classList.remove("hop"); void pcv.offsetWidth; pcv.classList.add("hop"); moodEl.textContent = `${ps.name} : « ${PET_TAP[Math.floor(Math.random()*PET_TAP.length)]} »`; sColor(); };
-    ptx.append(pnm, el("small",null, ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour grandir` : " · taille maximale !")), barEl(ps.pct), moodEl);
+    ptx.append(pnm, el("small",null, ps.stage + " · " + petAgeTxt() + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour évoluer` : " · évolution maximale !")), barEl(ps.pct), moodEl);
     const prn = el("button","btn small ghost","Changer son nom"); prn.type = "button"; prn.style.alignSelf = "flex-start";
 const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = "button"; pac.style.alignSelf = "flex-start"; pac.onclick = () => setPage("compagnon");
-    { petTick(); const mini = el("div","mini"); [[PT.h,"#ff922b"],[PT.e,"#4dabf7"],[PT.j,"#f783ac"]].forEach(([v,cc])=>{ const b = barEl(v); b.firstChild.style.background = cc; mini.appendChild(b); }); ptx.appendChild(mini); }
+    { petTick(); const mini = el("div","mini"); [[PT.h,"#ff922b"],[PT.e,"#4dabf7"],[PT.c,"#22b8cf"],[PT.j,"#f783ac"]].forEach(([v,cc])=>{ const b = barEl(v); b.firstChild.style.background = cc; mini.appendChild(b); }); ptx.appendChild(mini); }
     prn.onclick = () => { const inp = el("input"); inp.type = "text"; inp.maxLength = 12; inp.value = xs.pet; inp.setAttribute("aria-label","Nom de ta pieuvre"); pnm.replaceWith(inp); prn.remove(); inp.focus();
       const ok = () => { const v = inp.value.trim().slice(0,12); if(v){ xs.pet = v; saveXs(); } renderGallery(); }; inp.onkeydown = e => { if(e.key==="Enter") ok(); }; inp.onblur = ok; };
     ptx.appendChild(pac); pc.append(pcv, ptx);
@@ -3003,6 +3003,9 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
   /* Compagnon */
   if(page === "compagnon"){
     petTick(); const ps = petState();
+    if(PT.lv===undefined || PT.lv===null || PT.lv>ps.k) { PT.lv = ps.k; saveXs(); }
+    if(ps.k>PT.lv && petUI.mode==="home" && !petUI.anim){ petUI.anim = {type:"evolve", t:0, from:PT.lv}; petUI.msg = ""; setTimeout(()=>{ const a = audio(); if(a && !muted) [523,659,784,1047,1319].forEach((f,i)=>tone(f, a.currentTime+i*.16, .3, .1, "triangle")); }, 200); }
+    { const wk = Math.floor(petAge()/7); if(wk>(PT.bw||0)){ PT.bw = wk; petFoodAdd(5); petUI.msg = `Joyeux anniversaire ! ${ps.name} a ${wk} ${wk>1 ? "semaines" : "semaine"} : 5 pommes en cadeau.`; } }
     $("abTitle").textContent = ps.name;
     const b0 = el("div","block");
     const bk = el("button","btn ghost small","‹ Menu"); bk.type = "button"; bk.style.alignSelf = "flex-start"; bk.onclick = () => { petUI.mode = "home"; petUI.game = null; petUI.pick = false; setPage("menu"); };
@@ -3018,7 +3021,7 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
         if(petUI.hand && xs.wo.inv[petUI.hand]>0){ objPlace(petUI.hand, hx, hy); if(!(xs.wo.inv[petUI.hand]>0)) petUI.hand = ""; petUI.sel = -1; } else { petUI.sel = objAt(hx, hy); petUI.hand = ""; }
         renderGallery(); return; }
       if(petUI.mode==="world"){ down = true; try{ cv.setPointerCapture(e.pointerId); }catch(x){} lastI = cell(e); dab(lastI); return; }
-      if(!petUI.anim){ petUI.anim = {type:"hop", t:0}; PT.j = clamp100(PT.j+1); sColor(); } };
+      if(!petUI.anim){ petUI.anim = {type:"hop", t:0}; PT.j = clamp100(PT.j+1); sColor(); const r = cv.getBoundingClientRect(), fx = (e.clientX-r.left)/r.width*cv.width, fy = (e.clientY-r.top)/r.height*cv.height; petUI.fx = (petUI.fx||[]).concat([0,1,2].map(q=>({x:fx+(q-1)*18, y:fy-10, t:q*.12-.01, s:q*2}))); } };
     cv.onpointermove = e => { if(!down) return; const i = cell(e); if(i<0 || i===lastI) return;
       if(lastI>=0){ const x0 = lastI%WORLD_W, y0 = Math.floor(lastI/WORLD_W), x1 = i%WORLD_W, y1 = Math.floor(i/WORLD_W), st = Math.max(Math.abs(x1-x0), Math.abs(y1-y0)); for(let k=1;k<=st;k++) dab(Math.round(y0+(y1-y0)*k/st)*WORLD_W+Math.round(x0+(x1-x0)*k/st)); } else dab(i); lastI = i; };
     cv.onpointerup = cv.onpointercancel = () => { down = false; lastI = -1; };
@@ -3065,12 +3068,14 @@ const pac = el("button","btn small pink",`S'occuper de ${ps.name}`); pac.type = 
       const r = el("div","quick"); mk("Sauter","pink",()=>{ const gg = petUI.game; if(gg && gg.over){ petPlay(); renderGallery(); } else petJump(); },r); mk("Arrêter le jeu","line",()=>{ petUI.mode = "home"; petUI.game = null; renderGallery(); },r);
       b1.append(el("p","empty", g && g.over ? `${ps.name} s'est bien amusé ! Touche l'image ou « Sauter » pour rejouer (il faut de l'énergie).` : `Touche l'image ou le bouton pour faire sauter ${ps.name}. 10 obstacles donnent ★ 1 une fois par jour. Meilleur score : ${PT.best}.`), r); pg.appendChild(b1); return;
     }
-    const b1 = el("div","block"), sh = el("div","sec"); sh.append(el("h2",null,ps.name), el("span","eyebrow", ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour grandir` : ""))); b1.appendChild(sh);
-    [["Faim",PT.h,"#ff922b"],["Énergie",PT.e,"#4dabf7"],["Joie",PT.j,"#f783ac"]].forEach(([l,v,cc])=>{ const row = el("div","need"), b = barEl(v); b.firstChild.style.background = cc; row.append(el("span",null,l), b, el("b",null,Math.round(v)+" %")); b1.appendChild(row); });
-    b1.appendChild(el("p","empty", petMood()+" · Les barres descendent doucement quand tu ne joues pas. Chaque dessin terminé donne une pomme."));
+    const b1 = el("div","block"), sh = el("div","sec"); sh.append(el("h2",null,ps.name), el("span","eyebrow", ps.stage + (ps.next ? ` · encore ★ ${ps.next[0]-lastStars} pour évoluer` : " · évolution maximale"))); b1.appendChild(sh);
+    { const nb = new Date(PT.born), wkd = 7-(petAge()%7); b1.appendChild(el("p","empty",`Âge : ${petAgeTxt()} · arrivé le ${nb.getDate()} ${["janv.","févr.","mars","avril","mai","juin","juill.","août","sept.","oct.","nov.","déc."][nb.getMonth()]} · anniversaire dans ${wkd} ${wkd>1 ? "jours" : "jour"} · évolution ${ps.k+1} sur 6`)); }
+    [["Faim",PT.h,"#ff922b"],["Énergie",PT.e,"#4dabf7"],["Propreté",PT.c,"#22b8cf"],["Joie",PT.j,"#f783ac"]].forEach(([l,v,cc])=>{ const row = el("div","need"), b = barEl(v); b.firstChild.style.background = cc; row.append(el("span",null,l), b, el("b",null,Math.round(v)+" %")); b1.appendChild(row); });
+    b1.appendChild(el("p","empty", petMood()+" · Les barres descendent doucement quand tu ne joues pas. Chaque dessin terminé donne une pomme. La bulle au-dessus de sa tête montre ce qu'il veut."));
     const acts = el("div","petacts");
     mk("Nourrir","pink",()=>{ petFeed(); renderGallery(); },acts,`${PT.food} ${PT.food>1 ? "pommes" : "pomme"}`);
     mk("Sieste","line",()=>{ petNap(); renderGallery(); },acts,"Redonne de l'énergie");
+    mk("Bain","line",()=>{ petBath(); renderGallery(); },acts,"Tout propre, tout doux");
     mk("Jouer à sauter","line",()=>{ petPlay(); renderGallery(); },acts,"Coûte 15 d'énergie");
     mk("Décorer son monde","line",()=>{ petUI.mode = "world"; petUI.msg = ""; renderGallery(); },acts,"Peindre et poser des objets");
     mk("Changer de compagnon","line",()=>{ petUI.pick = !petUI.pick; renderGallery(); },acts,(PET_KINDS.find(x=>x[0]===PT.kind)||PET_KINDS[0])[1]);
@@ -3720,14 +3725,17 @@ if(typeof xs.pet!=="string" || !xs.pet.trim()) xs.pet = "Pixou";
 if(!Array.isArray(xs.st)) xs.st = []; if(!xs.ecole || typeof xs.ecole!=="object") xs.ecole = {day:"", n:0};
 function petState(){ let k = 0; for(let i=0;i<PET_ST.length;i++) if(lastStars>=PET_ST[i][0]) k = i; const nx = PET_ST[k+1] || null;
   const kd = PET_KINDS.find(x=>x[0]===xs.pt.kind) || PET_KINDS[0], kdr = kd[2] ? BUILTIN.find(x=>x.id===kd[2]) : null;
-  return {k, name:xs.pet, stage: kdr ? `${kd[1]} · niveau ${k+1}` : PET_ST[k][1], d: kdr || BUILTIN.find(x=>x.id===PET_ST[k][2]) || BUILTIN[0], next:nx, pct: nx ? Math.min(100, (lastStars-PET_ST[k][0])/(nx[0]-PET_ST[k][0])*100) : 100}; }
+  return {k, name:xs.pet, stage: kdr ? `${kd[1]} · ${PET_STG[k].toLowerCase()}` : PET_ST[k][1], stg: PET_STG[k], d: kdr || BUILTIN.find(x=>x.id===PET_ST[k][2]) || BUILTIN[0], next:nx, pct: nx ? Math.min(100, (lastStars-PET_ST[k][0])/(nx[0]-PET_ST[k][0])*100) : 100}; }
 /* ---------- Compagnon façon animal virtuel : espèce, besoins, repas, sieste, jeu de saut, monde dessiné ---------- */
 const PET_KINDS = [["pieuvre","Pieuvre",""],["chat","Chaton","W_chaton"],["chien","Chien","W_chien"],["lapin","Lapin","W_lapin"],["panda","Panda","W_panda"],["renard","Renard","W_renard"],["hibou","Hibou","W_hibou"],["dragon","Bébé dragon","W_ct_bebedragon"],["licorne","Licorne","W_ct_licorne"],["robot","Robot","W_robot1"]];
 if(!xs.pt || typeof xs.pt!=="object") xs.pt = {};
-{ const P0 = {h:80, e:80, j:80, t:Date.now(), food:3, kind:"pieuvre", best:0, runDay:""}; for(const k in P0) if(xs.pt[k]===undefined || xs.pt[k]===null) xs.pt[k] = P0[k]; if(!PET_KINDS.some(x=>x[0]===xs.pt.kind)) xs.pt.kind = "pieuvre"; }
+{ const P0 = {h:80, e:80, j:80, c:80, t:Date.now(), food:3, kind:"pieuvre", best:0, runDay:"", born:Date.now(), bw:0}; for(const k in P0) if(xs.pt[k]===undefined || xs.pt[k]===null) xs.pt[k] = P0[k]; if(!PET_KINDS.some(x=>x[0]===xs.pt.kind)) xs.pt.kind = "pieuvre"; }
 const PT = xs.pt, clamp100 = v => Math.max(0, Math.min(100, v));
-function petTick(){ const now = Date.now(), dt = Math.max(0, (now-PT.t)/3600000); if(dt>0.002){ PT.h = clamp100(PT.h-dt*5); PT.e = clamp100(PT.e-dt*3.5); PT.j = clamp100(PT.j-dt*4.5); PT.t = now; saveXs(); } }
-function petMood(){ petTick(); return PT.h<25 ? "A très faim !" : PT.e<25 ? "Est fatigué" : PT.j<25 ? "S'ennuie un peu" : (PT.h+PT.e+PT.j)/3>70 ? "En pleine forme" : "Va bien"; }
+function petTick(){ const now = Date.now(), dt = Math.max(0, (now-PT.t)/3600000); if(dt>0.002){ PT.h = clamp100(PT.h-dt*5); PT.e = clamp100(PT.e-dt*3.5); PT.j = clamp100(PT.j-dt*4.5); PT.c = clamp100(PT.c-dt*3.3); PT.t = now; saveXs(); } }
+const PET_STG = ["Bébé","Petit","Jeune","Grand","Champion","Légende"], PET_SCALE = [.6,.7,.8,.9,1,1.08];
+const petAge = () => Math.max(0, Math.floor((Date.now()-PT.born)/86400000));
+const petAgeTxt = () => { const d = petAge(); return d===0 ? "né aujourd'hui" : d===1 ? "1 jour" : d<14 ? d+" jours" : Math.floor(d/7)+" semaines"; };
+function petMood(){ petTick(); return PT.h<25 ? "A très faim !" : PT.e<25 ? "Est fatigué" : PT.c<25 ? "A besoin d'un bain" : PT.j<25 ? "S'ennuie un peu" : (PT.h+PT.e+PT.j)/3>70 ? "En pleine forme" : "Va bien"; }
 function petFoodAdd(n){ PT.food = Math.min(20, (PT.food||0)+n); saveXs(); }
 /* Silhouette du compagnon sans son décor : on garde le plus gros morceau du dessin */
 const spriteCache = {};
@@ -3787,6 +3795,8 @@ function objAt(hx, hy){ for(let i=xs.wo.put.length-1;i>=0;i--){ const b = objBox
 let petUI = {mode:"home", anim:null, game:null, col:9, pick:false, name:false, msg:"", wtab:"paint", hand:"", sel:-1};
 function petFeed(){ petTick(); if(PT.food<=0){ petUI.msg = "Plus de pommes ! Termine un dessin pour en gagner une."; return; } if(PT.h>=98){ petUI.msg = `${xs.pet} n'a plus faim.`; return; }
   PT.food--; PT.h = clamp100(PT.h+25); PT.j = clamp100(PT.j+4); saveXs(); petUI.anim = {type:"eat", t:0}; petUI.msg = ""; sColor(); }
+function petBath(){ petTick(); if(PT.c>=95){ petUI.msg = `${xs.pet} est déjà tout propre.`; return; } petUI.anim = {type:"bath", t:0}; petUI.msg = ""; }
+function petOldDrawing(k){ const kd = PET_KINDS.find(x=>x[0]===PT.kind) || PET_KINDS[0]; return (kd[2] && BUILTIN.find(x=>x.id===kd[2])) || BUILTIN.find(x=>x.id===PET_ST[Math.max(0,Math.min(PET_ST.length-1,k))][2]) || BUILTIN[0]; }
 function petNap(){ petTick(); if(PT.e>=90){ petUI.msg = `${xs.pet} n'est pas fatigué.`; return; } petUI.anim = {type:"nap", t:0}; petUI.msg = ""; }
 function petPlay(){ petTick(); if(PT.e<15){ petUI.msg = `${xs.pet} est trop fatigué pour jouer. Fais-lui faire une sieste !`; return; }
   PT.e = clamp100(PT.e-15); saveXs(); petUI.mode = "game"; petUI.msg = ""; petUI.anim = null; petUI.game = {y:0, vy:0, obs:[], speed:210, score:0, over:false, started:false, gap:260, scroll:0}; }
@@ -3818,14 +3828,53 @@ function petFrame(cv, c, dt, now){
     c.strokeStyle = "#e03131"; c.setLineDash([8,6]); c.lineWidth = 2; c.beginPath(); c.moveTo(0,gy); c.lineTo(Wd,gy); c.stroke(); c.setLineDash([]);
     if(petUI.wtab==="items" && xs.wo.put[petUI.sel]){ const b = objBox(xs.wo.put[petUI.sel]); c.strokeStyle = "#c81fd0"; c.lineWidth = 3; c.strokeRect(b.x*OPX-3, b.y*OPX-3, b.w*OPX+6, b.h*OPX+6); } }
   const an = petUI.anim; if(an) an.t += dt;
-  const sh = petUI.mode==="world" ? 70 : 104, hideGrid = 0, sw = sp.width/sp.height*sh, t = now/1000;
-  let px = Wd/2-sw/2 + (petUI.mode==="world" ? 150 : Math.sin(t*.45)*110), py = gy-sh-Math.abs(Math.sin(t*2.2))*5, alpha = petUI.mode==="world" ? .55 : 1;
-  if(an && an.type==="hop"){ py -= Math.sin(Math.min(1, an.t/.5)*Math.PI)*46; if(an.t>.5) petUI.anim = null; }
-  if(an && an.type==="eat"){ px = Wd/2-sw/2; const k = Math.min(1, an.t/.7), ax = Wd/2, ay = 20+(gy-sh*.55-20)*k; if(an.t<.7){ c.fillStyle = "#e03131"; c.fillRect(ax-9, ay-9, 18, 18); c.fillStyle = "#2f9e44"; c.fillRect(ax-2, ay-15, 8, 6); c.fillStyle = "#ff8787"; c.fillRect(ax-6, ay-6, 5, 5); }
-    else py -= Math.abs(Math.sin((an.t-.7)*9))*14; if(an.t>1.6){ petUI.anim = null; renderGallery(); } }
-  if(an && an.type==="nap"){ px = Wd/2-sw/2; py = gy-sh*.86; }
-  c.globalAlpha = alpha; if(an && an.type==="nap") c.drawImage(sp, px, py, sw, sh*.86); else c.drawImage(sp, px, py, sw, sh); c.globalAlpha = 1;
-  if(an && an.type==="nap"){ c.fillStyle = "rgba(20,24,60,.45)"; c.fillRect(0,0,Wd,cv.height); c.fillStyle = "#fff"; c.textAlign = "left"; for(let k=0;k<3;k++){ const ph = (an.t*.7+k*.33)%1; c.globalAlpha = 1-ph; c.font = `800 ${16+k*7}px 'Baloo 2', system-ui, sans-serif`; c.fillText("z", px+sw*.8+ph*26+k*8, py-ph*46); } c.globalAlpha = 1;
+  const t = now/1000, inWorld = petUI.mode==="world", hr = new Date().getHours(), night = (hr>=20 || hr<6) && !inWorld;
+  let k = ps.k, spr = sp, scale = PET_SCALE[k];
+  if(an && an.type==="evolve"){ const u = Math.min(1, an.t/2.6), from = Math.max(0, Math.min(5, an.from)); scale = PET_SCALE[from]+(PET_SCALE[k]-PET_SCALE[from])*Math.min(1, u*1.6); if(u<.55 && Math.floor(an.t*9)%2===0) spr = petSprite(petOldDrawing(from), shop.hat); }
+  const sh = (inWorld ? 70 : 108)*scale, sw = spr.width/spr.height*sh;
+  let cx = Wd/2 + (inWorld ? 150 : Math.sin(t*.45)*110), lift = Math.abs(Math.sin(t*2.2))*5, dir = Math.cos(t*.45)>=0 ? 1 : -1, sq = 1, alpha = inWorld ? .55 : 1;
+  if(an && an.type!=="hop"){ cx = Wd/2; dir = 1; }
+  if(an && an.type==="hop"){ const u = Math.min(1, an.t/.5); lift = Math.sin(u*Math.PI)*46; sq = 1+Math.sin(u*Math.PI)*.08; if(an.t>.5) petUI.anim = null; }
+  if(an && an.type==="eat"){ const u = Math.min(1, an.t/.7), ax = Wd/2, ay = 20+(gy-sh*.55-20)*u; if(an.t<.7){ c.fillStyle = "#e03131"; c.fillRect(ax-9, ay-9, 18, 18); c.fillStyle = "#2f9e44"; c.fillRect(ax-2, ay-15, 8, 6); c.fillStyle = "#ff8787"; c.fillRect(ax-6, ay-6, 5, 5); }
+    else { lift = Math.abs(Math.sin((an.t-.7)*9))*14; for(let q=0;q<4;q++){ c.fillStyle = "#e03131"; c.fillRect(Wd/2-20+q*13+Math.sin(an.t*8+q)*4, gy-sh*.5+(an.t-.7)*60+q*3, 4, 4); } } if(an.t>1.6){ petUI.anim = null; renderGallery(); } }
+  if(an && an.type==="nap"){ lift = 0; sq = .86; }
+  if(an && an.type==="evolve"){ lift = Math.abs(Math.sin(an.t*7))*6; }
+  const hgt = sh*sq, wid = sw*(2-sq), px = cx-wid/2, py = gy-hgt-lift;
+  /* aura des grandes évolutions */
+  if(!inWorld && k>=4){ const g = c.createRadialGradient(cx, gy-sh*.5, 4, cx, gy-sh*.5, sh*.95); g.addColorStop(0, k===5 ? "rgba(255,212,59,.55)" : "rgba(255,255,255,.45)"); g.addColorStop(1, "rgba(255,255,255,0)"); c.fillStyle = g; c.fillRect(cx-sh, gy-sh*1.5, sh*2, sh*2); }
+  if(!inWorld && k===5){ ["#e03131","#ff922b","#ffd43b","#51cf66","#4dabf7","#7048e8"].forEach((col,q)=>{ c.strokeStyle = col; c.globalAlpha = .55; c.lineWidth = 3; c.beginPath(); c.arc(cx, gy-sh*.5, sh*.62+q*3.5, Math.PI*1.05+t*.2, Math.PI*1.95+t*.2); c.stroke(); }); c.globalAlpha = 1; }
+  /* ombre au sol */
+  c.fillStyle = "rgba(20,20,50,.22)"; c.beginPath(); c.ellipse(cx, gy+4, Math.max(8, sw*.36*(1-Math.min(.5, lift/90))), 5, 0, 0, 6.3); c.fill();
+  /* le compagnon, tourné dans le sens de la marche */
+  c.save(); c.globalAlpha = alpha; c.translate(cx, 0); c.scale(dir, 1); c.drawImage(spr, -wid/2, py, wid, hgt);
+  if(an && an.type==="evolve" && an.t<1.5){ c.globalAlpha = .35+.35*Math.sin(an.t*20); c.globalCompositeOperation = "lighter"; c.drawImage(spr, -wid/2, py, wid, hgt); c.globalCompositeOperation = "source-over"; }
+  c.restore(); c.globalAlpha = 1;
+  if(!inWorld && !an){
+    /* petites mouches quand il est sale */
+    if(PT.c<30) for(let q=0;q<3;q++){ c.fillStyle = "#3d2b1f"; c.fillRect(cx+Math.sin(t*3+q*2.1)*sw*.55, py+hgt*.3+Math.cos(t*4+q)*hgt*.25, 4, 4); }
+    /* étincelles des grandes évolutions */
+    if(k>=3) for(let q=0;q<(k>=5 ? 6 : 4);q++){ const a = t*.9+q*(6.283/(k>=5 ? 6 : 4)), r = sh*.62, x = cx+Math.cos(a)*r, y = gy-sh*.5+Math.sin(a)*r*.7, al = .5+.5*Math.sin(t*5+q); c.globalAlpha = al; c.fillStyle = k>=5 ? "#ffd43b" : "#ffffff"; c.fillRect(x-1.5, y-6, 3, 12); c.fillRect(x-6, y-1.5, 12, 3); } c.globalAlpha = 1;
+    /* bulle : ce dont il a besoin */
+    const need = PT.h<30 ? "faim" : PT.e<30 ? "dodo" : PT.c<30 ? "bain" : PT.j<30 ? "jeu" : (PT.h+PT.e+PT.j+PT.c)/4>80 && Math.sin(t*.6)>.2 ? "coeur" : "";
+    if(need){ const bx = Math.max(6, Math.min(Wd-58, cx+wid*.32)), by = Math.max(6, py-46+Math.sin(t*3)*3); c.fillStyle = "#ffffff"; c.strokeStyle = "#1d1b3a"; c.lineWidth = 3; c.beginPath(); c.roundRect ? c.roundRect(bx, by, 50, 40, 12) : c.rect(bx, by, 50, 40); c.fill(); c.stroke();
+      c.fillStyle = "#ffffff"; c.beginPath(); c.moveTo(bx+8, by+38); c.lineTo(bx+2, by+50); c.lineTo(bx+20, by+38); c.fill(); c.beginPath(); c.moveTo(bx+8, by+40); c.lineTo(bx+2, by+50); c.lineTo(bx+20, by+40); c.stroke();
+      const ix = bx+25, iy = by+20;
+      if(need==="faim"){ c.fillStyle = "#e03131"; c.fillRect(ix-9, iy-6, 18, 16); c.fillStyle = "#2f9e44"; c.fillRect(ix-1, iy-12, 8, 6); c.fillStyle = "#ff8787"; c.fillRect(ix-6, iy-3, 5, 5); }
+      else if(need==="dodo"){ c.fillStyle = "#4dabf7"; c.font = "800 26px 'Baloo 2', system-ui, sans-serif"; c.textAlign = "center"; c.fillText("z", ix-6, iy+10); c.font = "800 16px 'Baloo 2', system-ui, sans-serif"; c.fillText("z", ix+9, iy-2); }
+      else if(need==="bain"){ c.fillStyle = "#4dabf7"; c.beginPath(); c.moveTo(ix, iy-13); c.bezierCurveTo(ix+12, iy, ix+10, iy+12, ix, iy+12); c.bezierCurveTo(ix-10, iy+12, ix-12, iy, ix, iy-13); c.fill(); c.fillStyle = "#fff"; c.fillRect(ix-5, iy+2, 4, 4); }
+      else if(need==="jeu"){ c.fillStyle = "#ff922b"; c.beginPath(); c.arc(ix, iy, 12, 0, 6.3); c.fill(); c.strokeStyle = "#7a2e0e"; c.lineWidth = 2; c.beginPath(); c.moveTo(ix-12, iy); c.lineTo(ix+12, iy); c.moveTo(ix, iy-12); c.lineTo(ix, iy+12); c.stroke(); }
+      else { c.fillStyle = "#f783ac"; c.beginPath(); c.moveTo(ix, iy+12); c.bezierCurveTo(ix-20, iy-2, ix-9, iy-16, ix, iy-5); c.bezierCurveTo(ix+9, iy-16, ix+20, iy-2, ix, iy+12); c.fill(); } }
+  }
+  /* cœurs quand on le chatouille */
+  if(petUI.fx && petUI.fx.length){ petUI.fx = petUI.fx.filter(f=>(f.t += dt)<1); for(const f of petUI.fx){ c.globalAlpha = 1-f.t; c.fillStyle = "#f783ac"; const x = f.x+Math.sin(f.t*6+f.s)*8, y = f.y-f.t*60; c.beginPath(); c.moveTo(x, y+7); c.bezierCurveTo(x-12, y-1, x-5, y-10, x, y-3); c.bezierCurveTo(x+5, y-10, x+12, y-1, x, y+7); c.fill(); } c.globalAlpha = 1; }
+  if(an && an.type==="bath"){ for(let q=0;q<14;q++){ const ph = (an.t*.55+q/14)%1, x = cx+Math.sin(q*2.4+an.t*2)*sw*.6, y = gy-ph*(sh+30), r = 5+(q%3)*3; c.globalAlpha = 1-ph*.7; c.fillStyle = "rgba(208,235,255,.85)"; c.beginPath(); c.arc(x, y, r, 0, 6.3); c.fill(); c.strokeStyle = "#ffffff"; c.lineWidth = 2; c.stroke(); } c.globalAlpha = 1;
+    if(an.t>3){ PT.c = 100; PT.j = clamp100(PT.j+5); saveXs(); petUI.anim = null; sWin(); renderGallery(); } }
+  if(an && an.type==="evolve"){ const u = an.t/2.6; for(let q=0;q<3;q++){ const r = ((an.t*90+q*40)%130); c.globalAlpha = Math.max(0, 1-r/130); c.strokeStyle = "#ffd43b"; c.lineWidth = 4; c.beginPath(); c.arc(cx, gy-sh*.5, r, 0, 6.3); c.stroke(); } c.globalAlpha = 1;
+    if(an.t>1.5 && an.t<1.75){ c.fillStyle = `rgba(255,255,255,${1-(an.t-1.5)*4})`; c.fillRect(0,0,Wd,cv.height); }
+    if(an.t>1.5){ c.fillStyle = "#1d1b3a"; c.textAlign = "center"; c.font = "800 26px 'Baloo 2', system-ui, sans-serif"; c.strokeStyle = "#fff"; c.lineWidth = 5; c.strokeText(`${ps.name} évolue !`, Wd/2, 40); c.fillText(`${ps.name} évolue !`, Wd/2, 40); }
+    if(u>=1){ PT.lv = k; saveXs(); petUI.anim = null; renderGallery(); } }
+  if(night){ c.fillStyle = "rgba(14,18,64,.42)"; c.fillRect(0,0,Wd,cv.height); c.fillStyle = "#fff"; for(let q=0;q<14;q++){ const x = (q*73+31)%Wd, y = (q*47+13)%(gy-30); c.globalAlpha = .5+.5*Math.sin(t*2+q); c.fillRect(x, y, 3, 3); } c.globalAlpha = 1; }
+  if(an && an.type==="nap"){ c.fillStyle = "rgba(20,24,60,.45)"; c.fillRect(0,0,Wd,cv.height); c.fillStyle = "#fff"; c.textAlign = "left"; for(let q=0;q<3;q++){ const ph = (an.t*.7+q*.33)%1; c.globalAlpha = 1-ph; c.font = `800 ${16+q*7}px 'Baloo 2', system-ui, sans-serif`; c.fillText("z", cx+wid*.3+ph*26+q*8, py-ph*46); } c.globalAlpha = 1;
     if(an.t>5){ PT.e = clamp100(PT.e+45); saveXs(); petUI.anim = null; sColor(); renderGallery(); } }
 }
 function petLoop(cv){ const c = cv.getContext("2d"); c.imageSmoothingEnabled = false; let last = performance.now();
